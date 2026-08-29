@@ -1,0 +1,130 @@
+<section class="payment-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Learning Operations</p>
+      <h1>Payment Verification</h1>
+      <p>
+        Review paid course enrollments, approve valid payments and reject invalid references.
+        Every action is stored in the backend.
+      </p>
+    </div>
+
+    <button type="button" class="primary-button" (click)="loadEnrollments()" [disabled]="isLoading">
+      {{ isLoading ? 'Loading...' : 'Refresh' }}
+    </button>
+  </header>
+
+  <div class="summary-grid">
+    <article class="summary-card">
+      <span>Pending</span>
+      <strong>{{ pendingCount }}</strong>
+    </article>
+    <article class="summary-card">
+      <span>Approved</span>
+      <strong>{{ paidCount }}</strong>
+    </article>
+    <article class="summary-card">
+      <span>Rejected</span>
+      <strong>{{ rejectedCount }}</strong>
+    </article>
+    <article class="summary-card">
+      <span>Total Enrollments</span>
+      <strong>{{ enrollments.length }}</strong>
+    </article>
+  </div>
+
+  <div class="filters-panel">
+    <input
+      type="search"
+      [(ngModel)]="searchText"
+      placeholder="Search learner, course or transaction reference"
+    />
+
+    <select [(ngModel)]="statusFilter">
+      <option value="ALL">All Payment Statuses</option>
+      <option value="PENDING">Pending</option>
+      <option value="PAID">Approved</option>
+      <option value="REJECTED">Rejected</option>
+      <option value="NOT_REQUIRED">Not Required</option>
+    </select>
+  </div>
+
+  <div *ngIf="isLoading" class="state-panel">Loading enrollment payments...</div>
+  <div *ngIf="!isLoading && errorMessage" class="state-panel error-panel">{{ errorMessage }}</div>
+  <div *ngIf="!isLoading && !errorMessage && filteredEnrollments.length === 0" class="state-panel">
+    No matching enrollment payments were found.
+  </div>
+
+  <div *ngIf="!isLoading && filteredEnrollments.length > 0" class="payment-list">
+    <article
+      *ngFor="let enrollment of filteredEnrollments; trackBy: trackByEnrollmentId"
+      class="payment-card"
+    >
+      <div class="payment-heading">
+        <div>
+          <span class="course-code">{{ enrollment.courseCode }}</span>
+          <h2>{{ enrollment.courseTitle }}</h2>
+          <p>{{ enrollment.learnerName || enrollment.learnerId }}</p>
+        </div>
+
+        <span class="status-badge" [attr.data-status]="enrollment.paymentStatus">
+          {{ enrollment.paymentStatus }}
+        </span>
+      </div>
+
+      <div class="details-grid">
+        <div>
+          <span>Amount</span>
+          <strong>{{ formatAmount(enrollment) }}</strong>
+        </div>
+        <div>
+          <span>Enrollment Status</span>
+          <strong>{{ enrollment.status }}</strong>
+        </div>
+        <div>
+          <span>Transaction Reference</span>
+          <strong>{{ enrollment.paymentReference || 'Not submitted' }}</strong>
+        </div>
+        <div>
+          <span>Submitted</span>
+          <strong>
+            {{ enrollment.paymentSubmittedAt ? (enrollment.paymentSubmittedAt | date: 'dd MMM yyyy, h:mm a') : 'Not submitted' }}
+          </strong>
+        </div>
+      </div>
+
+      <p *ngIf="enrollment.paymentRejectionReason" class="rejection-message">
+        Rejection reason: {{ enrollment.paymentRejectionReason }}
+      </p>
+
+      <div *ngIf="enrollment.paymentStatus === 'PENDING'" class="approval-panel">
+        <input
+          type="text"
+          [(ngModel)]="rejectionReasons[enrollment.enrollmentId]"
+          placeholder="Rejection reason (required only when rejecting)"
+          maxlength="500"
+        />
+
+        <div class="action-buttons">
+          <button
+            type="button"
+            class="approve-button"
+            (click)="approve(enrollment)"
+            [disabled]="processingEnrollmentId !== null || !enrollment.paymentReference"
+          >
+            {{ processingEnrollmentId === enrollment.enrollmentId ? 'Processing...' : 'Approve Payment' }}
+          </button>
+
+          <button
+            type="button"
+            class="reject-button"
+            (click)="reject(enrollment)"
+            [disabled]="processingEnrollmentId !== null"
+          >
+            Reject Payment
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

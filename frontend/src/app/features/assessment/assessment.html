@@ -1,0 +1,152 @@
+<div class="module-wrapper">
+  <!-- Module Header -->
+  <div class="module-header">
+    <div>
+      <h1 class="module-title">Skill Assessment Logs</h1>
+      <p class="module-subtitle">Record and audit technical test evaluations, review scorecards, and verify endorsements.</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Log Assessment
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <h3 class="state-title">Syncing Scores</h3>
+      <p class="state-desc">Consolidating grade metrics and mapping employee profiles...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <div class="modal-icon-danger">!</div>
+      <h3 class="state-title">Sync Failure</h3>
+      <p class="state-desc">{{ error() }}</p>
+      <button class="btn btn-secondary" (click)="loadData()">Retry Connection</button>
+    </div>
+  } @else if (assessments().length === 0) {
+    <div class="empty-state">
+      <h3 class="state-title">No Assessments Recorded</h3>
+      <p class="state-desc">Begin recording evaluations by posting the first score entry.</p>
+      <button class="btn btn-primary" (click)="openAddModal()">Record Assessment</button>
+    </div>
+  } @else {
+    <!-- Assessments Table -->
+    <div class="table-card glass-panel animate-fade-in">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Log ID</th>
+              <th>Employee</th>
+              <th>Skill Evaluated</th>
+              <th>Assessment Score</th>
+              <th>Audit Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of assessments(); track a.assessmentId) {
+              <tr>
+                <td><strong>#ASM-{{ a.assessmentId }}</strong></td>
+                <td>{{ a.employeeName }}</td>
+                <td>{{ a.skillName }}</td>
+                <td>
+                  <div class="score-display-wrapper">
+                    <span class="score-number">{{ a.score }}%</span>
+                    <div class="score-bar-track">
+                      <div class="score-bar-fill" [style.width.%]="a.score" [ngClass]="{
+                        'excellent': a.score >= 85,
+                        'passing': a.score >= 60 && a.score < 85,
+                        'failing': a.score < 60
+                      }"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <button class="badge-btn" (click)="toggleVerify(a)" [title]="a.verified ? 'Revoke Verification' : 'Verify Score'">
+                    <span class="badge" [ngClass]="a.verified ? 'badge-success' : 'badge-danger'">
+                      {{ a.verified ? 'Verified' : 'Pending Review' }}
+                    </span>
+                  </button>
+                </td>
+                <td style="text-align: right;">
+                  <div class="action-buttons-group">
+                    <button class="btn btn-secondary btn-sm" (click)="openEditModal(a)" title="Edit Score">
+                      Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm" (click)="onDelete(a.assessmentId)" title="Delete Record">
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- CRUD Modal -->
+  @if (showModal()) {
+    <div class="modal-overlay open">
+      <div class="modal-box glass-panel animate-slide-in">
+        <div class="modal-header">
+          <h3 class="modal-box-title">{{ isEditing() ? 'Edit Assessment Grade' : 'Log Skill Assessment' }}</h3>
+          <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+
+        <form [formGroup]="assessmentForm" (ngSubmit)="submitForm()" class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="employeeId">Select Employee</label>
+            <select id="employeeId" class="form-select" formControlName="employeeId">
+              <option [value]="null" disabled selected>Choose an employee...</option>
+              @for (e of employees(); track e.employeeId) {
+                <option [value]="e.employeeId">{{ e.employeeName }} (Designation: {{ e.designation }})</option>
+              }
+            </select>
+            @if (assessmentForm.get('employeeId')?.touched && assessmentForm.get('employeeId')?.invalid) {
+              <span class="form-error">An employee must be selected.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="skillId">Select Skill</label>
+            <select id="skillId" class="form-select" formControlName="skillId">
+              <option [value]="null" disabled selected>Choose a skill...</option>
+              @for (s of skills(); track s.skillId) {
+                <option [value]="s.skillId">{{ s.skillName }} (Category: {{ s.category }})</option>
+              }
+            </select>
+            @if (assessmentForm.get('skillId')?.touched && assessmentForm.get('skillId')?.invalid) {
+              <span class="form-error">A skill must be selected.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="score">Evaluation Score (0 - 100%)</label>
+            <input type="number" id="score" class="form-input" formControlName="score" min="0" max="100" />
+            @if (assessmentForm.get('score')?.touched && assessmentForm.get('score')?.invalid) {
+              <span class="form-error">Score is required and must be between 0 and 100.</span>
+            }
+          </div>
+
+          <div class="form-group check-group" style="flex-direction: row; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
+            <input type="checkbox" id="verified" class="form-checkbox" formControlName="verified" />
+            <label class="form-label" for="verified" style="margin-bottom: 0; cursor: pointer;">Mark score as verified and audited</label>
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="assessmentForm.invalid">
+              {{ isEditing() ? 'Save Score' : 'Record Score' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

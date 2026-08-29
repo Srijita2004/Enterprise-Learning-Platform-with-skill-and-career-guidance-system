@@ -1,0 +1,22 @@
+{
+  "/api": {
+    "target": "http://localhost:8085",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/learning-api": {
+    "target": "http://localhost:8085",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/certification-api": {
+    "target": "http://localhost:8085",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/notification-api": {
+    "target": "http://localhost:8085",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

@@ -1,0 +1,23 @@
+<div class="donut-card">
+  <div class="chart-wrap">
+    <svg viewBox="0 0 120 120" role="img" [attr.aria-label]="title">
+      <circle class="track" cx="60" cy="60" r="44" pathLength="100" />
+      @for (segment of rendered; track segment.label) {
+        @if (segment.value > 0) {
+          <circle class="segment" cx="60" cy="60" r="44" pathLength="100"
+            [attr.stroke]="segment.color"
+            [attr.stroke-dasharray]="segment.percent + ' ' + (100 - segment.percent)"
+            [attr.stroke-dashoffset]="-segment.offset">
+            <title>{{ segment.label }}: {{ segment.value }} ({{ percent(segment.value) }})</title>
+          </circle>
+        }
+      }
+    </svg>
+    <div class="center"><strong>{{ total }}</strong><span>{{ centerLabel }}</span></div>
+  </div>
+  <div class="legend">
+    @for (segment of segments; track segment.label) {
+      <div class="legend-row"><i [style.background]="segment.color"></i><span>{{ segment.label }}</span><strong>{{ segment.value }}</strong><small>{{ percent(segment.value) }}</small></div>
+    }
+  </div>
+</div>

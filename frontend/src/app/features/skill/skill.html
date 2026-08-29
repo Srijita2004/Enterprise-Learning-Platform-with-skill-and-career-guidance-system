@@ -1,0 +1,121 @@
+<div class="module-wrapper">
+  <!-- Module Header -->
+  <div class="module-header">
+    <div>
+      <h1 class="module-title">Skill Library Catalog</h1>
+      <p class="module-subtitle">Register and govern technical competency definitions, soft skills, and domain categories.</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Add New Skill
+    </button>
+  </div>
+
+  <!-- Filter Navigation Tab -->
+  <div class="filter-tabs glass-panel">
+    <button class="tab-btn" [ngClass]="{ 'active': activeFilter() === 'ALL' }" (click)="setFilter('ALL')">All Skills</button>
+    <button class="tab-btn" [ngClass]="{ 'active': activeFilter() === 'TECHNICAL' }" (click)="setFilter('TECHNICAL')">Technical</button>
+    <button class="tab-btn" [ngClass]="{ 'active': activeFilter() === 'DOMAIN' }" (click)="setFilter('DOMAIN')">Domain</button>
+    <button class="tab-btn" [ngClass]="{ 'active': activeFilter() === 'SOFT' }" (click)="setFilter('SOFT')">Soft Skills</button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <h3 class="state-title">Loading Catalog</h3>
+      <p class="state-desc">Synchronizing skill registers and categorizing competencies...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <div class="modal-icon-danger">!</div>
+      <h3 class="state-title">Sync Failure</h3>
+      <p class="state-desc">{{ error() }}</p>
+      <button class="btn btn-secondary" (click)="loadData()">Retry Sync</button>
+    </div>
+  } @else if (filteredSkills().length === 0) {
+    <div class="empty-state">
+      <h3 class="state-title">No Skills Listed</h3>
+      <p class="state-desc">There are no skills matching the selected filter in your registry catalog.</p>
+      <button class="btn btn-primary" (click)="openAddModal()">Create Skill Definition</button>
+    </div>
+  } @else {
+    <!-- Skill Cards Grid -->
+    <div class="skills-grid animate-fade-in">
+      @for (s of filteredSkills(); track s.skillId) {
+        <div class="skill-card glass-panel glow-hover" [ngClass]="s.category.toLowerCase()">
+          <div class="skill-header">
+            <span class="badge" [ngClass]="{
+              'badge-success': s.category === 'TECHNICAL',
+              'badge-warning': s.category === 'DOMAIN',
+              'badge-danger': s.category === 'SOFT'
+            }">{{ s.category }}</span>
+            
+            <div class="card-menu-actions">
+              <button class="btn btn-secondary btn-sm" (click)="openEditModal(s)" title="Edit Skill">
+                Edit
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="onDelete(s.skillId)" title="Delete Skill" style="padding: 0.25rem 0.5rem;">
+                &times;
+              </button>
+            </div>
+          </div>
+          
+          <h3 class="skill-card-name">{{ s.skillName }}</h3>
+          <p class="skill-card-desc">{{ s.description }}</p>
+          
+          <div class="skill-card-footer">
+            <span class="skill-id-label">Code: SK-00{{ s.skillId }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- CRUD Modal -->
+  @if (showModal()) {
+    <div class="modal-overlay open">
+      <div class="modal-box glass-panel animate-slide-in">
+        <div class="modal-header">
+          <h3 class="modal-box-title">{{ isEditing() ? 'Modify Skill Definition' : 'Define New Skill' }}</h3>
+          <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+
+        <form [formGroup]="skillForm" (ngSubmit)="submitForm()" class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="skillName">Skill Name</label>
+            <input type="text" id="skillName" class="form-input" formControlName="skillName" placeholder="e.g. Spring Boot" />
+            @if (skillForm.get('skillName')?.touched && skillForm.get('skillName')?.invalid) {
+              <span class="form-error">Skill name is required.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="category">Category</label>
+            <select id="category" class="form-select" formControlName="category">
+              <option value="TECHNICAL">Technical (Code, Infrastructure, DB)</option>
+              <option value="DOMAIN">Domain (Finance, Business Analysis, Banking)</option>
+              <option value="SOFT">Soft Skills (Leadership, Scrum, Communications)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="description">Detailed Description</label>
+            <textarea id="description" class="form-textarea" formControlName="description" rows="4" placeholder="Describe the skill competencies..."></textarea>
+            @if (skillForm.get('description')?.touched && skillForm.get('description')?.invalid) {
+              <span class="form-error">Description is required.</span>
+            }
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="skillForm.invalid">
+              {{ isEditing() ? 'Save Definition' : 'Add to Catalog' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

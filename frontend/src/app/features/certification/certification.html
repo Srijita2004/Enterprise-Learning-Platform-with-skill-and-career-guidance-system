@@ -1,0 +1,147 @@
+<div class="module-wrapper">
+  <!-- Module Header -->
+  <div class="module-header">
+    <div>
+      <h1 class="module-title">Professional Certifications</h1>
+      <p class="module-subtitle">Record and audit technical certificates, review renewal timelines, and verify credentials.</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Add Certification
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <h3 class="state-title">Retrieving Credentials</h3>
+      <p class="state-desc">Synchronizing professional certification files and indexing statuses...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <div class="modal-icon-danger">!</div>
+      <h3 class="state-title">Sync Failure</h3>
+      <p class="state-desc">{{ error() }}</p>
+      <button class="btn btn-secondary" (click)="loadData()">Retry Sync</button>
+    </div>
+  } @else if (certificates().length === 0) {
+    <div class="empty-state">
+      <h3 class="state-title">No Certifications Logged</h3>
+      <p class="state-desc">Record compliance and engineering skills by logging the first professional certification.</p>
+      <button class="btn btn-primary" (click)="openAddModal()">Log Certification</button>
+    </div>
+  } @else {
+    <!-- Credentials Table -->
+    <div class="table-card glass-panel animate-fade-in">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Employee Name</th>
+              <th>Certification name</th>
+              <th>Issuing Organization</th>
+              <th>Issue Date</th>
+              <th>Expiration Date</th>
+              <th>Credential Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of certificates(); track c.certid) {
+              <tr>
+                <td><strong>{{ c.employeeName }}</strong></td>
+                <td>{{ c.name }}</td>
+                <td>
+                  <span class="badge badge-info" style="text-transform: none; padding: 0.2rem 0.5rem; background: rgba(6, 182, 212, 0.08); color: var(--accent-secondary); border: 1px solid rgba(6, 182, 212, 0.15)">
+                    {{ c.issuingOrganization }}
+                  </span>
+                </td>
+                <td>{{ c.issueDate }}</td>
+                <td>{{ c.expiry }}</td>
+                <td>
+                  <span class="badge" [ngClass]="c.status === 'Valid' ? 'badge-success' : 'badge-danger'">
+                    {{ c.status }}
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <div class="action-buttons-group">
+                    <button class="btn btn-secondary btn-sm" (click)="openEditModal(c)">Edit</button>
+                    <button class="btn btn-danger btn-sm" (click)="onDelete(c.certid)">&times;</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- CRUD Modal -->
+  @if (showModal()) {
+    <div class="modal-overlay open">
+      <div class="modal-box glass-panel animate-slide-in">
+        <div class="modal-header">
+          <h3 class="modal-box-title">{{ isEditing() ? 'Modify Certification Record' : 'Record Certification' }}</h3>
+          <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+
+        <form [formGroup]="certForm" (ngSubmit)="submitForm()" class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="empid">Select Employee Profile</label>
+            <select id="empid" class="form-select" formControlName="empid">
+              <option [value]="null" disabled selected>Choose employee...</option>
+              @for (e of employees(); track e.employeeId) {
+                <option [value]="e.employeeId">{{ e.employeeName }} ({{ e.designation }})</option>
+              }
+            </select>
+            @if (certForm.get('empid')?.touched && certForm.get('empid')?.invalid) {
+              <span class="form-error">An employee must be associated.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="certName">Certification Name</label>
+            <input type="text" id="certName" class="form-input" formControlName="name" placeholder="e.g. AWS Solutions Architect Associate" />
+            @if (certForm.get('name')?.touched && certForm.get('name')?.invalid) {
+              <span class="form-error">Name is required (min 2 characters).</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="issuingOrganization">Issuing Authority</label>
+            <input type="text" id="issuingOrganization" class="form-input" formControlName="issuingOrganization" placeholder="e.g. Amazon Web Services" />
+            @if (certForm.get('issuingOrganization')?.touched && certForm.get('issuingOrganization')?.invalid) {
+              <span class="form-error">Issuing organization is required.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="issueDate">Issue Date</label>
+            <input type="date" id="issueDate" class="form-input" formControlName="issueDate" />
+            @if (certForm.get('issueDate')?.touched && certForm.get('issueDate')?.invalid) {
+              <span class="form-error">Issue date is required.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="expiry">Expiry Date</label>
+            <input type="date" id="expiry" class="form-input" formControlName="expiry" />
+            @if (certForm.get('expiry')?.touched && certForm.get('expiry')?.invalid) {
+              <span class="form-error">Expiry date is required.</span>
+            }
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="certForm.invalid">
+              Save Certificate
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

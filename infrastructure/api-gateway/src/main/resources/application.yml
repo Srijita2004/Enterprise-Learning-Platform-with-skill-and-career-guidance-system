@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+
+            # Milestone 4 Backend Route (must precede the general /api/** rule below)
+            - id: career-service-route
+              uri: lb://CAREER-SERVICE
+              predicates:
+                - Path=/api/career/**
+
+            # Milestone 1 Backend Route
+            - id: skill-management-service-route
+              uri: lb://SKILL-MANAGEMENT-SERVICE
+              predicates:
+                - Path=/api/**
+
+            # Milestone 2 Backend Route
+            - id: learning-service-route
+              uri: lb://LEARNING-SERVICE
+              predicates:
+                - Path=/learning-api/**
+              filters:
+                - StripPrefix=1
+
+            # Milestone 3 Backend Route
+            - id: certification-management-service-route
+              uri: lb://CERTIFICATION-MANAGEMENT-SERVICE
+              predicates:
+                - Path=/certification-api/**
+              filters:
+                 - StripPrefix=1
+
+            # Notification Service Route (Unified Notification Center)
+            - id: notification-service-route
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/notification-api/**
+              filters:
+                 - StripPrefix=1
+
+server:
+  port: 8085
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+    register-with-eureka: true
+    fetch-registry: true
+
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}

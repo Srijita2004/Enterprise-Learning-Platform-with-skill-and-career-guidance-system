@@ -1,0 +1,77 @@
+﻿# =========================================================================
+# SkillsSphere Nexus - Root .gitignore
+# =========================================================================
+
+# 1. Java & Maven Build Artifacts
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+dependency-reduced-pom.xml
+
+# Maven Wrapper
+!.mvn/wrapper/maven-wrapper.jar
+!mvnw
+!mvnw.cmd
+
+# 2. Node.js & Angular Build Artifacts
+node_modules/
+dist/
+dist-ssr/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.turbo/
+
+# 3. IDEs, Editors & Tooling
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+*.bak
+*.tmp
+
+# 4. Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# 5. Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+
+# Allow example files
+!.env.example
+
+# 6. Python Artifacts
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*.class
+*.egg-info/
+.pytest_cache/

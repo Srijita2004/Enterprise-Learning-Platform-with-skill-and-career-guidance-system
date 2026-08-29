@@ -1,0 +1,589 @@
+<div class="employee-profile-container">
+  
+  <!-- LOADING SPINNER -->
+  <div *ngIf="isLoading()" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading Connected Employee 360 Profile...</p>
+  </div>
+
+  <div *ngIf="!isLoading()" class="profile-content-wrapper">
+    
+    <!-- 1. HERO 360 PROFILE HEADER -->
+    <header class="profile-hero-card glass-panel">
+      <div class="hero-left-section">
+        <div class="profile-avatar-circle">
+          <span>{{ employee()?.employeeName?.charAt(0) || 'E' }}</span>
+          <div class="online-indicator-dot" title="Active Enterprise Account"></div>
+        </div>
+
+        <div class="profile-meta-text">
+          <div class="name-badge-row">
+            <h1 class="profile-name">{{ employee()?.employeeName }}</h1>
+            <span class="role-pill">{{ isSelfProfile() ? 'My Connected Profile' : 'Enterprise Employee' }}</span>
+            <span class="emp-id-badge">EMP #{{ employee()?.employeeId }}</span>
+          </div>
+          <p class="designation-text">{{ employee()?.designation }} &bull; Enterprise Engineering</p>
+          <div class="personal-quick-info">
+            <span><strong>Annual Comp:</strong> ${{ employee()?.salary | number }}</span>
+            <span class="dot-separator">&bull;</span>
+            <span><strong>Mentor:</strong> {{ careerPlan()?.mentorName || 'Assigned by Department' }}</span>
+            <span class="dot-separator">&bull;</span>
+            <span><strong>Status:</strong> <span class="text-success">Compliant &amp; Active</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right-section">
+        <div class="career-target-pill glass-card">
+          <div class="target-label">CAREER OBJECTIVE TARGET</div>
+          <div class="target-title">{{ careerPlan()?.targetRole || 'Senior Architect' }}</div>
+          <div class="target-progress-row">
+            <div class="mini-progress-track">
+              <div class="mini-progress-bar" [style.width.%]="careerPlan()?.progress || 78"></div>
+            </div>
+            <span class="target-percent">{{ careerPlan()?.progress || 78 }}%</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-add-cert" (click)="openAddCertModal()">
+          <span>+ Add External Certificate</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. NAVIGATION TABS BAR -->
+    <nav class="profile-tabs-nav">
+      <button 
+        type="button" 
+        class="tab-link" 
+        [class.active]="activeTab() === 'overview'"
+        (click)="activeTab.set('overview')"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+        <span>360 Overview</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="tab-link" 
+        [class.active]="activeTab() === 'skills'"
+        (click)="activeTab.set('skills')"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+        <span>Skills &amp; Competencies ({{ skills().length }})</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="tab-link" 
+        [class.active]="activeTab() === 'learning'"
+        (click)="activeTab.set('learning')"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>Courses &amp; Training ({{ courses().length }})</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="tab-link" 
+        [class.active]="activeTab() === 'certifications'"
+        (click)="activeTab.set('certifications')"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"></path></svg>
+        <span>Certifications ({{ certifications().length }})</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="tab-link" 
+        [class.active]="activeTab() === 'career'"
+        (click)="activeTab.set('career')"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+        <span>Career Roadmap &amp; Jobs</span>
+      </button>
+    </nav>
+
+    <!-- 3. TAB CONTENT PANELS -->
+    <main class="tab-body-container">
+
+      <!-- ========================================== -->
+      <!-- TAB A: 360 OVERVIEW MATRIX                 -->
+      <!-- ========================================== -->
+      <section *ngIf="activeTab() === 'overview'" class="tab-pane overview-matrix">
+        <div class="overview-grid-4">
+          <div class="matrix-card glass-panel">
+            <div class="matrix-card-header">
+              <span class="matrix-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+              </span>
+              <h4>Skills Benchmarking</h4>
+            </div>
+            <div class="matrix-num">{{ skills().length }}</div>
+            <p class="matrix-desc">Mapped technical proficiencies with verified assessments.</p>
+            <div class="matrix-chips">
+              <span class="chip-item" *ngFor="let s of skills() | slice:0:3">{{ s.skillName }} (L{{ s.proficiencyLevel }})</span>
+              <span class="chip-item" *ngIf="skills().length === 0" style="color: var(--text-secondary); font-style: italic;">No mapped skills</span>
+            </div>
+          </div>
+
+          <div class="matrix-card glass-panel">
+            <div class="matrix-card-header">
+              <span class="matrix-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              </span>
+              <h4>Learning Journeys</h4>
+            </div>
+            <div class="matrix-num">{{ enrollments().length }}</div>
+            <p class="matrix-desc">Active enrolled courses with completion tracks.</p>
+            <div class="matrix-chips">
+              <span class="chip-item" *ngFor="let e of enrollments() | slice:0:2">{{ e.courseTitle }}</span>
+              <span class="chip-item" *ngIf="enrollments().length === 0" style="color: var(--text-secondary); font-style: italic;">No active enrollments</span>
+            </div>
+          </div>
+
+          <div class="matrix-card glass-panel">
+            <div class="matrix-card-header">
+              <span class="matrix-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"></path></svg>
+              </span>
+              <h4>Verified Certifications</h4>
+            </div>
+            <div class="matrix-num">{{ certifications().length }}</div>
+            <p class="matrix-desc">Compliant enterprise &amp; external certifications.</p>
+            <div class="matrix-chips">
+              <span class="chip-item cert-chip" *ngFor="let cert of certifications() | slice:0:2">{{ cert.certificationName }}</span>
+              <span class="chip-item" *ngIf="certifications().length === 0" style="color: var(--text-secondary); font-style: italic;">No active certificates</span>
+            </div>
+          </div>
+
+          <div class="matrix-card glass-panel">
+            <div class="matrix-card-header">
+              <span class="matrix-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+              </span>
+              <h4>Career Progression</h4>
+            </div>
+            <div class="matrix-num">{{ careerPlan()?.progress ?? 0 }}%</div>
+            <p class="matrix-desc">Progression towards {{ careerPlan()?.targetRole || 'Target Role' }}.</p>
+            <div class="matrix-chips">
+              <span class="chip-item target-chip">{{ careerPlan()?.promotionCriteria?.length ?? 0 }} Criteria Mapped</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Action Shortcuts -->
+        <div class="overview-secondary-split">
+          <div class="split-card glass-panel">
+            <h3>Recent Milestones &amp; Compliance</h3>
+            <ul class="activity-timeline">
+              <li *ngFor="let cert of certifications()">
+                <span class="timeline-dot"></span>
+                <div class="timeline-text">
+                  <strong>{{ cert.certificationName }}</strong>
+                  <p>Issued by {{ cert.issuingOrganization }} &bull; Valid until {{ cert.expiryDate || 'No Expiration' }}</p>
+                </div>
+                <span class="badge badge-success">COMPLIANT</span>
+              </li>
+              <li *ngIf="certifications().length === 0">
+                <span class="timeline-dot"></span>
+                <div class="timeline-text">
+                  <strong>No external certificates recorded yet.</strong>
+                  <p>Click "+ Add External Certificate" to record credentials earned outside the platform.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="split-card glass-panel">
+            <h3>Advancement Checklist</h3>
+            <div class="advancement-checklist">
+              <div 
+                class="checklist-item" 
+                *ngFor="let item of careerPlan()?.promotionCriteria"
+                [class.item-checked]="item.isMet"
+              >
+                <input 
+                  type="checkbox" 
+                  [checked]="item.isMet" 
+                  (change)="toggleCriteria(item.criteriaId)" 
+                  id="chk-{{item.criteriaId}}" 
+                />
+                <label for="chk-{{item.criteriaId}}">
+                  <strong>{{ item.name }}</strong>
+                  <span>{{ item.description }}</span>
+                </label>
+                <span class="badge badge-skill">{{ item.type }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB B: SKILLS & COMPETENCIES               -->
+      <!-- ========================================== -->
+      <section *ngIf="activeTab() === 'skills'" class="tab-pane">
+        <div class="pane-header-row">
+          <div>
+            <h2>Mapped Skills &amp; Competency Frameworks</h2>
+            <p>Benchmarked technical proficiencies, years of experience, and verified assessment scores.</p>
+          </div>
+          <a routerLink="/competencies" class="btn btn-secondary">Explore Competencies Library</a>
+        </div>
+
+        <div class="skills-card-grid">
+          <div class="skill-detail-card glass-panel" *ngFor="let s of skills()">
+            <div class="skill-card-top">
+              <div>
+                <h3 class="skill-title">{{ s.skillName }}</h3>
+                <span class="skill-cat-tag">{{ s.category }}</span>
+              </div>
+              <div class="prof-pill">{{ getSkillProficiencyLabel(s.proficiencyLevel) }}</div>
+            </div>
+
+            <div class="skill-meters-group">
+              <div class="meter-line">
+                <span>Proficiency Level ({{ s.proficiencyLevel }} / 5)</span>
+                <div class="meter-bar">
+                  <div class="meter-fill" [style.width.%]="(s.proficiencyLevel / 5) * 100"></div>
+                </div>
+              </div>
+
+              <div class="meter-line" *ngIf="s.score">
+                <span>Verified Assessment Score ({{ s.score }}%)</span>
+                <div class="meter-bar">
+                  <div class="meter-fill score-fill" [style.width.%]="s.score"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="skill-card-footer">
+              <span>Experience: <strong>{{ s.yearsOfExperience }} yrs</strong></span>
+              <span class="verified-tag" *ngIf="s.verified">Verified Assessment</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB C: COURSES & TRAINING                  -->
+      <!-- ========================================== -->
+      <section *ngIf="activeTab() === 'learning'" class="tab-pane">
+        <div class="pane-header-row">
+          <div>
+            <h2>Course Catalog &amp; Training Journeys</h2>
+            <p>Active learning paths, modular video sessions, and completion tracking.</p>
+          </div>
+          <a routerLink="/courses" class="btn btn-primary">Browse All Courses</a>
+        </div>
+
+        <div class="courses-card-grid">
+          <div class="course-summary-card glass-panel" *ngFor="let c of courses()">
+            <div class="course-card-badge">{{ c.category }}</div>
+            <h3>{{ c.title }}</h3>
+            <p class="course-card-desc">{{ c.description }}</p>
+            
+            <div class="course-card-meta">
+              <span>Duration: {{ c.durationHours }} hrs</span>
+              <span>Level: {{ c.courseLevel }}</span>
+              <span>Passing: {{ c.passingScore }}%</span>
+            </div>
+
+            <div class="course-card-actions">
+              <a [routerLink]="['/courses', c.courseId]" class="btn btn-secondary btn-sm">View Curriculum</a>
+              <a [routerLink]="['/courses', c.courseId, 'learning']" class="btn btn-primary btn-sm">Enter Classroom</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB D: CERTIFICATIONS & COMPLIANCE         -->
+      <!-- ========================================== -->
+      <section *ngIf="activeTab() === 'certifications'" class="tab-pane">
+        <div class="pane-header-row">
+          <div>
+            <h2>Enterprise &amp; External Certifications</h2>
+            <p>Active credentials, validation tracking, compliance status, and expiration warning windows.</p>
+          </div>
+          <button type="button" class="btn btn-primary" (click)="openAddCertModal()">+ Add External Certificate</button>
+        </div>
+
+        <div class="certifications-table-card glass-panel">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th>Certification Name</th>
+                <th>Issuing Organization</th>
+                <th>Credential ID</th>
+                <th>Issue Date</th>
+                <th>Expiry Date</th>
+                <th>Verification</th>
+                <th>Compliance Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cert of certifications()">
+                <td>
+                  <strong>{{ cert.certificationName }}</strong>
+                </td>
+                <td>{{ cert.issuingOrganization }}</td>
+                <td><code>{{ cert.credentialNumber || 'N/A' }}</code></td>
+                <td>{{ cert.issueDate }}</td>
+                <td>{{ cert.expiryDate || 'No Expiry' }}</td>
+                <td>
+                  <span class="badge badge-success">{{ cert.verificationStatus }}</span>
+                </td>
+                <td>
+                  <span class="badge" [class]="getCertStatusClass(cert.status)">{{ cert.status }}</span>
+                </td>
+              </tr>
+              <tr *ngIf="certifications().length === 0">
+                <td colspan="7" class="text-center empty-cell">
+                  No certifications found. Click "+ Add External Certificate" to register your certificates.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB E: CAREER ROADMAP & OPPORTUNITIES      -->
+      <!-- ========================================== -->
+      <section *ngIf="activeTab() === 'career'" class="tab-pane">
+        <div class="pane-header-row">
+          <div>
+            <h2>Career Progression Roadmap &amp; Internal Jobs</h2>
+            <p>Target role milestones, promotion criteria, skill gap remedies, and matched internal openings.</p>
+          </div>
+          <a routerLink="/career" class="btn btn-secondary">Open Full Career Center</a>
+        </div>
+
+        <!-- AI CAREER ADVISOR BANNER & CARD -->
+        <div class="ai-profile-advisor-card glass-panel glow-hover">
+          <div class="ai-advisor-header">
+            <div class="ai-advisor-title-group">
+              <span class="ai-advisor-badge-dot"></span>
+              <div>
+                <h3 class="ai-advisor-title">Gemini AI Career Advisor</h3>
+                <span class="ai-advisor-subtitle">Vector Cosine Similarity &bull; Google Gemini Intelligence</span>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              class="btn btn-primary btn-sm" 
+              (click)="generateAiCareerGuidance()"
+              [disabled]="loadingAi()"
+              style="font-weight: 700;"
+            >
+              {{ loadingAi() ? 'Synthesizing AI Model...' : 'Generate AI Career Coaching' }}
+            </button>
+          </div>
+
+          <div *ngIf="loadingAi()" class="loading-state" style="padding: 1.5rem 0;">
+            <div class="spinner"></div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Calculating vector cosine similarity across {{ skills().length }} mapped skills and generating tailored coaching...</p>
+          </div>
+
+          <div *ngIf="!loadingAi() && aiEvaluation()" class="ai-advisor-results">
+            <div class="ai-advisor-kpi-grid">
+              <div class="ai-advisor-kpi-box">
+                <div class="ai-kpi-lbl">AI Vector Match Score</div>
+                <div class="ai-kpi-num text-primary">{{ aiEvaluation()?.matchScore }}%</div>
+                <div class="ai-kpi-sub">Cosine: {{ aiEvaluation()?.cosineSimilarity }}</div>
+              </div>
+              <div class="ai-advisor-kpi-box">
+                <div class="ai-kpi-lbl">Promotion Readiness</div>
+                <div class="ai-kpi-num text-success">{{ aiEvaluation()?.readinessProbability }}%</div>
+                <div class="ai-kpi-sub">Velocity: {{ aiEvaluation()?.readinessTier }}</div>
+              </div>
+              <div class="ai-advisor-kpi-box">
+                <div class="ai-kpi-lbl">Missing Gaps</div>
+                <div class="ai-kpi-num text-warning">{{ aiEvaluation()?.skillGaps?.length || 0 }} Skills</div>
+                <div class="ai-kpi-sub">Target courses suggested</div>
+              </div>
+            </div>
+
+            <div class="ai-advisor-narrative-box">
+              <p class="ai-advisor-narrative-text" [innerHTML]="formatAiText(aiEvaluation()?.aiExecutiveSummary)"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="career-split-layout">
+          <div class="roadmap-plan-card glass-panel">
+            <div class="roadmap-card-header">
+              <div>
+                <h3>Target: {{ careerPlan()?.targetRole || 'Senior Architect' }}</h3>
+                <p>Assigned Mentor: <strong>{{ careerPlan()?.mentorName || 'Jane Doe' }}</strong></p>
+              </div>
+              <div class="roadmap-progress-badge">{{ careerPlan()?.progress || 78 }}% Achieved</div>
+            </div>
+
+            <div class="roadmap-steps-vertical">
+              <div class="step-card step-done">
+                <div class="step-circle">
+                  <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8.5 6 11.5 13 4.5"></polyline></svg>
+                </div>
+                <div class="step-content">
+                  <h4>Step 1: Current Role Baseline Established</h4>
+                  <p>Certified in {{ employee()?.designation }} core competency frameworks.</p>
+                </div>
+              </div>
+
+              <div class="step-card step-active">
+                <div class="step-circle">2</div>
+                <div class="step-content">
+                  <h4>Step 2: Core Capability Development</h4>
+                  <p>Acquiring identified skill gap competencies through tailored LMS training.</p>
+                  <div class="skill-gap-chips">
+                    <span class="gap-chip" *ngFor="let g of careerPlan()?.skillGaps">{{ g }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="step-card">
+                <div class="step-circle">3</div>
+                <div class="step-content">
+                  <h4>Step 3: Promotion Assessment Checklist</h4>
+                  <p>Complete formal certifications and assessments mapped for advancement.</p>
+                </div>
+              </div>
+
+              <div class="step-card step-target">
+                <div class="step-circle">4</div>
+                <div class="step-content">
+                  <h4>Step 4: Transition to {{ careerPlan()?.targetRole || 'Senior Architect' }}</h4>
+                  <p>Achieve promotion eligibility and apply to matched internal postings.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matched Opportunities -->
+          <div class="jobs-column">
+            <h3>Matched Internal Opportunities</h3>
+            <div class="job-card-compact glass-panel" *ngFor="let job of jobMatches() | slice:0:3">
+              <div class="job-top">
+                <h4>{{ job.title }}</h4>
+                <span class="match-tag">{{ job.matchScore }}% FIT</span>
+              </div>
+              <p class="job-dept">{{ job.department }} &bull; {{ job.location }}</p>
+              <p class="job-desc">{{ job.description }}</p>
+              <div class="job-foot">
+                <span class="salary-txt">${{ job.salary | number }} / yr</span>
+                <a routerLink="/career" class="btn btn-secondary btn-sm">View &amp; Apply</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- 4. MODAL: ADD EXTERNAL CERTIFICATE DIALOG -->
+  <div *ngIf="showAddCertModal()" class="modal-backdrop" (click)="closeAddCertModal()">
+    <div class="modal-card glass-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"></path></svg>
+          </span>
+          <h3>Add External Certificate</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="closeAddCertModal()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <p class="modal-subtitle">
+        Record a certification or course credential earned outside the platform for <strong>{{ employee()?.employeeName }}</strong>.
+        This record will immediately be connected to your profile and visible in HR Compliance registries.
+      </p>
+
+      <form [formGroup]="certForm" (ngSubmit)="submitExternalCert()">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="certName">Certification / Course Name *</label>
+            <input 
+              id="certName" 
+              type="text" 
+              class="form-control" 
+              formControlName="certificationName" 
+              placeholder="e.g. Google Cloud Professional Architect"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="issuingOrg">Issuing Organization *</label>
+            <input 
+              id="issuingOrg" 
+              type="text" 
+              class="form-control" 
+              formControlName="issuingOrganization" 
+              placeholder="e.g. Google Cloud / Coursera / AWS"
+            />
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="credNum">Credential ID / License Number *</label>
+            <input 
+              id="credNum" 
+              type="text" 
+              class="form-control" 
+              formControlName="credentialNumber" 
+              placeholder="e.g. GCP-ARCH-2026-881"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="warningDays">Expiry Alert Window (Days) *</label>
+            <input 
+              id="warningDays" 
+              type="number" 
+              class="form-control" 
+              formControlName="warningWindowDays" 
+              placeholder="30"
+            />
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="issueDate">Date Issued *</label>
+            <input 
+              id="issueDate" 
+              type="date" 
+              class="form-control" 
+              formControlName="issueDate" 
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="expiryDate">Expiration Date (Optional)</label>
+            <input 
+              id="expiryDate" 
+              type="date" 
+              class="form-control" 
+              formControlName="expiryDate" 
+            />
+          </div>
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="button" class="btn btn-secondary" (click)="closeAddCertModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmittingCert()">
+            {{ isSubmittingCert() ? 'Saving Credential...' : 'Save & Connect Certificate' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

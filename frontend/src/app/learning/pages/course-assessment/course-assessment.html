@@ -1,0 +1,378 @@
+<section class="assessment-page">
+
+  <!-- Page Header -->
+  <header class="assessment-header">
+
+    <div>
+      <a
+        *ngIf="course"
+        [routerLink]="[
+          '/courses',
+          course.courseId,
+          'learn'
+        ]"
+        class="back-link"
+      >
+        ← Back to Learning Room
+      </a>
+
+      <p class="eyebrow">
+        Enterprise Assessment
+      </p>
+
+      <h1>
+        {{
+          latestAttempt?.contentTitle ||
+          'Spring Boot Fundamentals Assessment'
+        }}
+      </h1>
+
+      <p class="header-description">
+        Answer all five questions and submit your attempt.
+        Your result will be calculated and saved automatically.
+      </p>
+    </div>
+
+    <div
+      *ngIf="enrollment"
+      class="enrollment-card"
+    >
+      <span>Enrollment</span>
+
+      <strong>
+        {{ enrollment.status }}
+      </strong>
+    </div>
+
+  </header>
+
+  <!-- Loading State -->
+  <div
+    *ngIf="isLoading"
+    class="state-panel"
+  >
+    <div class="loader"></div>
+
+    <p>Loading assessment...</p>
+  </div>
+
+  <!-- Page Error -->
+  <div
+    *ngIf="
+      !isLoading &&
+      errorMessage &&
+      !quizVisible
+    "
+    class="message-box error-message"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <!-- Success Message -->
+  <div
+    *ngIf="actionMessage"
+    class="message-box success-message"
+  >
+    {{ actionMessage }}
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <!-- Latest Assessment Result -->
+    <section
+      *ngIf="
+        latestAttempt &&
+        !quizVisible
+      "
+      class="result-card"
+      [class.passed-result]="
+        latestAttempt.status === 'PASSED'
+      "
+      [class.failed-result]="
+        latestAttempt.status === 'FAILED'
+      "
+    >
+
+      <div class="result-score">
+        {{
+          getScorePercentage(latestAttempt)
+            | number: '1.0-0'
+        }}%
+      </div>
+
+      <div class="result-information">
+
+        <p class="result-label">
+          Latest Assessment Result
+        </p>
+
+        <h2>
+          {{ getResultText(latestAttempt) }}
+        </h2>
+
+        <p>
+          Attempt {{ latestAttempt.attemptNumber }}
+          · Passing score:
+          {{ latestAttempt.passingScore }}%
+        </p>
+
+        <p
+          *ngIf="latestAttempt.feedback"
+          class="feedback-text"
+        >
+          {{ latestAttempt.feedback }}
+        </p>
+
+      </div>
+
+      <span
+        class="status-badge"
+        [class.passed]="
+          latestAttempt.status === 'PASSED'
+        "
+        [class.failed]="
+          latestAttempt.status === 'FAILED'
+        "
+        [class.in-progress]="
+          latestAttempt.status === 'IN_PROGRESS'
+        "
+      >
+        {{ latestAttempt.status }}
+      </span>
+
+    </section>
+
+    <!-- Start / Retake Assessment -->
+    <section
+      *ngIf="!quizVisible"
+      class="start-card"
+    >
+
+      <div>
+        <p class="card-label">
+          Assessment Information
+        </p>
+
+        <h2>
+          Spring Boot Fundamentals Quiz
+        </h2>
+
+        <p>
+          This assessment contains five multiple-choice
+          questions and a total score of 100 marks.
+          The passing score is
+          {{
+            latestAttempt?.passingScore ||
+            course?.passingScore ||
+            70
+          }}%.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="start-button"
+        [disabled]="isActionRunning"
+        (click)="startOrContinueAssessment()"
+      >
+        {{ getStartButtonLabel() }}
+      </button>
+
+    </section>
+
+    <!-- Quiz Area -->
+    <section
+      *ngIf="quizVisible"
+      class="quiz-section"
+    >
+
+      <header class="quiz-header">
+
+        <div>
+          <p class="card-label">
+            Current Attempt
+          </p>
+
+          <h2>
+            Attempt
+            {{ currentAttempt?.attemptNumber }}
+          </h2>
+        </div>
+
+        <span class="question-count">
+          {{ questions.length }} Questions
+        </span>
+
+      </header>
+
+      <!-- Questions -->
+      <div
+        *ngFor="
+          let question of questions;
+          let questionIndex = index;
+          trackBy: trackQuestionById
+        "
+        class="question-card"
+      >
+
+        <div class="question-number">
+          {{ questionIndex + 1 }}
+        </div>
+
+        <div class="question-content">
+
+          <h3>
+            {{ question.question }}
+          </h3>
+
+          <!-- Answer Options -->
+          <label
+            *ngFor="
+              let option of question.options;
+              let optionIndex = index
+            "
+            class="option-row"
+            [class.selected-option]="
+              answers[question.id] === optionIndex
+            "
+          >
+
+            <input
+              type="radio"
+              [name]="'question-' + question.id"
+              [value]="optionIndex"
+              [(ngModel)]="answers[question.id]"
+            />
+
+            <span class="option-letter">
+              {{
+                optionIndex === 0
+                  ? 'A'
+                  : optionIndex === 1
+                  ? 'B'
+                  : optionIndex === 2
+                  ? 'C'
+                  : 'D'
+              }}
+            </span>
+
+            <span>
+              {{ option }}
+            </span>
+
+          </label>
+
+        </div>
+
+      </div>
+
+      <!-- Quiz Error -->
+      <div
+        *ngIf="errorMessage"
+        class="message-box error-message"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <!-- Correct Quiz Footer -->
+      <footer class="quiz-footer">
+
+        <p>
+          Select one answer for each of the
+          {{ questions.length }} questions before submitting.
+        </p>
+
+        <button
+          type="button"
+          class="submit-button"
+          [disabled]="
+            isActionRunning ||
+            !allQuestionsAnswered()
+          "
+          (click)="submitAssessment()"
+        >
+          {{
+            isActionRunning
+              ? 'Submitting...'
+              : 'Submit Assessment'
+          }}
+        </button>
+
+      </footer>
+
+    </section>
+
+    <!-- Assessment History -->
+    <section
+      *ngIf="attemptHistory.length > 0"
+      class="history-section"
+    >
+
+      <div class="section-heading">
+        <p class="card-label">
+          Assessment History
+        </p>
+
+        <h2>Previous Attempts</h2>
+      </div>
+
+      <div class="history-table">
+
+        <article
+          *ngFor="
+            let attempt of attemptHistory;
+            trackBy: trackAttemptById
+          "
+          class="history-row"
+        >
+
+          <div>
+            <span>Attempt</span>
+
+            <strong>
+              #{{ attempt.attemptNumber }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Status</span>
+
+            <strong>
+              {{ attempt.status }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Score</span>
+
+            <strong>
+              {{
+                attempt.scorePercentage ?? 0
+              }}%
+            </strong>
+          </div>
+
+          <div>
+            <span>Date</span>
+
+            <strong>
+              {{
+                attempt.gradedAt
+                  ? (
+                    attempt.gradedAt
+                      | date: 'dd MMM yyyy'
+                  )
+                  : 'Pending'
+              }}
+            </strong>
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</section>

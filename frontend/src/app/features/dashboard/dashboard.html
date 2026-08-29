@@ -1,0 +1,597 @@
+<div class="dashboard-wrapper">
+
+  <!-- =========================================================
+       DASHBOARD HEADER & ACTIONS
+       ========================================================= -->
+  <header class="dashboard-header">
+    <div class="header-intro">
+      @if (authService.hasRole('EMPLOYEE')) {
+        <h1 class="dashboard-title">Employee Workspace</h1>
+        <p class="dashboard-subtitle">
+          Personalized hub for your professional skills, training courses, career roadmap, and compliance certifications.
+        </p>
+      } @else if (authService.hasRole('LEARNER')) {
+        <h1 class="dashboard-title">My Learning Dashboard</h1>
+        <p class="dashboard-subtitle">
+          Track your enrolled courses, learning paths, assessment scores, and earned completion certificates.
+        </p>
+      } @else {
+        <h1 class="dashboard-title">System &amp; Operations Command</h1>
+        <p class="dashboard-subtitle">
+          Real-time telemetry across workforce competency frameworks, learning paths, active certifications, and career development matrices.
+        </p>
+      }
+    </div>
+
+    <div class="dashboard-header-actions">
+      @if (authService.hasRole('EMPLOYEE')) {
+        <a routerLink="/profile" class="dashboard-action-link primary-action">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>My 360 Profile</span>
+        </a>
+        <a routerLink="/courses" class="dashboard-action-link">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <span>Courses &amp; Training</span>
+        </a>
+        <a routerLink="/career-analytics" class="dashboard-action-link">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          <span>Career Roadmap</span>
+        </a>
+      } @else if (authService.hasRole('LEARNER')) {
+        <a routerLink="/courses" class="dashboard-action-link primary-action">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <span>Explore Courses</span>
+        </a>
+        <a routerLink="/learning-paths" class="dashboard-action-link">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+          <span>Learning Paths</span>
+        </a>
+      } @else {
+        <a routerLink="/admin/courses" class="dashboard-action-link">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>Manage Courses</span>
+        </a>
+        <a routerLink="/employee" class="dashboard-action-link">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span>Employees</span>
+        </a>
+        <a routerLink="/hr/payments" class="dashboard-action-link">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+          <span>Verify Payments</span>
+        </a>
+        <a routerLink="/certification-hub" class="dashboard-action-link">
+          <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+          </svg>
+          <span>Certifications</span>
+        </a>
+      }
+      <a routerLink="/course-certificates" class="dashboard-action-link primary-action">
+        <svg class="action-svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+        </svg>
+        <span>Certificates</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       LIVE ENTERPRISE TELEMETRY MATRIX HUD (Admin & HR Only)
+       ========================================================= -->
+  @if (authService.hasRole('ADMIN', 'HR')) {
+    <section class="telemetry-hud-banner glass-panel">
+      <div class="hud-top-bar">
+        <div class="hud-indicator-group">
+          <span class="live-pulse-dot"></span>
+          <span class="hud-live-tag">LIVE ENTERPRISE PLATFORM CORE</span>
+        </div>
+        <div class="hud-broker-badge">
+          <span class="broker-icon">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </span>
+          <span>Kafka Event Stream: <strong>Active (9092)</strong></span>
+        </div>
+      </div>
+
+      <div class="hud-matrix-grid">
+        <!-- Skills Domain Node -->
+        <a routerLink="/employee" class="hud-node-card">
+          <div class="node-header">
+            <span class="node-code">SKILLS</span>
+            <span class="node-status-dot online"></span>
+          </div>
+          <div class="node-title">Skill Competency Matrix</div>
+          <div class="node-metric">12.4K <span class="node-sub">Employees</span> &bull; 2,847 <span class="node-sub">Skills</span></div>
+          <div class="node-footer">Competency Scale L1–L5 &bull; Assessments</div>
+        </a>
+
+        <!-- Learning Domain Node -->
+        <a routerLink="/admin/courses" class="hud-node-card">
+          <div class="node-header">
+            <span class="node-code">LEARNING</span>
+            <span class="node-status-dot online"></span>
+          </div>
+          <div class="node-title">Learning &amp; LMS Engine</div>
+          <div class="node-metric">847 <span class="node-sub">Courses</span> &bull; 87% <span class="node-sub">Completion</span></div>
+          <div class="node-footer">Curriculum Tracks &bull; Verified Certificates</div>
+        </a>
+
+        <!-- Certification Domain Node -->
+        <a routerLink="/certification-hub" class="hud-node-card">
+          <div class="node-header">
+            <span class="node-code">COMPLIANCE</span>
+            <span class="node-status-dot online"></span>
+          </div>
+          <div class="node-title">Certification Command</div>
+          <div class="node-metric">8.4K <span class="node-sub">Active</span> &bull; 94% <span class="node-sub">Renewal</span></div>
+          <div class="node-footer">Expiry Monitoring &bull; Audit Trail</div>
+        </a>
+
+        <!-- Career Domain Node -->
+        <a routerLink="/career-analytics" class="hud-node-card">
+          <div class="node-header">
+            <span class="node-code">CAREER</span>
+            <span class="node-status-dot online"></span>
+          </div>
+          <div class="node-title">Career &amp; Workforce Planning</div>
+          <div class="node-metric">2,847 <span class="node-sub">Plans</span> &bull; 247 <span class="node-sub">Promotions</span></div>
+          <div class="node-footer">Roadmaps &bull; 12 Matched Vacancies</div>
+        </a>
+      </div>
+    </section>
+  }
+
+  <!-- =========================================================
+       ADMIN & HR: LEARNING OPERATIONS
+       ========================================================= -->
+  @if (authService.hasRole('ADMIN', 'HR')) {
+    <section class="dashboard-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">Operations & Compliance</p>
+          <h2>HR Learning Management Overview</h2>
+          <p>Backend-connected enrollment, payment, course, learning path, and certificate statistics.</p>
+        </div>
+      </div>
+
+      @if (hrDashboardLoading()) {
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <h3 class="state-title">Loading Learning Operations</h3>
+          <p class="state-desc">Synchronizing learning telemetry and enrollment matrices...</p>
+        </div>
+      } @else if (hrDashboardError()) {
+        <div class="dashboard-error">
+          <span class="error-badge">!</span>
+          <span>{{ hrDashboardError() }}</span>
+        </div>
+      } @else if (hrDashboard(); as operations) {
+        <div class="stats-grid hr-operation-grid">
+          
+          <a routerLink="/hr/payments" class="stat-card glass-panel glow-hover operation-card">
+            <div class="stat-icon-wrapper amber">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Pending Payments</span>
+              <span class="stat-value warning-text">{{ operations.pendingPayments }}</span>
+              <span class="stat-sub">Verification required</span>
+            </div>
+          </a>
+
+          <a routerLink="/admin/courses" class="stat-card glass-panel glow-hover operation-card">
+            <div class="stat-icon-wrapper blue">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Published Courses</span>
+              <span class="stat-value">{{ operations.publishedCourses }} <span class="stat-denominator">/ {{ operations.totalCourses }}</span></span>
+              <span class="stat-sub">Active curriculum</span>
+            </div>
+          </a>
+
+          <div class="stat-card glass-panel glow-hover operation-card">
+            <div class="stat-icon-wrapper cyan">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Active Enrollments</span>
+              <span class="stat-value">{{ operations.activeEnrollments }}</span>
+              <span class="stat-sub">In-progress learners</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass-panel glow-hover operation-card">
+            <div class="stat-icon-wrapper green">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Completed Enrollments</span>
+              <span class="stat-value success-text">{{ operations.completedEnrollments }}</span>
+              <span class="stat-sub">Graduated modules</span>
+            </div>
+          </div>
+
+          <a routerLink="/course-certificates" class="stat-card glass-panel glow-hover operation-card">
+            <div class="stat-icon-wrapper cyan">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Issued Certificates</span>
+              <span class="stat-value">{{ operations.issuedCertificates }}</span>
+              <span class="stat-sub">Verified badges</span>
+            </div>
+          </a>
+
+          <a routerLink="/hr/learning-paths" class="stat-card glass-panel glow-hover operation-card">
+            <div class="stat-icon-wrapper blue">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Learning Paths</span>
+              <span class="stat-value">{{ operations.publishedLearningPaths }} <span class="stat-denominator">/ {{ operations.totalLearningPaths }}</span></span>
+              <span class="stat-sub">Career milestones</span>
+            </div>
+          </a>
+
+        </div>
+      }
+    </section>
+  }
+
+  <!-- =========================================================
+       ADMIN & HR: ORGANIZATION OVERVIEW
+       ========================================================= -->
+  @if (authService.hasRole('ADMIN', 'HR')) {
+    <section class="dashboard-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">Talent Intelligence</p>
+          <h2>Organization Overview</h2>
+          <p>Workforce skill catalog, competency distribution, and certification monitoring matrix.</p>
+        </div>
+      </div>
+
+      @if (statusLoading()) {
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <h3 class="state-title">Analyzing Organization Metrics</h3>
+          <p class="state-desc">Connecting to talent services and calculating competency distribution...</p>
+        </div>
+      } @else if (systemDashboardError()) {
+        <div class="dashboard-error">
+          <span class="error-badge">!</span>
+          <span>{{ systemDashboardError() }}</span>
+        </div>
+      } @else {
+        
+        <div class="stats-grid">
+          
+          <div class="stat-card glass-panel glow-hover">
+            <div class="stat-icon-wrapper blue">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Total Employees</span>
+              <span class="stat-value">{{ employeeCount() }}</span>
+              <span class="stat-sub">Managed workforce</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass-panel glow-hover">
+            <div class="stat-icon-wrapper cyan">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Skills Catalog</span>
+              <span class="stat-value">{{ skillCount() }}</span>
+              <span class="stat-sub">Indexed competencies</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass-panel glow-hover">
+            <div class="stat-icon-wrapper green">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Average Assessment Score</span>
+              <span class="stat-value">{{ avgAssessmentScore() }}%</span>
+              <span class="stat-sub">Validation threshold</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass-panel glow-hover">
+            <div class="stat-icon-wrapper blue">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Valid Certificates</span>
+              <span class="stat-value">{{ activeCertCount() }}</span>
+              <span class="stat-sub">Active & compliant</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="dashboard-grid">
+          
+          <div class="chart-card glass-panel">
+            <div class="card-header-clean">
+              <h3 class="card-title">Skill Proficiency Distribution</h3>
+              <p class="card-subtitle">Aggregate employee skill counts classified across standard competency levels (L1 - L5).</p>
+            </div>
+
+            <div class="bar-chart-container">
+              @for (item of skillProficiencies() | keyvalue; track item.key) {
+                <div class="bar-chart-row">
+                  <span class="bar-label">L{{ item.key }} Proficiency</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.width.%]="(item.value / (employeeCount() || 1)) * 100"></div>
+                  </div>
+                  <span class="bar-value">{{ item.value }} instances</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="chart-card glass-panel">
+            <div class="card-header-clean">
+              <h3 class="card-title">Skill Categories Coverage</h3>
+              <p class="card-subtitle">Distribution of catalog skills mapped across technical, domain, and behavioral categories.</p>
+            </div>
+
+            <div class="category-list">
+              @for (item of skillCategories() | keyvalue; track item.key) {
+                <div class="category-item">
+                  <div class="category-info">
+                    <span class="category-name">{{ item.key }}</span>
+                    <span class="category-percentage">{{ item.value }} Skills</span>
+                  </div>
+                  <div class="category-pill-track">
+                    <div class="category-pill-fill" [style.width.%]="(item.value / (skillCount() || 1)) * 100"></div>
+                  </div>
+                </div>
+              }
+
+              @if ((skillCategories() | keyvalue).length === 0) {
+                <p class="empty-chart-message">No skill categories defined yet.</p>
+              }
+            </div>
+          </div>
+
+        </div>
+      }
+    </section>
+  }
+
+  <!-- =========================================================
+       LEARNER / EMPLOYEE: MY LEARNING JOURNEY
+       ========================================================= -->
+  @if (authService.hasRole('LEARNER', 'EMPLOYEE')) {
+    <section class="dashboard-section learner-section">
+      
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">Personalized Workspace</p>
+          <h2>My Learning Journey</h2>
+          <p>Enrollment progress, milestone assessments, verified certificates, and structured learning path development.</p>
+        </div>
+
+        <button
+          type="button"
+          class="refresh-dashboard-button"
+          [disabled]="learningStatusLoading()"
+          (click)="fetchLearnerDashboardData()"
+        >
+          <svg class="refresh-icon" [class.spinning]="learningStatusLoading()" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+          <span>{{ learningStatusLoading() ? 'Refreshing...' : 'Refresh Learning Data' }}</span>
+        </button>
+      </div>
+
+      @if (learningStatusLoading()) {
+        <div class="loading-overlay learning-loader">
+          <div class="spinner"></div>
+          <h3 class="state-title">Loading Learning Progress</h3>
+          <p class="state-desc">Calculating course milestones, assessment scores, and career progression paths...</p>
+        </div>
+      } @else if (learningDashboardError()) {
+        <div class="dashboard-error">
+          <span class="error-badge">!</span>
+          <span>{{ learningDashboardError() }}</span>
+        </div>
+      } @else if (learnerDashboard(); as learning) {
+        
+        <div class="learning-stats-grid">
+
+          <div class="learning-stat-card glass-panel glow-hover">
+            <div class="learning-stat-icon blue">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div class="learning-stat-info">
+              <span>Total Enrollments</span>
+              <strong>{{ learning.totalEnrollments }}</strong>
+              <small>{{ learning.activeEnrollments }} active · {{ learning.pendingEnrollments }} pending</small>
+            </div>
+          </div>
+
+          <div class="learning-stat-card glass-panel glow-hover">
+            <div class="learning-stat-icon green">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="learning-stat-info">
+              <span>Completed Courses</span>
+              <strong>{{ learning.completedCourses }}</strong>
+              <small>Successfully finished courses</small>
+            </div>
+          </div>
+
+          <div class="learning-stat-card glass-panel glow-hover">
+            <div class="learning-stat-icon cyan">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <div class="learning-stat-info">
+              <span>Average Progress</span>
+              <strong>{{ learning.averageCourseProgress | number: '1.0-0' }}%</strong>
+              <small>Across active course enrollments</small>
+            </div>
+          </div>
+
+          <div class="learning-stat-card glass-panel glow-hover">
+            <div class="learning-stat-icon amber">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+            <div class="learning-stat-info">
+              <span>Certificates Earned</span>
+              <strong>{{ learning.certificatesEarned }}</strong>
+              <small>Verified credential badges</small>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="learning-detail-grid">
+
+          <article class="learning-detail-card glass-panel">
+            <div class="detail-card-heading">
+              <div>
+                <p class="detail-eyebrow">Skill Verification</p>
+                <h3>Assessment Performance</h3>
+              </div>
+              <div class="score-circle">
+                <span>{{ getAssessmentPassRate() }}%</span>
+              </div>
+            </div>
+
+            <div class="detail-progress-track">
+              <div class="detail-progress-fill" [style.width.%]="getAssessmentPassRate()"></div>
+            </div>
+
+            <div class="detail-stat-grid">
+              <div class="mini-stat-card">
+                <span>Total Attempts</span>
+                <strong>{{ learning.totalAssessmentAttempts }}</strong>
+              </div>
+              <div class="mini-stat-card">
+                <span>Passed</span>
+                <strong class="success-value">{{ learning.passedAssessments }}</strong>
+              </div>
+              <div class="mini-stat-card">
+                <span>Failed</span>
+                <strong class="danger-value">{{ learning.failedAssessments }}</strong>
+              </div>
+            </div>
+
+            <a routerLink="/courses" class="detail-link">
+              <span>Review Course Assessments</span>
+              <span class="link-arrow">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </span>
+            </a>
+          </article>
+
+          <article class="learning-detail-card glass-panel">
+            <div class="detail-card-heading">
+              <div>
+                <p class="detail-eyebrow">Career Development</p>
+                <h3>Learning Path Summary</h3>
+              </div>
+              <div class="score-circle">
+                <span>{{ getLearningPathCompletionRate() }}%</span>
+              </div>
+            </div>
+
+            <div class="detail-progress-track">
+              <div class="detail-progress-fill path-progress-fill" [style.width.%]="getLearningPathCompletionRate()"></div>
+            </div>
+
+            <div class="detail-stat-grid">
+              <div class="mini-stat-card">
+                <span>Assigned</span>
+                <strong>{{ learning.assignedLearningPaths }}</strong>
+              </div>
+              <div class="mini-stat-card">
+                <span>In Progress</span>
+                <strong>{{ learning.inProgressLearningPaths }}</strong>
+              </div>
+              <div class="mini-stat-card">
+                <span>Completed</span>
+                <strong class="success-value">{{ learning.completedLearningPaths }}</strong>
+              </div>
+            </div>
+
+            <a routerLink="/learning-paths" class="detail-link">
+              <span>Open Learning Paths</span>
+              <span class="link-arrow">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </span>
+            </a>
+          </article>
+
+        </div>
+
+        <div class="dashboard-generated-at">
+          <span>Telemetry updated:</span>
+          <strong>
+            {{
+              learning.generatedAt
+                ? (learning.generatedAt | date: 'dd MMM yyyy, hh:mm a')
+                : 'Just now'
+            }}
+          </strong>
+        </div>
+
+      }
+    </section>
+  }
+
+</div>

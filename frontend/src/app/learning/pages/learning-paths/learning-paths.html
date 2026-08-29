@@ -1,0 +1,538 @@
+<section class="learning-path-page">
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">
+        Enterprise Learning Platform
+      </p>
+
+      <h1>Learning Paths</h1>
+
+      <p class="header-description">
+        Follow structured course sequences,
+        monitor progress and build skills for
+        your target role.
+      </p>
+    </div>
+
+    <a
+      routerLink="/courses"
+      class="courses-link"
+    >
+      Browse Courses
+    </a>
+  </header>
+
+  <div
+    *ngIf="isLoading"
+    class="state-panel"
+  >
+    <div class="loader"></div>
+
+    <p>Loading learning paths...</p>
+  </div>
+
+  <div
+    *ngIf="errorMessage"
+    class="message-box error-message"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <div
+    *ngIf="actionMessage"
+    class="message-box success-message"
+  >
+    {{ actionMessage }}
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <section class="page-section">
+
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">
+            Personal Development
+          </p>
+
+          <h2>My Learning Paths</h2>
+        </div>
+
+        <span class="count-badge">
+          {{ assignments.length }}
+        </span>
+      </div>
+
+      <div
+        *ngIf="assignments.length === 0"
+        class="state-panel small-state-panel"
+      >
+        <h3>No learning paths assigned</h3>
+
+        <p>
+          Choose a published learning path
+          below to begin your journey.
+        </p>
+      </div>
+
+      <div class="assignment-grid">
+
+        <article
+          *ngFor="
+            let assignment of assignments;
+            trackBy: trackAssignmentById
+          "
+          class="assignment-card"
+        >
+          <div class="assignment-top">
+            <div>
+              <span class="path-code">
+                {{ assignment.pathCode }}
+              </span>
+
+              <h3>
+                {{ assignment.pathTitle }}
+              </h3>
+            </div>
+
+            <span
+              class="status-badge"
+              [class.in-progress-status]="
+                assignment.status ===
+                'IN_PROGRESS'
+              "
+              [class.completed-status]="
+                assignment.status ===
+                'COMPLETED'
+              "
+            >
+              {{
+                formatEnumLabel(
+                  assignment.status
+                )
+              }}
+            </span>
+          </div>
+
+          <div class="progress-heading">
+            <span>Overall Progress</span>
+
+            <strong>
+              {{
+                getProgressPercentage(
+                  assignment
+                )
+                | number: '1.0-0'
+              }}%
+            </strong>
+          </div>
+
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              [style.width.%]="
+                getProgressPercentage(
+                  assignment
+                )
+              "
+            ></div>
+          </div>
+
+          <div class="assignment-stats">
+            <div>
+              <span>Courses Completed</span>
+
+              <strong>
+                {{
+                  assignment.completedCourses
+                }}
+                /
+                {{
+                  assignment.totalCourses
+                }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Current Course</span>
+
+              <strong>
+                {{
+                  assignment.currentCourseOrder ||
+                  1
+                }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Assigned Through</span>
+
+              <strong>
+                {{
+                  formatEnumLabel(
+                    assignment.assignmentSource
+                  )
+                }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Due Date</span>
+
+              <strong>
+                {{
+                  assignment.dueAt
+                    ? (
+                      assignment.dueAt
+                        | date: 'dd MMM yyyy'
+                    )
+                    : 'No deadline'
+                }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="assignment-actions">
+
+            <button
+              *ngIf="
+                assignment.status ===
+                'ASSIGNED'
+              "
+              type="button"
+              class="start-button"
+              [disabled]="
+                processingAssignmentId !== null
+              "
+              (click)="
+                startLearningPath(
+                  assignment
+                )
+              "
+            >
+              {{
+                processingAssignmentId ===
+                assignment.assignmentId
+                  ? 'Starting...'
+                  : 'Start Learning Path'
+              }}
+            </button>
+
+            <button
+              *ngIf="
+                assignment.status ===
+                'IN_PROGRESS' ||
+                assignment.status ===
+                'COMPLETED'
+              "
+              type="button"
+              class="refresh-button"
+              [disabled]="
+                processingAssignmentId !== null
+              "
+              (click)="
+                refreshProgress(
+                  assignment
+                )
+              "
+            >
+              {{
+                processingAssignmentId ===
+                assignment.assignmentId
+                  ? 'Refreshing...'
+                  : 'Refresh Progress'
+              }}
+            </button>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+    <section class="page-section">
+
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">
+            Structured Skill Development
+          </p>
+
+          <h2>Available Learning Paths</h2>
+        </div>
+
+        <span class="count-badge">
+          {{ learningPaths.length }}
+        </span>
+      </div>
+
+      <div
+        *ngIf="learningPaths.length === 0"
+        class="state-panel small-state-panel"
+      >
+        <h3>No learning paths available</h3>
+
+        <p>
+          Learning paths created by the
+          administrator will appear here.
+        </p>
+      </div>
+
+      <div class="path-grid">
+
+        <article
+          *ngFor="
+            let path of learningPaths;
+            trackBy: trackPathById
+          "
+          class="path-card"
+          [class.unavailable-card]="
+            path.status !== 'PUBLISHED'
+          "
+        >
+          <div class="path-card-top">
+
+            <div class="path-icon">
+              LP
+            </div>
+
+            <div class="path-heading">
+              <div class="path-badges">
+                <span class="level-badge">
+                  {{
+                    formatEnumLabel(
+                      path.level
+                    )
+                  }}
+                </span>
+
+                <span
+                  class="path-status-badge"
+                  [class.published-status]="
+                    path.status ===
+                    'PUBLISHED'
+                  "
+                >
+                  {{
+                    formatEnumLabel(
+                      path.status
+                    )
+                  }}
+                </span>
+              </div>
+
+              <h3>{{ path.title }}</h3>
+
+              <span>{{ path.pathCode }}</span>
+            </div>
+
+          </div>
+
+          <p class="path-description">
+            {{
+              path.description ||
+              'Follow this structured learning path to develop role-specific skills.'
+            }}
+          </p>
+
+          <div class="path-information">
+            <div>
+              <span>Category</span>
+
+              <strong>
+                {{ path.category }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Target Role</span>
+
+              <strong>
+                {{
+                  path.targetRole ||
+                  'General Development'
+                }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Duration</span>
+
+              <strong>
+                {{
+                  path.estimatedDurationHours ||
+                  0
+                }}
+                hours
+              </strong>
+            </div>
+
+            <div>
+              <span>Course Structure</span>
+
+              <strong>
+                {{ path.totalCourses }}
+                courses
+              </strong>
+            </div>
+          </div>
+
+          <div class="path-actions">
+
+            <button
+              type="button"
+              class="sequence-button"
+              [disabled]="
+                loadingCoursesPathId !== null
+              "
+              (click)="
+                toggleCourseSequence(path)
+              "
+            >
+              {{
+                loadingCoursesPathId ===
+                path.pathId
+                  ? 'Loading...'
+                  : expandedPathId ===
+                    path.pathId
+                    ? 'Hide Course Sequence'
+                    : 'View Course Sequence'
+              }}
+            </button>
+
+            <button
+              *ngIf="
+                path.status ===
+                'PUBLISHED' &&
+                !getAssignmentForPath(
+                  path.pathId
+                )
+              "
+              type="button"
+              class="assign-button"
+              [disabled]="
+                processingPathId !== null
+              "
+              (click)="
+                assignLearningPath(path)
+              "
+            >
+              {{
+                processingPathId ===
+                path.pathId
+                  ? 'Assigning...'
+                  : 'Start This Path'
+              }}
+            </button>
+
+            <span
+              *ngIf="
+                getAssignmentForPath(
+                  path.pathId
+                )
+              "
+              class="assigned-label"
+            >
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><polyline points="3 8.5 6 11.5 13 4.5"></polyline></svg>
+              Already Assigned
+            </span>
+
+            <span
+              *ngIf="
+                path.status !==
+                'PUBLISHED'
+              "
+              class="unavailable-label"
+            >
+              Currently Unavailable
+            </span>
+
+          </div>
+
+          <div
+            *ngIf="
+              expandedPathId ===
+              path.pathId
+            "
+            class="course-sequence"
+          >
+            <h4>Course Sequence</h4>
+
+            <p
+              *ngIf="
+                getCoursesForPath(
+                  path.pathId
+                ).length === 0
+              "
+              class="empty-sequence"
+            >
+              No courses have been added to
+              this learning path.
+            </p>
+
+            <div
+              *ngFor="
+                let course of getCoursesForPath(
+                  path.pathId
+                );
+                trackBy: trackPathCourseById
+              "
+              class="sequence-course"
+            >
+              <div class="course-order">
+                {{ course.courseOrder }}
+              </div>
+
+              <div class="sequence-course-info">
+                <strong>
+                  {{ course.courseTitle }}
+                </strong>
+
+                <span>
+                  {{ course.courseCode }}
+                </span>
+              </div>
+
+              <div class="course-flags">
+                <span
+                  *ngIf="
+                    course.requiredForCompletion
+                  "
+                >
+                  Required
+                </span>
+
+                <span
+                  *ngIf="
+                    course.unlockAfterPrevious
+                  "
+                >
+                  Sequential
+                </span>
+              </div>
+
+              <a
+                [routerLink]="[
+                  '/courses',
+                  course.courseId
+                ]"
+                class="open-course-link"
+              >
+                Open Course
+              </a>
+            </div>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</section>

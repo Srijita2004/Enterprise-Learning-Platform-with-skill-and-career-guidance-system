@@ -1,0 +1,344 @@
+<section class="learning-page">
+
+  <!-- TOP LMS NAVIGATION BAR -->
+  <header class="learning-header">
+    <div class="header-left">
+      <a
+        *ngIf="course"
+        [routerLink]="['/courses', course.courseId]"
+        class="back-link"
+      >
+        ← Back to Course Details
+      </a>
+      <div class="course-header-meta">
+        <span class="course-code-tag">{{ course?.courseCode }}</span>
+        <span class="course-level-tag">{{ course?.courseLevel || 'INTERMEDIATE' }}</span>
+        <h1>{{ course?.title || 'Course Learning Experience' }}</h1>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div *ngIf="progressSummary" class="top-progress-pill">
+        <div class="progress-dial-track">
+          <div
+            class="progress-dial-fill"
+            [style.width.%]="progressSummary.overallProgressPercentage"
+          ></div>
+        </div>
+        <div class="progress-pill-text">
+          <strong>{{ progressSummary.overallProgressPercentage | number: '1.0-0' }}%</strong>
+          <span>{{ progressSummary.completedContents }} / {{ progressSummary.totalPublishedContents }} Completed</span>
+        </div>
+      </div>
+
+      <div *ngIf="enrollment" class="enrollment-badge-pill" [class.completed-pill]="enrollment.status === 'COMPLETED'">
+        <span>{{ enrollment.status === 'COMPLETED' ? 'Completed' : 'Active Enrollment' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- LOADING & ERROR STATES -->
+  <div *ngIf="isLoading" class="state-panel">
+    <div class="loader"></div>
+    <p>Loading your personalized learning journey...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="state-panel error-panel">
+    <h2>Unable to open learning room</h2>
+    <p>{{ errorMessage }}</p>
+    <a routerLink="/courses" class="btn btn-primary btn-sm">Return to Courses</a>
+  </div>
+
+  <!-- MAIN COURSERA-STYLE TWO-PANE LMS ROOM -->
+  <div *ngIf="!isLoading && !errorMessage" class="lms-classroom-layout">
+
+    <!-- LEFT PANE: SYLLABUS JOURNEY TIMELINE -->
+    <aside class="lms-sidebar-syllabus">
+      <div class="syllabus-header">
+        <h3>Course Syllabus</h3>
+        <span class="syllabus-stats">
+          {{ progressSummary?.completedContents || 0 }} of {{ progressSummary?.totalPublishedContents || 0 }} items completed
+        </span>
+      </div>
+
+      <div class="syllabus-modules-list">
+        <div
+          *ngFor="let group of moduleGroups; let mIdx = index; trackBy: trackModuleById"
+          class="syllabus-module-group"
+        >
+          <div class="syllabus-module-title">
+            <span class="mod-order">Module {{ group.module.moduleOrder }}</span>
+            <h4>{{ group.module.title }}</h4>
+          </div>
+
+          <div class="syllabus-lessons-list">
+            <div
+              *ngFor="let content of group.contents; let cIdx = index; trackBy: trackContentById"
+              class="syllabus-lesson-item"
+              [class.active-lesson]="isContentCurrent(content)"
+              [class.completed-lesson]="isContentCompleted(content)"
+              [class.locked-lesson]="isContentLocked(content)"
+              (click)="!isContentLocked(content) && selectContent(content, group.module)"
+            >
+              <!-- STATUS INDICATOR -->
+              <div class="lesson-status-icon">
+                <span *ngIf="isContentCompleted(content)" class="icon-check" title="Completed">
+                  <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8.5 6 11.5 13 4.5"></polyline></svg>
+                </span>
+                <span *ngIf="!isContentCompleted(content) && isContentCurrent(content)" class="icon-current" title="Current Lesson">
+                  <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><polygon points="4 2 13 8 4 14 4 2"></polygon></svg>
+                </span>
+                <span *ngIf="!isContentCompleted(content) && !isContentCurrent(content) && !isContentLocked(content)" class="icon-pending">
+                  <span class="icon-pending-dot"></span>
+                </span>
+                <span *ngIf="isContentLocked(content)" class="icon-lock" title="Locked - Complete prior lessons">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </span>
+              </div>
+
+              <!-- LESSON META -->
+              <div class="lesson-meta-wrap">
+                <div class="lesson-type-badge-row">
+                  <span class="mini-resource-tag" [ngClass]="getResourceBadgeClass(content.contentType)">
+                    {{ getResourceLabel(content.contentType) }}
+                  </span>
+                  <span class="lesson-mini-duration">{{ content.durationMinutes || 15 }}m</span>
+                </div>
+                <span class="lesson-title-text">{{ content.title }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FINAL CERTIFICATE MILESTONE CARD -->
+        <div class="syllabus-certificate-card" [class.certificate-unlocked]="enrollment?.status === 'COMPLETED'">
+          <div class="cert-card-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"></path></svg>
+          </div>
+          <div class="cert-card-info">
+            <h5>Course Certificate</h5>
+            <p *ngIf="enrollment?.status === 'COMPLETED'">
+              Congratulations! Your verified certificate is ready.
+            </p>
+            <p *ngIf="enrollment?.status !== 'COMPLETED'">
+              Complete all mandatory video lectures, readings &amp; quizzes to unlock.
+            </p>
+            <a
+              *ngIf="enrollment?.status === 'COMPLETED'"
+              routerLink="/certificates"
+              class="btn-cert-link"
+            >
+              View Official Certificate
+            </a>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT PANE: ACTIVE LESSON FOCUS PLAYER & WORKSPACE -->
+    <main class="lms-main-stage">
+
+      <div *ngIf="actionMessage" class="action-alert-banner">
+        <span>{{ actionMessage }}</span>
+      </div>
+
+      <div *ngIf="!selectedContent" class="no-content-selected">
+        <h3>Select a lesson from the syllabus on the left to begin learning.</h3>
+      </div>
+
+      <div *ngIf="selectedContent" class="stage-content-wrapper">
+
+        <!-- STAGE HEADER -->
+        <div class="stage-header-bar">
+          <div class="stage-breadcrumbs">
+            <span>Module {{ selectedModule?.moduleOrder }}: {{ selectedModule?.title }}</span>
+            <span class="crumb-sep">/</span>
+            <span class="crumb-active">{{ selectedContent.title }}</span>
+          </div>
+
+          <div class="stage-title-row">
+            <div class="stage-title-left">
+              <span class="resource-icon-badge" [ngClass]="getResourceBadgeClass(selectedContent.contentType)">
+                {{ getResourceLabel(selectedContent.contentType) }}
+              </span>
+              <h2>{{ selectedContent.title }}</h2>
+            </div>
+
+            <div class="stage-status-pills">
+              <span class="badge badge-duration">{{ selectedContent.durationMinutes || 15 }} mins</span>
+              <span *ngIf="selectedContent.mandatory" class="badge badge-warning">Mandatory</span>
+              <span
+                class="badge"
+                [ngClass]="isContentCompleted(selectedContent) ? 'badge-completed' : 'badge-in-progress'"
+              >
+                {{ isContentCompleted(selectedContent) ? 'Completed' : 'In Progress' }}
+              </span>
+            </div>
+          </div>
+
+          <p *ngIf="selectedContent.description" class="stage-description">
+            {{ selectedContent.description }}
+          </p>
+        </div>
+
+        <!-- 1. YOUTUBE VIDEO LESSON PLAYER -->
+        <div *ngIf="selectedContent.contentType === 'VIDEO'" class="video-stage-player">
+          <div class="youtube-player-frame">
+            <iframe
+              *ngIf="getSafeYouTubeEmbed(selectedContent.contentUrl)"
+              [src]="getSafeYouTubeEmbed(selectedContent.contentUrl)!"
+              title="Course Video Player"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+
+          <div class="stage-action-bar">
+            <button class="btn btn-youtube-watch" (click)="openContent(selectedContent)">
+              Watch Directly on YouTube
+            </button>
+            <div class="video-notes-box">
+              <strong>Video Lecture Guidance:</strong>
+              <p>{{ selectedContent.textContent || 'Watch this video lecture attentively and take note of architectural patterns discussed.' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. EXTERNAL READING MATERIAL & PDF VIEWER -->
+        <div *ngIf="isReadingContent(selectedContent)" class="reading-stage-viewer">
+          <div class="reading-hero-card">
+            <div class="reading-hero-icon">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <div class="reading-hero-content">
+              <h3>Technical Specification &amp; Study Guide</h3>
+              <p>This module requires reviewing the official reference documentation and architectural design blueprints.</p>
+              <div class="reading-action-btns">
+                <button *ngIf="selectedContent.contentUrl" class="btn btn-reading-open" (click)="openContent(selectedContent)">
+                  Open Study Resource / PDF
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="selectedContent.textContent" class="reading-text-notes">
+            <h4>Core Chapter Guidance &amp; Concepts:</h4>
+            <div class="notes-body">{{ selectedContent.textContent }}</div>
+          </div>
+        </div>
+
+        <!-- 3. INTERACTIVE MODULE CHECKPOINT QUIZ -->
+        <div *ngIf="isAssessmentContent(selectedContent)" class="quiz-stage-runner">
+          <div class="quiz-runner-header">
+            <div class="quiz-badge-wrap">
+              <span class="quiz-type-tag">Checkpoint Assessment</span>
+              <h3>{{ selectedContent.title }}</h3>
+              <p>Passing Score: 70% &bull; Multiple Choice &bull; Instant Automated Evaluation</p>
+            </div>
+
+            <a
+              [routerLink]="['/courses', course?.courseId, 'assessments', selectedContent.contentId]"
+              class="btn btn-secondary btn-sm"
+            >
+              Launch Fullscreen Assessment
+            </a>
+          </div>
+
+          <!-- QUIZ QUESTIONS LIST -->
+          <div class="quiz-questions-interactive">
+            <div
+              *ngFor="let q of inlineQuizQuestions; let qIdx = index"
+              class="interactive-question-card"
+            >
+              <div class="q-header">
+                <span class="q-number">Question {{ qIdx + 1 }}</span>
+                <p class="q-text">{{ q.question }}</p>
+              </div>
+
+              <div class="q-options-grid">
+                <label
+                  *ngFor="let opt of q.options; let optIdx = index"
+                  class="q-option-label"
+                  [class.option-selected]="selectedQuizAnswers[q.id] === optIdx"
+                  [class.option-correct]="quizSubmitted && optIdx === q.correctOption"
+                  [class.option-wrong]="quizSubmitted && selectedQuizAnswers[q.id] === optIdx && optIdx !== q.correctOption"
+                >
+                  <input
+                    type="radio"
+                    [name]="'question_' + q.id"
+                    [value]="optIdx"
+                    [checked]="selectedQuizAnswers[q.id] === optIdx"
+                    (change)="selectQuizOption(q.id, optIdx)"
+                    [disabled]="quizSubmitted && quizPassed"
+                  />
+                  <span class="opt-prefix">{{ ['A','B','C','D','E','F'][optIdx] || optIdx }}.</span>
+                  <span class="opt-text">{{ opt }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- QUIZ RESULT & SUBMISSION BOX -->
+            <div class="quiz-submit-box">
+              <div *ngIf="quizSubmitted" class="quiz-score-banner" [class.passed-banner]="quizPassed" [class.failed-banner]="!quizPassed">
+                <div class="score-icon">
+                  <svg *ngIf="quizPassed" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  <svg *ngIf="!quizPassed" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                </div>
+                <div class="score-details">
+                  <h4>{{ quizPassed ? 'Assessment Passed' : 'Assessment Not Passed' }}</h4>
+                  <p>Your Score: <strong>{{ quizScorePercentage }}%</strong> (Requirement: 70%)</p>
+                </div>
+                <button *ngIf="!quizPassed" class="btn btn-secondary btn-sm" (click)="resetInlineQuiz()">
+                  Retake Quiz
+                </button>
+              </div>
+
+              <div *ngIf="!quizSubmitted || !quizPassed" class="submit-action-row">
+                <button class="btn btn-primary" (click)="submitInlineQuiz()">
+                  Submit Quiz Answers
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STAGE FOOTER: COURSERA SEQUENTIAL NAVIGATION -->
+        <footer class="stage-footer-nav">
+          <button
+            class="btn btn-secondary"
+            [disabled]="!hasPreviousContent()"
+            (click)="goToPreviousContent()"
+          >
+            Previous Lesson
+          </button>
+
+          <div class="footer-center-actions">
+            <button
+              *ngIf="!isContentCompleted(selectedContent)"
+              class="btn btn-success-outline"
+              [disabled]="updatingContentId === selectedContent.contentId"
+              (click)="completeContent(selectedContent)"
+            >
+              {{ updatingContentId === selectedContent.contentId ? 'Marking...' : 'Mark as Completed' }}
+            </button>
+            <span *ngIf="isContentCompleted(selectedContent)" class="completed-check-label">
+              Lesson Completed
+            </span>
+          </div>
+
+          <button
+            class="btn btn-primary"
+            [disabled]="!hasNextContent()"
+            (click)="completeAndGoNext()"
+          >
+            {{ isContentCompleted(selectedContent) ? 'Next Lesson' : 'Complete & Next' }}
+          </button>
+        </footer>
+
+      </div>
+    </main>
+
+  </div>
+
+</section>

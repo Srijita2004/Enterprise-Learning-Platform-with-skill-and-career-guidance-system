@@ -1,0 +1,536 @@
+<div class="landing-login-container">
+
+  <!-- =========================================================
+       1. TOP FLOATING GLASS PILL NAVBAR (HIDES ON SCROLL / SIGN IN)
+       ========================================================= -->
+  <header class="floating-navbar" [class.navbar-hidden]="!showFloatingNav()">
+    <div class="nav-brand">
+      
+      <!-- Brand Logo Icon -->
+      <div class="header-brand-icon">
+        <img src="/branding/skillsphere-logo.svg" alt="Platform Logo" />
+      </div>
+
+      <!-- 2-Line Enterprise Wordmark -->
+      <div class="header-brand-text">
+        <div class="enterprise-brand-lockup">
+          <div class="brand-wordmark-line">
+            <span class="wordmark-main">Enterpri</span>
+            
+            <!-- Inlined Safe Geometric Maze 'S' (Cannot blow up) -->
+            <span class="wordmark-maze-box" aria-label="S">
+              <svg 
+                width="20" 
+                height="20" 
+                viewBox="0 0 100 100" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="10" 
+                stroke-linecap="square" 
+                stroke-linejoin="miter"
+                style="width: 20px; height: 20px; display: inline-block; vertical-align: middle;"
+              >
+                <path d="M 85 15 H 15 V 50 H 55 V 70 H 30" />
+                <path d="M 15 85 H 85 V 50 H 45 V 30 H 70" />
+              </svg>
+            </span>
+
+            <span class="wordmark-main">e</span>
+          </div>
+
+          <span class="brand-tagline-line">
+            LEARNING PLATFORM WITH SKILL &amp; CAREER GUIDANCE SYSTEM
+          </span>
+        </div>
+      </div>
+
+    </div>
+    
+    <div class="nav-actions">
+      <button type="button" class="nav-login-btn" (click)="scrollToLogin()">
+        <span class="btn-dot"></span>
+        <span>Sign In</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       2. FULL-SCREEN VIDEO HERO LANDING SECTION
+       ========================================================= -->
+  <section class="hero-video-section">
+    <div class="video-overlay-gradient"></div>
+    <video autoplay muted loop playsinline class="hero-bg-video">
+      <source src="https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-with-charts-31912-large.mp4" type="video/mp4">
+    </video>
+
+    <!-- Ambient Aurora Glow Orbs -->
+    <div class="hero-ambient-glows">
+      <div class="glow-orb glow-cyan"></div>
+      <div class="glow-orb glow-violet"></div>
+      <div class="glow-orb glow-blue"></div>
+    </div>
+
+    <div class="hero-grid-overlay"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-pulse"></span>
+        <span>ENTERPRISE WORKFORCE INTELLIGENCE &bull; v2.6</span>
+      </div>
+      
+      <h2 class="hero-headline">
+        Navigate your next.<br>
+        <span class="gradient-text">Empower skills &amp; careers.</span>
+      </h2>
+      
+      <p class="hero-subtext">
+        A unified cloud-native workspace for employee skill benchmarking, continuous learning journeys, verified achievements, and career progression.
+      </p>
+
+      <!-- 4 Core Enterprise Capability Cards -->
+      <div class="hero-stats-grid">
+        <div class="hero-stat-card">
+          <div class="stat-card-icon icon-blue">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </div>
+          <div class="stat-card-text">
+            <strong>12.4K+ Skills</strong>
+            <span>Skill Matrix L1–L5</span>
+          </div>
+        </div>
+
+        <div class="hero-stat-card">
+          <div class="stat-card-icon icon-emerald">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
+          <div class="stat-card-text">
+            <strong>800+ Courses</strong>
+            <span>LMS Tracks &amp; Certs</span>
+          </div>
+        </div>
+
+        <div class="hero-stat-card">
+          <div class="stat-card-icon icon-violet">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+          </div>
+          <div class="stat-card-text">
+            <strong>Compliance Hub</strong>
+            <span>Registry &amp; Audit Trail</span>
+          </div>
+        </div>
+
+        <div class="hero-stat-card">
+          <div class="stat-card-icon icon-amber">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+          </div>
+          <div class="stat-card-text">
+            <strong>AI Vector Matrix</strong>
+            <span>Cosine Match &amp; GenAI</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-action-buttons">
+        <button type="button" class="hero-primary-btn" (click)="scrollToLogin()">
+          <span>Access Workspace</span>
+          <svg class="btn-arrow-svg" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="8" y1="3" x2="8" y2="13"></line>
+            <polyline points="4 9 8 13 12 9"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <div class="scroll-indicator" (click)="scrollToLogin()">
+        <div class="mouse-icon">
+          <div class="wheel"></div>
+        </div>
+        <span class="scroll-text">Scroll down to authenticate</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       3. AUTHENTICATION SECTION (SCROLL TARGET)
+       ========================================================= -->
+  <section id="login-section" class="auth-wrapper-section">
+    <div class="login-page">
+
+      <button
+        type="button"
+        class="login-theme-toggle"
+        (click)="toggleTheme()"
+        [attr.aria-label]="
+          themeService.isDarkTheme()
+            ? 'Switch to light theme'
+            : 'Switch to dark theme'
+        "
+      >
+        @if (themeService.isDarkTheme()) {
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        }
+      </button>
+
+      <!-- BRAND VISUAL PANEL -->
+      <section
+        class="brand-visual"
+        aria-label="Enterprise Learning Platform overview"
+      >
+        <div class="visual-overlay"></div>
+        <div class="visual-grid"></div>
+
+        <div class="ambient-glow ambient-glow-one" aria-hidden="true"></div>
+        <div class="ambient-glow ambient-glow-two" aria-hidden="true"></div>
+
+        <!-- Network Constellation Graphic -->
+        <div class="network-graphic" aria-hidden="true">
+          <svg viewBox="0 0 1000 720" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="networkLine" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="currentColor" stop-opacity="0.08" />
+                <stop offset="50%" stop-color="currentColor" stop-opacity="0.52" />
+                <stop offset="100%" stop-color="currentColor" stop-opacity="0.08" />
+              </linearGradient>
+
+              <radialGradient id="networkNode" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="white" stop-opacity="1" />
+                <stop offset="35%" stop-color="currentColor" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="currentColor" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+
+            <g class="network-lines">
+              <path d="M420 550 L545 455 L675 490 L785 390 L900 470" />
+              <path d="M545 455 L605 335 L785 390" />
+              <path d="M675 490 L720 610 L865 575 L900 470" />
+              <path d="M420 550 L500 655 L720 610" />
+              <path d="M605 335 L735 265 L840 305 L785 390" />
+              <path d="M735 265 L895 235 L840 305" />
+              <path d="M545 455 L720 610" />
+              <path d="M675 490 L785 390" />
+            </g>
+
+            <g class="network-nodes">
+              <circle class="node node-a" cx="420" cy="550" r="7" />
+              <circle class="node node-b" cx="545" cy="455" r="9" />
+              <circle class="node node-c" cx="675" cy="490" r="6" />
+              <circle class="node node-d" cx="785" cy="390" r="10" />
+              <circle class="node node-e" cx="900" cy="470" r="7" />
+              <circle class="node node-f" cx="605" cy="335" r="6" />
+              <circle class="node node-g" cx="735" cy="265" r="8" />
+              <circle class="node node-h" cx="840" cy="305" r="5" />
+              <circle class="node node-i" cx="895" cy="235" r="6" />
+              <circle class="node node-j" cx="720" cy="610" r="8" />
+              <circle class="node node-k" cx="865" cy="575" r="6" />
+              <circle class="node node-l" cx="500" cy="655" r="5" />
+            </g>
+          </svg>
+        </div>
+
+        <div class="orbit orbit-one" aria-hidden="true"><span class="orbit-particle"></span></div>
+        <div class="orbit orbit-two" aria-hidden="true"><span class="orbit-particle"></span></div>
+        <div class="orbit orbit-three" aria-hidden="true"></div>
+
+        <!-- Brand Lockup in Visual Panel -->
+        <div class="brand-lockup">
+          <div class="header-brand-icon brand-visual-icon">
+            <img src="/branding/skillsphere-logo.svg" alt="Platform Logo" />
+          </div>
+
+          <div class="header-brand-text">
+            <div class="enterprise-brand-lockup">
+              <div class="brand-wordmark-line">
+                <span class="wordmark-main">Enterpri</span>
+                
+                <span class="wordmark-maze-box" aria-label="S">
+                  <svg 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 100 100" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    stroke-width="10" 
+                    stroke-linecap="square" 
+                    stroke-linejoin="miter"
+                    style="width: 20px; height: 20px; display: inline-block; vertical-align: middle;"
+                  >
+                    <path d="M 85 15 H 15 V 50 H 55 V 70 H 30" />
+                    <path d="M 15 85 H 85 V 50 H 45 V 30 H 70" />
+                  </svg>
+                </span>
+
+                <span class="wordmark-main">e</span>
+              </div>
+
+              <span class="brand-tagline-line">
+                LEARNING PLATFORM WITH SKILL &amp; CAREER GUIDANCE SYSTEM
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Brand Message -->
+        <div class="visual-copy">
+          <span class="visual-pill">
+            <span class="visual-pill-dot"></span>
+            One connected learning ecosystem
+          </span>
+
+          <h1>
+            Build skills.<br />
+            Track growth.<br />
+            Create impact.
+          </h1>
+
+          <p>
+            A unified workspace for employee skills,
+            structured learning, verified achievements
+            and workforce development.
+          </p>
+
+          <div class="feature-strip">
+            <div class="feature-item">
+              <span class="feature-indicator" aria-hidden="true"></span>
+              <strong>Skills</strong>
+              <span>Competency intelligence</span>
+            </div>
+
+            <div class="feature-item">
+              <span class="feature-indicator" aria-hidden="true"></span>
+              <strong>Learning</strong>
+              <span>Courses and progress</span>
+            </div>
+
+            <div class="feature-item">
+              <span class="feature-indicator" aria-hidden="true"></span>
+              <strong>Growth</strong>
+              <span>Paths and certificates</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Minimal System Status -->
+        <div class="visual-status" aria-hidden="true">
+          <span class="visual-status-line"></span>
+          <span>Skills</span>
+          <span class="visual-status-dot"></span>
+          <span>Learning</span>
+          <span class="visual-status-dot"></span>
+          <span>Certification</span>
+        </div>
+      </section>
+
+      <!-- AUTHENTICATION FORM PANEL -->
+      <section class="auth-panel">
+        <div class="auth-card">
+
+          <!-- Mobile Brand Lockup -->
+          <div class="mobile-brand">
+            <div class="header-brand-icon">
+              <img src="/branding/skillsphere-logo.svg" alt="Platform Logo" />
+            </div>
+            <div class="enterprise-brand-lockup">
+              <div class="brand-wordmark-line">
+                <span class="wordmark-main">Enterpri</span>
+                <span class="wordmark-maze-box" aria-label="S">
+                  <svg 
+                    width="18" 
+                    height="18" 
+                    viewBox="0 0 100 100" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    stroke-width="10" 
+                    stroke-linecap="square" 
+                    stroke-linejoin="miter"
+                    style="width: 18px; height: 18px; display: inline-block; vertical-align: middle;"
+                  >
+                    <path d="M 85 15 H 15 V 50 H 55 V 70 H 30" />
+                    <path d="M 15 85 H 85 V 50 H 45 V 30 H 70" />
+                  </svg>
+                </span>
+                <span class="wordmark-main">e</span>
+              </div>
+              <span class="brand-tagline-line">
+                LEARNING PLATFORM
+              </span>
+            </div>
+          </div>
+
+          <!-- Heading -->
+          <div class="auth-heading">
+            <span class="secure-label">
+              <span class="status-dot"></span>
+              Secure platform access
+            </span>
+
+            <h2>Welcome back</h2>
+
+            <p>
+              Enter your registered details to continue
+              to your workspace.
+            </p>
+          </div>
+
+          <!-- Login Form -->
+          <form (ngSubmit)="submit()" novalidate>
+
+            <!-- Full Name -->
+            <div class="field-group">
+              <label for="fullName">
+                Full name / username
+              </label>
+
+              <div class="input-shell">
+                <span class="field-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </span>
+
+                <input
+                  id="fullName"
+                  type="text"
+                  placeholder="e.g. Srijita Dutta"
+                  autocomplete="name"
+                  [(ngModel)]="fullName"
+                  name="fullName"
+                  [disabled]="isSigningIn"
+                />
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="field-group">
+              <label for="email">
+                Email address
+              </label>
+
+              <div class="input-shell">
+                <span class="field-icon" aria-hidden="true">@</span>
+
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  autocomplete="email"
+                  [(ngModel)]="email"
+                  name="email"
+                  [disabled]="isSigningIn"
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="field-group">
+              <label for="password">
+                Password
+              </label>
+
+              <div class="input-shell">
+                <span class="field-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </span>
+
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  [placeholder]="role === 'LEARNER' ? 'Enter any password to sign in / register' : 'Enter enterprise password'"
+                  autocomplete="current-password"
+                  [(ngModel)]="password"
+                  name="password"
+                  [disabled]="isSigningIn"
+                />
+
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="showPassword = !showPassword"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+                >
+                  {{ showPassword ? 'Hide' : 'Show' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Workspace Role Selection (Horizontal Side-by-Side) -->
+            <fieldset class="role-fieldset">
+              <legend>
+                Choose your workspace
+              </legend>
+
+              <div class="role-options horizontal-roles">
+                @for (item of roles; track item.value) {
+                  <button
+                    type="button"
+                    class="role-option"
+                    [class.selected]="role === item.value"
+                    (click)="role = item.value"
+                    [disabled]="isSigningIn"
+                  >
+                    <span class="role-check" [class.checked]="role === item.value">
+                      @if (role === item.value) {
+                        <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="3.5 8.5 6.5 11.5 12.5 4.5"></polyline>
+                        </svg>
+                      }
+                    </span>
+
+                    <span class="role-label-text">
+                      {{ item.label }}
+                    </span>
+                  </button>
+                }
+              </div>
+            </fieldset>
+            <!-- Error Notification -->
+            @if (errorMessage) {
+              <div class="login-error" role="alert">
+                <span class="error-badge-icon" aria-hidden="true">!</span>
+                <p>{{ errorMessage }}</p>
+              </div>
+            }
+
+            <!-- Submit Button -->
+            <button
+              class="login-button"
+              type="submit"
+              [disabled]="isSigningIn"
+            >
+              <span>
+                {{ isSigningIn ? 'Verifying account...' : 'Continue to Platform' }}
+              </span>
+
+              <svg class="login-arrow-svg" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="3" y1="8" x2="13" y2="8"></line>
+                <polyline points="9 4 13 8 9 12"></polyline>
+              </svg>
+            </button>
+
+          </form>
+
+          <p class="account-note">
+            External learners have open access: any student or professional can sign in or self-register freely with their name, email, and chosen password. Enterprise staff roles require corporate credentials.
+          </p>
+
+        </div>
+
+        <p class="login-footer">
+          © 2026 Enterprise Learning Platform with Skill and Career Guidance System. All rights reserved.
+        </p>
+      </section>
+
+    </div>
+  </section>
+
+</div>

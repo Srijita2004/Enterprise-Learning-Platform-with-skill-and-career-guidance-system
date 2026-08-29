@@ -1,0 +1,196 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1>Course Management</h1>
+      <p class="page-subtitle">Create, edit and publish courses.</p>
+    </div>
+
+    <button class="btn btn-primary" (click)="openCreateForm()">
+      + New Course
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="state-box">Loading courses…</div>
+  } @else if (errorMessage) {
+    <div class="state-box error">{{ errorMessage }}</div>
+  } @else if (courses.length === 0) {
+    <div class="state-box">No courses yet. Create your first course.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Level</th>
+            <th>Pricing</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (course of courses; track trackCourseById($index, course)) {
+            <tr>
+              <td>{{ course.courseCode }}</td>
+              <td>{{ course.title }}</td>
+              <td>{{ course.courseType }}</td>
+              <td>{{ course.courseLevel }}</td>
+              <td>
+                @if (course.pricingType === 'FREE') {
+                  Free
+                } @else {
+                  {{ course.currencyCode }} {{ course.price }}
+                }
+              </td>
+              <td>
+                <span class="badge" [ngClass]="'badge-' + (course.status || '').toLowerCase()">
+                  {{ course.status }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <a [routerLink]="['/admin/content']" [queryParams]="{ courseId: course.courseId }" class="btn btn-primary btn-sm">
+                  Modules &amp; Content
+                </a>
+
+                <button class="btn btn-secondary btn-sm" (click)="openEditForm(course)">Edit</button>
+
+                @if (course.status !== 'PUBLISHED') {
+                  <button class="btn btn-secondary btn-sm" (click)="publishCourse(course)">Publish</button>
+                }
+                @if (course.status !== 'ARCHIVED') {
+                  <button class="btn btn-secondary btn-sm" (click)="archiveCourse(course)">Archive</button>
+                }
+
+                <button class="btn btn-danger btn-sm" (click)="deleteCourse(course)">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (isFormOpen) {
+    <div class="modal-overlay open">
+      <div class="modal-box lg">
+        <h3 class="modal-box-title">{{ isEditing ? 'Edit Course' : 'New Course' }}</h3>
+
+        @if (formErrors.length > 0) {
+          <ul class="form-errors">
+            @for (err of formErrors; track err) {
+              <li>{{ err }}</li>
+            }
+          </ul>
+        }
+
+        <div class="form-grid">
+          @if (!isEditing) {
+            <label class="field">
+              <span>Course Code</span>
+              <input class="field-input" type="text" [(ngModel)]="form.courseCode" name="courseCode" />
+            </label>
+          }
+
+          <label class="field">
+            <span>Title</span>
+            <input class="field-input" type="text" [(ngModel)]="form.title" name="title" />
+          </label>
+
+          <label class="field field-wide">
+            <span>Description</span>
+            <textarea class="field-input" rows="3" [(ngModel)]="form.description" name="description"></textarea>
+          </label>
+
+          <label class="field">
+            <span>Category</span>
+            <input class="field-input" type="text" [(ngModel)]="form.category" name="category" />
+          </label>
+
+          <label class="field">
+            <span>Instructor</span>
+            <input class="field-input" type="text" [(ngModel)]="form.instructorName" name="instructorName" />
+          </label>
+
+          <label class="field">
+            <span>Course Type</span>
+            <select class="field-input" [(ngModel)]="form.courseType" name="courseType">
+              @for (t of courseTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Level</span>
+            <select class="field-input" [(ngModel)]="form.courseLevel" name="courseLevel">
+              @for (l of courseLevels; track l) {
+                <option [value]="l">{{ l }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Pricing</span>
+            <select class="field-input" [(ngModel)]="form.pricingType" name="pricingType">
+              <option value="FREE">Free</option>
+              <option value="PAID">Paid</option>
+            </select>
+          </label>
+
+          @if (form.pricingType === 'PAID') {
+            <label class="field">
+              <span>Price</span>
+              <input class="field-input" type="number" min="0" [(ngModel)]="form.price" name="price" />
+            </label>
+
+            <label class="field">
+              <span>Currency Code</span>
+              <input class="field-input" type="text" maxlength="3" [(ngModel)]="form.currencyCode" name="currencyCode" />
+            </label>
+          }
+
+          <label class="field">
+            <span>Duration (hours)</span>
+            <input class="field-input" type="number" min="1" [(ngModel)]="form.durationHours" name="durationHours" />
+          </label>
+
+          <label class="field">
+            <span>Max Capacity</span>
+            <input class="field-input" type="number" min="1" [(ngModel)]="form.maxCapacity" name="maxCapacity" />
+          </label>
+
+          <label class="field">
+            <span>Passing Score (%)</span>
+            <input class="field-input" type="number" min="0" max="100" [(ngModel)]="form.passingScore" name="passingScore" />
+          </label>
+
+          <label class="field checkbox-field">
+            <input type="checkbox" [(ngModel)]="form.certificateEnabled" name="certificateEnabled" />
+            <span>Certificate enabled</span>
+          </label>
+
+          <label class="field">
+            <span>Start Date</span>
+            <input class="field-input" type="date" [(ngModel)]="form.startDate" name="startDate" />
+          </label>
+
+          <label class="field">
+            <span>End Date</span>
+            <input class="field-input" type="date" [(ngModel)]="form.endDate" name="endDate" />
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button class="btn btn-primary" [disabled]="isSaving" (click)="saveCourse()">
+            {{ isSaving ? 'Saving…' : 'Save Course' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

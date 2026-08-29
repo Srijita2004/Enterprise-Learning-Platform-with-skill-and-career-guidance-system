@@ -1,0 +1,504 @@
+<section class="m3-zone page">
+
+  <header class="page-heading">
+
+    <div>
+      <h2>Compliance Verification</h2>
+      <p>
+        Record policy-backed certification checks with evidence references
+        and immutable audit events.
+      </p>
+    </div>
+
+    <div class="page-actions">
+      <button
+        class="btn"
+        (click)="load()"
+      >
+        Refresh
+      </button>
+    </div>
+
+  </header>
+
+
+  @if (loading()) {
+
+    <div class="panel loading">
+      <span class="spinner"></span>
+      Loading compliance data...
+    </div>
+
+  } @else {
+
+
+    <!-- Compliance Health Graphic -->
+    <article class="panel panel-pad compliance-overview">
+
+      <div class="compliance-ring-area">
+
+        <div
+          class="compliance-ring"
+          [style.background]="complianceRingBackground()"
+        >
+
+          <div class="compliance-ring-center">
+
+            <strong>
+              {{ compliancePercent() }}%
+            </strong>
+
+            <span>
+              Compliant
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="compliance-overview-copy">
+
+        <span class="compliance-kicker">
+          POLICY HEALTH
+        </span>
+
+        <h3>
+          Certification Compliance Coverage
+        </h3>
+
+        <p>
+          Live compliance state across all active employee certifications.
+        </p>
+
+
+        <div class="compliance-stats">
+
+          <div class="compliance-stat compliant">
+
+            <span class="status-dot"></span>
+
+            <div>
+              <strong>
+                {{ compliantCount() }}
+              </strong>
+
+              <span>
+                Compliant
+              </span>
+            </div>
+
+          </div>
+
+
+          <div class="compliance-stat pending">
+
+            <span class="status-dot"></span>
+
+            <div>
+              <strong>
+                {{ pendingCount() }}
+              </strong>
+
+              <span>
+                Pending
+              </span>
+            </div>
+
+          </div>
+
+
+          <div class="compliance-stat non-compliant">
+
+            <span class="status-dot"></span>
+
+            <div>
+              <strong>
+                {{ nonCompliantCount() }}
+              </strong>
+
+              <span>
+                Non-compliant
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+    <div class="split-grid">
+
+      <article class="panel panel-pad">
+
+        <div class="panel-title">
+
+          <div>
+            <h3>
+              Certification Compliance Queue
+            </h3>
+
+            <p>
+              Verify active certifications against your organizational policy.
+            </p>
+          </div>
+
+        </div>
+
+
+        @if (certifications().length) {
+
+          <div class="table-wrap">
+
+            <table class="data-table">
+
+              <thead>
+
+                <tr>
+                  <th>Employee</th>
+                  <th>Certification</th>
+                  <th>Validity</th>
+                  <th>Compliance</th>
+                  <th>Action</th>
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                @for (
+                  c of certifications();
+                  track c.certificationId
+                ) {
+
+                  <tr>
+
+                    <td>
+                      <span class="cell-main">
+                        {{ c.employeeName }}
+                      </span>
+
+                      <span class="cell-sub">
+                        #{{ c.employeeId }}
+                      </span>
+                    </td>
+
+
+                    <td>
+                      <span class="cell-main">
+                        {{ c.certificationName }}
+                      </span>
+
+                      <span class="cell-sub">
+                        {{ c.issuingOrganization }}
+                      </span>
+                    </td>
+
+
+                    <td>
+                      {{
+                        c.expiryDate
+                          ? (c.expiryDate | date:'dd MMM y')
+                          : 'No expiry'
+                      }}
+                    </td>
+
+
+                    <td>
+                      <span
+                        [class]="badge(c.complianceStatus)"
+                      >
+                        {{ humanize(c.complianceStatus) }}
+                      </span>
+                    </td>
+
+
+                    <td>
+                      <button
+                        class="btn btn-sm"
+                        (click)="open(c)"
+                      >
+                        Verify
+                      </button>
+                    </td>
+
+                  </tr>
+
+                }
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        } @else {
+
+          <div class="empty-state">
+
+            <span class="empty-icon">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </span>
+
+            <strong>
+              No active certifications available.
+            </strong>
+
+            <span>
+              Register or synchronize certifications first.
+            </span>
+
+          </div>
+
+        }
+
+      </article>
+
+
+      <article class="panel panel-pad">
+
+        <div class="panel-title">
+
+          <div>
+            <h3>
+              Recent Compliance Evidence
+            </h3>
+
+            <p>
+              Most recent verification records stored in the compliance registry.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div class="history-list">
+
+          @for (
+            v of recent().slice(0, 16);
+            track v.complianceVerificationId
+          ) {
+
+            <article>
+
+              <div>
+
+                <strong>
+                  {{ v.certificationName }}
+                </strong>
+
+                <span>
+                  {{ v.employeeName }}
+                  ·
+                  {{ v.policyReference }}
+                </span>
+
+              </div>
+
+
+              <span [class]="badge(v.result)">
+                {{ humanize(v.result) }}
+              </span>
+
+
+              <small>
+                {{ v.verifiedAt | date:'dd MMM y, HH:mm' }}
+                ·
+                {{ v.verifiedByRole }}
+              </small>
+
+
+              @if (v.evidenceReference) {
+
+                <p>
+                  Evidence:
+                  {{ v.evidenceReference }}
+                </p>
+
+              }
+
+            </article>
+
+          } @empty {
+
+            <div class="empty-state">
+
+              <span class="empty-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              </span>
+
+              <strong>
+                No compliance checks recorded.
+              </strong>
+
+              <span>
+                Verification history will appear here.
+              </span>
+
+            </div>
+
+          }
+
+        </div>
+
+      </article>
+
+    </div>
+
+  }
+
+</section>
+
+
+@if (
+  modalOpen() &&
+  selected();
+  as c
+) {
+
+  <div
+    class="m3-zone modal-backdrop"
+    (click)="modalOpen.set(false)"
+  >
+
+    <form
+      class="modal"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-head">
+
+        <div>
+
+          <h3>
+            Verify compliance
+          </h3>
+
+          <span class="cell-sub">
+            {{ c.employeeName }}
+            ·
+            {{ c.certificationName }}
+          </span>
+
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-sm"
+          (click)="modalOpen.set(false)"
+        >
+          Close
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <div class="form-grid">
+
+          <label class="field-label">
+
+            <span>
+              Result
+            </span>
+
+            <select
+              class="select"
+              formControlName="result"
+            >
+              <option value="COMPLIANT">
+                Compliant
+              </option>
+
+              <option value="NON_COMPLIANT">
+                Non-compliant
+              </option>
+            </select>
+
+          </label>
+
+
+          <label class="field-label">
+
+            <span>
+              Policy reference
+            </span>
+
+            <input
+              class="field"
+              formControlName="policyReference"
+              placeholder="e.g. CERT-POL-2026-04"
+            />
+
+          </label>
+
+
+          <label class="field-label full">
+
+            <span>
+              Evidence reference
+            </span>
+
+            <input
+              class="field"
+              formControlName="evidenceReference"
+              placeholder="Document, ticket or verification reference"
+            />
+
+          </label>
+
+
+          <label class="field-label full">
+
+            <span>
+              Verification notes
+            </span>
+
+            <textarea
+              class="textarea"
+              formControlName="notes"
+              placeholder="Record the reason and any required remediation."
+            ></textarea>
+
+          </label>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-foot">
+
+        <button
+          type="button"
+          class="btn"
+          (click)="modalOpen.set(false)"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="saving()"
+        >
+          Record verification
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+}

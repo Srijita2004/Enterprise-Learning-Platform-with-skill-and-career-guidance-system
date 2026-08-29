@@ -1,0 +1,1418 @@
+/* Google Fonts import: Outfit */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* Core Theme Variables */
+:root {
+  /* Dark Mode Palette (Default) */
+  --bg-primary: #0a0f1d;
+  --bg-secondary: #121829;
+  --bg-card: rgba(22, 29, 49, 0.7);
+  --bg-sidebar: rgba(15, 22, 42, 0.9);
+  --border-color: rgba(255, 255, 255, 0.08);
+  
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+
+  --accent-primary: #6366f1; /* Indigo */
+  --accent-primary-hover: #4f46e5;
+  --accent-primary-glow: rgba(99, 102, 241, 0.15);
+  
+  --accent-secondary: #06b6d4; /* Cyan */
+  --accent-secondary-hover: #0891b2;
+  
+  --success: #10b981; /* Emerald */
+  --success-glow: rgba(16, 185, 129, 0.1);
+  --warning: #f59e0b; /* Amber */
+  --warning-glow: rgba(245, 158, 11, 0.1);
+  --danger: #ef4444; /* Rose */
+  --danger-glow: rgba(239, 68, 68, 0.1);
+  --info: #3b82f6; /* Blue */
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px 2px rgba(99, 102, 241, 0.15);
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --glass-blur: blur(12px);
+}
+
+/* Light Theme Variables */
+:root.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-sidebar: rgba(241, 245, 249, 0.95);
+  --border-color: rgba(0, 0, 0, 0.08);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --accent-primary: #4f46e5;
+  --accent-primary-hover: #3730a3;
+  --accent-primary-glow: rgba(79, 70, 229, 0.1);
+
+  --accent-secondary: #0891b2;
+  --accent-secondary-hover: #0d9488;
+
+  --success: #059669;
+  --success-glow: rgba(5, 150, 105, 0.08);
+  --warning: #d97706;
+  --warning-glow: rgba(217, 119, 6, 0.08);
+  --danger: #dc2626;
+  --danger-glow: rgba(220, 38, 38, 0.08);
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px 2px rgba(79, 70, 229, 0.08);
+}
+
+/* Global Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  overflow-x: hidden;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-sm);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Utility Classes */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.glow-hover {
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.glow-hover:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+.animate-slide-in {
+  animation: slideInRight var(--transition-normal) forwards;
+}
+
+/* Forms CSS Styling */
+.form-group {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.form-input, .form-select, .form-textarea {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+  outline: none;
+}
+
+.light-theme .form-input, .light-theme .form-select, .light-theme .form-textarea {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-primary-glow);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.light-theme .form-input:focus, .light-theme .form-select:focus, .light-theme .form-textarea:focus {
+  background: #ffffff;
+}
+
+.form-input:disabled, .form-select:disabled, .form-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  font-weight: 400;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: #ffffff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-primary-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.light-theme .btn-secondary {
+  background: rgba(0, 0, 0, 0.04);
+}
+.light-theme .btn-secondary:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #ffffff;
+}
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+/* Tables styling */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.925rem;
+}
+
+.data-table th {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.light-theme .data-table th {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.data-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.light-theme .data-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background: var(--success-glow);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-warning {
+  background: var(--warning-glow);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-danger {
+  background: var(--danger-glow);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Spinner */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Page states overlay styles */
+.loading-overlay, .empty-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 2rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.state-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  max-width: 400px;
+  margin-bottom: 1.5rem;
+}
+
+/* Unified Global Modal Overlay & Box Layouts */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.confirm-modal-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  padding: 2rem;
+  box-shadow: var(--shadow-xl);
+  transform: translateY(20px);
+  transition: transform var(--transition-normal);
+}
+
+.modal-overlay.open .confirm-modal-box {
+  transform: translateY(0);
+}
+
+.modal-icon-danger {
+  width: 48px;
+  height: 48px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.modal-message {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.75rem;
+  line-height: 1.45;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.modal-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transform: translateY(20px);
+  transition: transform var(--transition-normal);
+}
+
+.modal-overlay.open .modal-box {
+  transform: translateY(0);
+}
+
+.modal-box.lg {
+  max-width: 800px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.modal-box-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.75rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+  transform: scale(1.15);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.25rem;
+}
+
+/* Toasts Overlay */
+.toasts-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 2000;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 300px;
+  max-width: 400px;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: #ffffff;
+  animation: slideInRight var(--transition-normal) forwards;
+}
+
+.toast-success {
+  background: #059669;
+  border-left: 4px solid #10b981;
+}
+
+.toast-danger {
+  background: #dc2626;
+  border-left: 4px solid #ef4444;
+}
+
+.toast-warning {
+  background: #d97706;
+  border-left: 4px solid #f59e0b;
+}
+
+.toast-info {
+  background: #2563eb;
+  border-left: 4px solid #3b82f6;
+}
+
+.toast-close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 1rem;
+}
+.toast-close:hover {
+  color: #ffffff;
+}
+
+/* SkillSphere Nexus visual system additions */
+:root {
+  color-scheme: dark;
+  --surface-raised: rgba(15, 23, 42, 0.78);
+  --surface-soft: rgba(15, 23, 42, 0.48);
+  --surface-input: rgba(15, 23, 42, 0.66);
+  --surface-subtle: rgba(148, 163, 184, 0.08);
+  --page-max-width: 1480px;
+}
+
+:root.light-theme {
+  color-scheme: light;
+  --surface-raised: rgba(255, 255, 255, 0.98);
+  --surface-soft: rgba(241, 245, 249, 0.82);
+  --surface-input: #ffffff;
+  --surface-subtle: rgba(15, 23, 42, 0.045);
+}
+
+html {
+  background: var(--bg-primary);
+}
+
+body {
+  min-width: 320px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Compact page rhythm: app-main already supplies the outer page padding. */
+.app-main .management-page,
+.app-main .payment-page,
+.app-main .assessment-page,
+.app-main .certificate-page,
+.app-main .details-page,
+.app-main .learning-page,
+.app-main .course-page,
+.app-main .learning-path-page {
+  padding: 0 !important;
+  color: var(--text-primary) !important;
+}
+
+.app-main .dashboard-wrapper,
+.app-main .module-wrapper,
+.app-main .page-container,
+.app-main .management-page,
+.app-main .payment-page,
+.app-main .assessment-page,
+.app-main .certificate-page,
+.app-main .details-page,
+.app-main .learning-page,
+.app-main .course-page,
+.app-main .learning-path-page {
+  max-width: var(--page-max-width);
+  margin-inline: auto;
+}
+
+.app-main .dashboard-wrapper,
+.app-main .module-wrapper,
+.app-main .page-container {
+  gap: clamp(1rem, 1.4vw, 1.45rem);
+}
+
+.app-main h1,
+.app-main h2,
+.app-main h3,
+.app-main h4 {
+  color: var(--text-primary);
+}
+
+.app-main h1 {
+  letter-spacing: -0.045em;
+}
+
+/* Consistent theme surfaces for pages that previously used fixed dark colors. */
+.state-panel,
+.state-box,
+.summary-card,
+.payment-card,
+.form-panel,
+.path-card,
+.recipient-section,
+.certificate-card,
+.assessment-card,
+.question-card,
+.hero-main,
+.hero-sidebar,
+.info-card,
+.module-card,
+.content-card,
+.path-assignment-card,
+.learning-path-card {
+  border-color: var(--border-color) !important;
+  background-color: var(--surface-soft) !important;
+  color: var(--text-primary) !important;
+}
+
+input,
+select,
+textarea,
+.form-input,
+.form-select,
+.form-textarea,
+.filters-panel input,
+.filters-panel select,
+.approval-panel input,
+.form-grid input,
+.form-grid select,
+.form-grid textarea,
+.inline-form select,
+.course-form select,
+.course-form input {
+  border-color: var(--border-color) !important;
+  background-color: var(--surface-input) !important;
+  color: var(--text-primary) !important;
+}
+
+select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.light-theme .data-table,
+.light-theme table {
+  color: var(--text-primary);
+}
+
+.light-theme .glass-panel,
+.light-theme .table-card,
+.light-theme .modal-content,
+.light-theme .modal-container,
+.light-theme .confirm-modal-box {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.light-theme .certificate-card {
+  background: linear-gradient(135deg, rgba(236, 254, 255, 0.88), rgba(238, 242, 255, 0.96)) !important;
+}
+
+.light-theme .recipient-section,
+.light-theme .certificate-details div,
+.light-theme .verification-section {
+  background: rgba(255, 255, 255, 0.74) !important;
+  color: var(--text-primary) !important;
+}
+
+.light-theme .course-card,
+.light-theme .path-card,
+.light-theme .payment-card,
+.light-theme .summary-card,
+.light-theme .form-panel {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055);
+}
+
+/* Professional card interaction without changing page behavior. */
+.dashboard-card,
+.stat-card,
+.course-card,
+.path-card,
+.payment-card,
+.certificate-card,
+.summary-card {
+  transition: transform var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.dashboard-card:hover,
+.stat-card:hover,
+.course-card:hover,
+.path-card:hover,
+.payment-card:hover,
+.certificate-card:hover,
+.summary-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent-primary) 32%, var(--border-color)) !important;
+  box-shadow: 0 16px 34px rgba(2, 8, 23, 0.1);
+}
+
+@media (max-width: 700px) {
+  .app-main .dashboard-header,
+  .app-main .module-header,
+  .app-main .page-header,
+  .app-main .certificate-header,
+  .app-main .learning-header,
+  .app-main .assessment-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* =========================================================
+   FULL COLOR THEME SYSTEM
+   11 colors x Light/Dark modes
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   COLOR IDENTITIES
+   --------------------------------------------------------- */
+
+:root[data-accent="blue"] {
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #4f46e5;
+  --accent-secondary: #06b6d4;
+  --accent-secondary-hover: #0891b2;
+}
+
+:root[data-accent="violet"] {
+  --accent-primary: #8b5cf6;
+  --accent-primary-hover: #7c3aed;
+  --accent-secondary: #d946ef;
+  --accent-secondary-hover: #c026d3;
+}
+
+:root[data-accent="emerald"] {
+  --accent-primary: #10b981;
+  --accent-primary-hover: #059669;
+  --accent-secondary: #34d399;
+  --accent-secondary-hover: #10b981;
+}
+
+:root[data-accent="rose"] {
+  --accent-primary: #e11d48;
+  --accent-primary-hover: #be123c;
+  --accent-secondary: #fb7185;
+  --accent-secondary-hover: #f43f5e;
+}
+
+:root[data-accent="amber"] {
+  --accent-primary: #f59e0b;
+  --accent-primary-hover: #d97706;
+  --accent-secondary: #fbbf24;
+  --accent-secondary-hover: #f59e0b;
+}
+
+:root[data-accent="orange"] {
+  --accent-primary: #f97316;
+  --accent-primary-hover: #ea580c;
+  --accent-secondary: #fb923c;
+  --accent-secondary-hover: #f97316;
+}
+
+:root[data-accent="teal"] {
+  --accent-primary: #14b8a6;
+  --accent-primary-hover: #0d9488;
+  --accent-secondary: #2dd4bf;
+  --accent-secondary-hover: #14b8a6;
+}
+
+:root[data-accent="cyan"] {
+  --accent-primary: #06b6d4;
+  --accent-primary-hover: #0891b2;
+  --accent-secondary: #38bdf8;
+  --accent-secondary-hover: #0ea5e9;
+}
+
+:root[data-accent="magenta"] {
+  --accent-primary: #d946ef;
+  --accent-primary-hover: #c026d3;
+  --accent-secondary: #ec4899;
+  --accent-secondary-hover: #db2777;
+}
+
+:root[data-accent="lime"] {
+  --accent-primary: #84cc16;
+  --accent-primary-hover: #65a30d;
+  --accent-secondary: #a3e635;
+  --accent-secondary-hover: #84cc16;
+}
+
+:root[data-accent="red"] {
+  --accent-primary: #ef4444;
+  --accent-primary-hover: #dc2626;
+  --accent-secondary: #f87171;
+  --accent-secondary-hover: #ef4444;
+}
+
+
+/* ---------------------------------------------------------
+   SHARED ACCENT EFFECTS
+   --------------------------------------------------------- */
+
+:root[data-accent] {
+  --accent-primary-glow:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 18%,
+      transparent
+    );
+
+  --shadow-glow:
+    0 0 22px 2px
+    color-mix(
+      in srgb,
+      var(--accent-primary) 18%,
+      transparent
+    );
+}
+
+
+/* ---------------------------------------------------------
+   DARK THEMES
+   --------------------------------------------------------- */
+
+:root[data-accent]:not(.light-theme) {
+  color-scheme: dark;
+
+  --bg-primary:
+    color-mix(
+      in srgb,
+      #05070d 82%,
+      var(--accent-primary) 18%
+    );
+
+  --bg-secondary:
+    color-mix(
+      in srgb,
+      #0b1020 82%,
+      var(--accent-primary) 18%
+    );
+
+  --bg-card:
+    color-mix(
+      in srgb,
+      rgba(18, 24, 41, 0.88) 80%,
+      var(--accent-primary) 20%
+    );
+
+  --bg-sidebar:
+    color-mix(
+      in srgb,
+      rgba(12, 18, 34, 0.94) 80%,
+      var(--accent-primary) 20%
+    );
+
+  --border-color:
+    color-mix(
+      in srgb,
+      rgba(255, 255, 255, 0.08) 70%,
+      var(--accent-primary) 30%
+    );
+
+  --surface-raised:
+    color-mix(
+      in srgb,
+      rgba(15, 23, 42, 0.9) 80%,
+      var(--accent-primary) 20%
+    );
+
+  --surface-soft:
+    color-mix(
+      in srgb,
+      rgba(15, 23, 42, 0.62) 76%,
+      var(--accent-primary) 24%
+    );
+
+  --surface-input:
+    color-mix(
+      in srgb,
+      rgba(15, 23, 42, 0.78) 82%,
+      var(--accent-primary) 18%
+    );
+
+  --surface-subtle:
+    color-mix(
+      in srgb,
+      rgba(148, 163, 184, 0.08) 72%,
+      var(--accent-primary) 28%
+    );
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+}
+
+
+/* Keep the original dark blue appearance as the default */
+:root[data-accent="blue"]:not(.light-theme) {
+  --bg-primary: #0a0f1d;
+  --bg-secondary: #121829;
+  --bg-card: rgba(22, 29, 49, 0.78);
+  --bg-sidebar: rgba(15, 22, 42, 0.94);
+
+  --border-color: rgba(255, 255, 255, 0.08);
+
+  --surface-raised: rgba(15, 23, 42, 0.78);
+  --surface-soft: rgba(15, 23, 42, 0.48);
+  --surface-input: rgba(15, 23, 42, 0.66);
+  --surface-subtle: rgba(148, 163, 184, 0.08);
+
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+}
+
+
+/* ---------------------------------------------------------
+   PREMIUM LIGHT THEMES
+   --------------------------------------------------------- */
+
+:root.light-theme[data-accent] {
+  color-scheme: light;
+
+  /*
+   * Main page stays clean and bright.
+   * Only a small amount of the selected accent is mixed in.
+   */
+  --bg-primary:
+    color-mix(
+      in srgb,
+      #f8fafc 97%,
+      var(--accent-primary) 3%
+    );
+
+  /*
+   * Header and elevated background.
+   */
+  --bg-secondary:
+    color-mix(
+      in srgb,
+      #ffffff 98%,
+      var(--accent-primary) 2%
+    );
+
+  /*
+   * Cards remain almost pure white for stronger contrast.
+   */
+  --bg-card:
+    color-mix(
+      in srgb,
+      #ffffff 98%,
+      var(--accent-primary) 2%
+    );
+
+  /*
+   * Sidebar gets a slightly stronger pastel accent.
+   */
+  --bg-sidebar:
+    color-mix(
+      in srgb,
+      #ffffff 92%,
+      var(--accent-primary) 8%
+    );
+
+  /*
+   * Borders follow the selected accent without becoming loud.
+   */
+  --border-color:
+    color-mix(
+      in srgb,
+      #cbd5e1 78%,
+      var(--accent-primary) 22%
+    );
+
+  /*
+   * Elevated surfaces such as menus and floating panels.
+   */
+  --surface-raised:
+    #ffffff;
+
+  /*
+   * Hovered or secondary surfaces.
+   */
+  --surface-soft:
+    color-mix(
+      in srgb,
+      #ffffff 92%,
+      var(--accent-primary) 8%
+    );
+
+  /*
+   * Form inputs should remain clean.
+   */
+  --surface-input:
+    color-mix(
+      in srgb,
+      #ffffff 98%,
+      var(--accent-primary) 2%
+    );
+
+  /*
+   * Very subtle decorative surface.
+   */
+  --surface-subtle:
+    color-mix(
+      in srgb,
+      #f8fafc 93%,
+      var(--accent-primary) 7%
+    );
+
+  /*
+   * Strong readable typography.
+   */
+  --text-primary: #111827;
+  --text-secondary: #475569;
+  --text-muted: #7c8798;
+
+  /*
+   * Accent effects are intentionally softer in light mode.
+   */
+  --accent-primary-glow:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 10%,
+      transparent
+    );
+
+  --shadow-glow:
+    0 8px 24px
+    color-mix(
+      in srgb,
+      var(--accent-primary) 10%,
+      transparent
+    );
+
+  --shadow-sm:
+    0 2px 8px rgba(15, 23, 42, 0.05);
+
+  --shadow-md:
+    0 7px 22px rgba(15, 23, 42, 0.07);
+
+  --shadow-lg:
+    0 14px 34px rgba(15, 23, 42, 0.09);
+
+  --shadow-xl:
+    0 20px 50px rgba(15, 23, 42, 0.12);
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT THEME APP SHELL
+   --------------------------------------------------------- */
+
+:root.light-theme[data-accent] .app-container {
+  background:
+    radial-gradient(
+      circle at 92% 4%,
+      color-mix(
+        in srgb,
+        var(--accent-primary) 8%,
+        transparent
+      ),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 55% 100%,
+      color-mix(
+        in srgb,
+        var(--accent-secondary) 5%,
+        transparent
+      ),
+      transparent 32%
+    ),
+    var(--bg-primary);
+}
+
+
+:root.light-theme[data-accent] .app-sidebar {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(
+        in srgb,
+        #ffffff 94%,
+        var(--accent-primary) 6%
+      ),
+      color-mix(
+        in srgb,
+        #ffffff 97%,
+        var(--accent-primary) 3%
+      )
+    );
+
+  border-right:
+    1px solid
+    color-mix(
+      in srgb,
+      #cbd5e1 78%,
+      var(--accent-primary) 22%
+    );
+
+  box-shadow:
+    8px 0 30px rgba(15, 23, 42, 0.045);
+}
+
+
+:root.light-theme[data-accent] .app-header {
+  background:
+    color-mix(
+      in srgb,
+      rgba(255, 255, 255, 0.96) 97%,
+      var(--accent-primary) 3%
+    );
+
+  border-bottom:
+    1px solid
+    color-mix(
+      in srgb,
+      #cbd5e1 82%,
+      var(--accent-primary) 18%
+    );
+
+  box-shadow:
+    0 4px 18px rgba(15, 23, 42, 0.035);
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT THEME CARDS
+   --------------------------------------------------------- */
+
+:root.light-theme[data-accent] .m3-zone .panel {
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      color-mix(
+        in srgb,
+        #ffffff 97%,
+        var(--accent-primary) 3%
+      )
+    );
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      #d7dee8 82%,
+      var(--accent-primary) 18%
+    );
+
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.055);
+}
+
+
+:root.light-theme[data-accent] .m3-zone .metric-card {
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      color-mix(
+        in srgb,
+        #ffffff 95%,
+        var(--accent-primary) 5%
+      )
+    );
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      #d7dee8 80%,
+      var(--accent-primary) 20%
+    );
+
+  box-shadow:
+    0 5px 18px rgba(15, 23, 42, 0.05);
+}
+
+
+:root.light-theme[data-accent] .m3-zone .metric-card:hover {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 42%,
+      #d7dee8
+    );
+
+  box-shadow:
+    0 9px 25px
+    color-mix(
+      in srgb,
+      var(--accent-primary) 8%,
+      rgba(15, 23, 42, 0.08)
+    );
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT THEME INPUTS
+   --------------------------------------------------------- */
+
+:root.light-theme[data-accent] .m3-zone .field,
+:root.light-theme[data-accent] .m3-zone .select,
+:root.light-theme[data-accent] .m3-zone .textarea {
+  background: #ffffff;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      #cbd5e1 84%,
+      var(--accent-primary) 16%
+    );
+
+  color: var(--text-primary);
+}
+
+
+:root.light-theme[data-accent] .m3-zone .field:hover,
+:root.light-theme[data-accent] .m3-zone .select:hover,
+:root.light-theme[data-accent] .m3-zone .textarea:hover {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 35%,
+      #cbd5e1
+    );
+}
+
+
+:root.light-theme[data-accent] .m3-zone .field:focus,
+:root.light-theme[data-accent] .m3-zone .select:focus,
+:root.light-theme[data-accent] .m3-zone .textarea:focus {
+  border-color: var(--accent-primary);
+
+  box-shadow:
+    0 0 0 3px
+    color-mix(
+      in srgb,
+      var(--accent-primary) 12%,
+      transparent
+    );
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT THEME TABLES
+   --------------------------------------------------------- */
+
+:root.light-theme[data-accent] .m3-zone .data-table th {
+  background:
+    color-mix(
+      in srgb,
+      #f8fafc 94%,
+      var(--accent-primary) 6%
+    );
+
+  color: #64748b;
+}
+
+
+:root.light-theme[data-accent] .m3-zone .data-table tbody tr:hover {
+  background:
+    color-mix(
+      in srgb,
+      #ffffff 93%,
+      var(--accent-primary) 7%
+    );
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT THEME APPEARANCE PANEL
+   --------------------------------------------------------- */
+
+:root.light-theme[data-accent] .theme-panel {
+  background:
+    rgba(255, 255, 255, 0.98);
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      #d7dee8 80%,
+      var(--accent-primary) 20%
+    );
+
+  box-shadow:
+    0 20px 48px rgba(15, 23, 42, 0.13);
+}
+
+
+:root.light-theme[data-accent] .accent-option,
+:root.light-theme[data-accent] .mode-selector button {
+  background: #ffffff;
+}
+
+
+:root.light-theme[data-accent] .accent-option:hover,
+:root.light-theme[data-accent] .mode-selector button:hover {
+  background:
+    color-mix(
+      in srgb,
+      #ffffff 91%,
+      var(--accent-primary) 9%
+    );
+}
+
+
+:root.light-theme[data-accent] .accent-option.selected,
+:root.light-theme[data-accent] .mode-selector button.selected {
+  background:
+    color-mix(
+      in srgb,
+      #ffffff 84%,
+      var(--accent-primary) 16%
+    );
+
+  border-color: var(--accent-primary);
+
+  box-shadow:
+    0 4px 14px
+    color-mix(
+      in srgb,
+      var(--accent-primary) 10%,
+      transparent
+    );
+}
+
+/* ---------------------------------------------------------
+   SMOOTH THEME TRANSITIONS
+   --------------------------------------------------------- */
+
+body,
+.app-container,
+.app-sidebar,
+.app-header,
+.glass-panel,
+.theme-panel,
+.user-profile-badge {
+  transition:
+    background-color var(--transition-normal),
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal),
+    box-shadow var(--transition-normal);
+}

@@ -1,0 +1,468 @@
+@if (authService.currentUser()) {
+
+<div class="app-container">
+
+  <!-- =========================================================
+       1. UNIFIED CONTINUOUS FULL-WIDTH TOP HEADER BAR
+       ========================================================= -->
+  <header class="app-header">
+    <div class="header-brand-group">
+      
+      <!-- Mobile Menu Button -->
+      <button
+        class="theme-toggle mobile-menu-button"
+        (click)="toggleSidebar()"
+        id="mobileMenuBtn"
+        aria-label="Toggle navigation"
+        title="Toggle navigation"
+      >
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <!-- Brand Area: Small Logo Icon + 2-Line Enterprise Wordmark -->
+      <div class="header-brand">
+        
+        <!-- Small Brand Logo Icon -->
+        <div class="header-brand-icon">
+          <img src="/branding/skillsphere-logo.svg" alt="Platform Logo" />
+        </div>
+
+        <!-- 2-Line Enterprise Wordmark -->
+        <div class="header-brand-text">
+          <div class="enterprise-brand-lockup">
+            
+            <!-- Line 1: Wordmark with Accurate Geometric Maze 'S' -->
+            <div class="brand-wordmark-line">
+              <span class="wordmark-main">Enterpri</span>
+              
+              <!-- Fixed Geometric Maze 'S' Box -->
+              <span class="wordmark-maze-box" aria-label="S">
+                <svg 
+                  width="21" 
+                  height="21" 
+                  viewBox="0 0 100 100" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="10" 
+                  stroke-linecap="square" 
+                  stroke-linejoin="miter"
+                  style="width: 21px; height: 21px; min-width: 21px; display: inline-block; vertical-align: middle;"
+                >
+                  <!-- Piece 1: Top bar, left wall, middle inner, center down -->
+                  <path d="M 88 15 H 12 V 55 H 55 V 85" />
+                  <!-- Piece 2: Bottom bar, right wall, middle inner, center up -->
+                  <path d="M 12 85 H 88 V 45 H 45 V 15" />
+                </svg>
+              </span>
+
+              <span class="wordmark-main">e</span>
+            </div>
+
+            <!-- Line 2: All-Caps Tagline -->
+            <span class="brand-tagline-line">
+              LEARNING PLATFORM WITH SKILL &amp; CAREER GUIDANCE SYSTEM
+            </span>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Header Actions (Right Controls) -->
+    <div class="header-actions">
+
+      <!-- Appearance Customizer Dropdown -->
+      <details class="theme-picker">
+        <summary class="theme-toggle" aria-label="Customize appearance" title="Customize appearance">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="5" cy="5" r="2"></circle>
+            <circle cx="19" cy="5" r="2"></circle>
+            <circle cx="5" cy="19" r="2"></circle>
+            <circle cx="19" cy="19" r="2"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+        </summary>
+
+        <div class="theme-panel">
+          <div class="theme-panel-header">
+            <strong>Appearance</strong>
+            <span>Personalize your workspace</span>
+          </div>
+
+          <!-- Display Mode -->
+          <div class="theme-section">
+            <span class="theme-section-title">Display Mode</span>
+            <div class="mode-selector">
+              <button type="button" [class.selected]="!themeService.isDarkTheme()" (click)="themeService.setLightMode()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+                </svg>
+                Light
+              </button>
+
+              <button type="button" [class.selected]="themeService.isDarkTheme()" (click)="themeService.setDarkMode()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                </svg>
+                Dark
+              </button>
+            </div>
+          </div>
+
+          <!-- Accent Colors -->
+          <div class="theme-section">
+            <span class="theme-section-title">Accent Color</span>
+            <div class="accent-grid">
+              <button type="button" class="accent-option blue" [class.selected]="themeService.accentTheme() === 'blue'" (click)="themeService.setAccent('blue')">
+                <span class="color-dot"></span> Blue
+              </button>
+              <button type="button" class="accent-option violet" [class.selected]="themeService.accentTheme() === 'violet'" (click)="themeService.setAccent('violet')">
+                <span class="color-dot"></span> Violet
+              </button>
+              <button type="button" class="accent-option emerald" [class.selected]="themeService.accentTheme() === 'emerald'" (click)="themeService.setAccent('emerald')">
+                <span class="color-dot"></span> Emerald
+              </button>
+              <button type="button" class="accent-option rose" [class.selected]="themeService.accentTheme() === 'rose'" (click)="themeService.setAccent('rose')">
+                <span class="color-dot"></span> Rose
+              </button>
+              <button type="button" class="accent-option amber" [class.selected]="themeService.accentTheme() === 'amber'" (click)="themeService.setAccent('amber')">
+                <span class="color-dot"></span> Amber
+              </button>
+              <button type="button" class="accent-option orange" [class.selected]="themeService.accentTheme() === 'orange'" (click)="themeService.setAccent('orange')">
+                <span class="color-dot"></span> Orange
+              </button>
+              <button type="button" class="accent-option teal" [class.selected]="themeService.accentTheme() === 'teal'" (click)="themeService.setAccent('teal')">
+                <span class="color-dot"></span> Teal
+              </button>
+              <button type="button" class="accent-option cyan" [class.selected]="themeService.accentTheme() === 'cyan'" (click)="themeService.setAccent('cyan')">
+                <span class="color-dot"></span> Cyan
+              </button>
+              <button type="button" class="accent-option magenta" [class.selected]="themeService.accentTheme() === 'magenta'" (click)="themeService.setAccent('magenta')">
+                <span class="color-dot"></span> Magenta
+              </button>
+              <button type="button" class="accent-option lime" [class.selected]="themeService.accentTheme() === 'lime'" (click)="themeService.setAccent('lime')">
+                <span class="color-dot"></span> Lime
+              </button>
+              <button type="button" class="accent-option red" [class.selected]="themeService.accentTheme() === 'red'" (click)="themeService.setAccent('red')">
+                <span class="color-dot"></span> Red
+              </button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <span class="header-divider" aria-hidden="true"></span>
+<!-- Notification Bell Icon -->
+<app-notification-bell></app-notification-bell>
+      <!-- User Info Badge -->
+      <a [routerLink]="authService.hasRole('EMPLOYEE') ? '/profile' : '/dashboard'" class="user-profile-badge" style="text-decoration: none; cursor: pointer;" [title]="authService.hasRole('EMPLOYEE') ? 'View My Connected 360 Profile' : 'My Dashboard'">
+        <div class="user-avatar">
+          {{ getInitials(authService.currentUser()?.name ?? 'User') }}
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ authService.currentUser()?.name }}</span>
+          <span class="user-role">{{ authService.currentUser()?.role }}</span>
+        </div>
+      </a>
+
+      <span class="header-divider" aria-hidden="true"></span>
+
+      <!-- Logout Button -->
+      <button class="theme-toggle" (click)="logout()" aria-label="Log out" title="Log out">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- =========================================================
+       2. WORKSPACE BODY (SLIM SIDEBAR + MAIN CONTENT AREA)
+       ========================================================= -->
+  <aside class="app-sidebar" [ngClass]="{ 'sidebar-open': sidebarOpen() }">
+    <nav class="nav-menu">
+
+      <li class="nav-item">
+        <a routerLink="/dashboard" routerLinkActive="active-link" (click)="closeSidebar()">
+          <span class="nav-symbol">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+          </span>
+          Dashboard
+        </a>
+      </li>
+
+      <!-- EMPLOYEE ROUTES -->
+      @if (authService.hasRole('EMPLOYEE')) {
+        <li class="nav-item">
+          <a routerLink="/profile" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"></circle><path d="M5.5 21a8.5 8.5 0 0 1 13 0"></path></svg>
+            </span>
+            My 360 Profile
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/courses" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            </span>
+            Courses &amp; Training
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/course-certificates" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"></path></svg>
+            </span>
+            My Certificates
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/career-analytics" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+            </span>
+            Career Roadmap
+          </a>
+        </li>
+      }
+
+      <!-- LEARNER ROUTES -->
+      @if (authService.hasRole('LEARNER')) {
+        <li class="nav-item">
+          <a routerLink="/courses" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            </span>
+            Courses
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/learning-paths" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M6 9v3a6 6 0 0 0 6 6h3"></path></svg>
+            </span>
+            Learning Paths
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/course-certificates" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"></path></svg>
+            </span>
+            My Course Certificates
+          </a>
+        </li>
+      }
+
+      <!-- ADMIN / HR ROUTES -->
+      @if (authService.hasRole('ADMIN', 'HR')) {
+        <li class="nav-item nav-section-label">Talent Management</li>
+
+        <li class="nav-item">
+          <a routerLink="/employee" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"></circle><path d="M5.5 21a8.5 8.5 0 0 1 13 0"></path></svg>
+            </span>
+            Employees
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/skill" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            </span>
+            Skill Library
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/assessment" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><polyline points="9 14 11 16 15 11"></polyline></svg>
+            </span>
+            Assessments
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/competency" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+            </span>
+            Competencies
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/certification" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"></path></svg>
+            </span>
+            Professional Certifications
+          </a>
+        </li>
+
+        <li class="nav-item nav-section-label">Learning Management</li>
+
+        <li class="nav-item">
+          <a routerLink="/admin/courses" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </span>
+            Course Management
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/admin/content" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </span>
+            Module &amp; Content
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/hr/payments" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+            </span>
+            Payment Verification
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/hr/learning-paths" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M6 9v3a6 6 0 0 0 6 6h3"></path></svg>
+            </span>
+            Learning Path Management
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/course-certificates" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"></path></svg>
+            </span>
+            Course Certificates
+          </a>
+        </li>
+
+        <li class="nav-item nav-section-label">Certification Management</li>
+
+        <li class="nav-item">
+          <a routerLink="/certification-hub" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </span>
+            Certification Command
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/certification-registry" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+            </span>
+            Certification Registry
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/certification-renewals" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+            </span>
+            Renewals &amp; Alerts
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/certification-compliance" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+            </span>
+            Compliance Verification
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/certification-reports-audit" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            </span>
+            Reports &amp; Audit
+          </a>
+        </li>
+        <li class="nav-item nav-section-label">Career &amp; Analytics</li>
+        <li class="nav-item">
+          <a routerLink="/career-analytics" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+            </span>
+            Career &amp; Analytics Center
+          </a>
+        </li>
+      }
+
+    </nav>
+  </aside>
+
+  <!-- =========================================================
+       3. MAIN VIEWPORT & FOOTER
+       ========================================================= -->
+  <main class="app-main">
+    <div class="main-content-scrollable">
+      <router-outlet></router-outlet>
+
+      <footer class="app-footer">
+        <p>© 2026 Enterprise Learning Platform with Skill and Career Guidance System. All rights reserved.</p>
+      </footer>
+    </div>
+  </main>
+
+  <!-- EIWI (Floating Bottom-Right AI Assistant) -->
+  <app-ai-assistant></app-ai-assistant>
+
+</div>
+
+} @else {
+  <router-outlet></router-outlet>
+}
+
+<!-- Global Toasts Overlay -->
+<div class="toasts-container">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast" [ngClass]="'toast-' + toast.type">
+      @if (toast.type === 'success') {
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      } @else if (toast.type === 'danger') {
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      } @else {
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      }
+      <span>{{ toast.message }}</span>
+      <button class="toast-close" (click)="toastService.remove(toast.id)" aria-label="Close notification">&times;</button>
+    </div>
+  }
+</div>
+
+<!-- Global Confirmation Modal Dialog -->
+<div class="modal-overlay" [ngClass]="{ 'open': confirmService.isOpen() }">
+  <div class="confirm-modal-box">
+    <div class="modal-icon-danger">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+    </div>
+    <h3 class="modal-title">{{ confirmService.title() }}</h3>
+    <p class="modal-message">{{ confirmService.message() }}</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="confirmService.cancel()">Cancel</button>
+      <button class="btn btn-danger" (click)="confirmService.confirm()">Delete</button>
+    </div>
+  </div>
+</div>

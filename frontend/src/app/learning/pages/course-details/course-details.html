@@ -1,0 +1,635 @@
+<section class="details-page">
+
+  <a
+    routerLink="/courses"
+    class="back-link"
+  >
+    <span aria-hidden="true">←</span>
+    Back to Courses
+  </a>
+
+  <div
+    *ngIf="isLoading"
+    class="state-panel"
+  >
+    <div class="loader"></div>
+
+    <p>Loading course details...</p>
+  </div>
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="state-panel error-panel"
+  >
+    <h2>Unable to load course</h2>
+
+    <p>{{ errorMessage }}</p>
+
+    <a
+      routerLink="/courses"
+      class="primary-link"
+    >
+      Return to Courses
+    </a>
+  </div>
+
+  <ng-container
+    *ngIf="
+      !isLoading &&
+      !errorMessage &&
+      course
+    "
+  >
+    <section class="hero-section">
+
+      <div class="hero-content">
+
+        <div class="top-row">
+          <span class="course-code">
+            {{ course.courseCode }}
+          </span>
+
+          <span
+            class="status-badge"
+            [class.published]="
+              course.status === 'PUBLISHED'
+            "
+            [class.archived]="
+              course.status === 'ARCHIVED'
+            "
+            [class.draft]="
+              course.status === 'DRAFT'
+            "
+          >
+            {{ course.status }}
+          </span>
+        </div>
+
+        <p class="eyebrow">
+          {{
+            course.category ||
+            'Professional Learning'
+          }}
+        </p>
+
+        <h1>{{ course.title }}</h1>
+
+        <p class="hero-description">
+          {{
+            course.description ||
+            'A structured learning programme designed to develop professional knowledge and practical skills.'
+          }}
+        </p>
+
+        <div class="hero-tags">
+          <span>
+            {{ course.courseType || 'ONLINE' }}
+          </span>
+
+          <span>
+            {{
+              course.courseLevel ||
+              'ALL LEVELS'
+            }}
+          </span>
+
+          <span>
+            {{ course.durationHours || 0 }}
+            HOURS
+          </span>
+        </div>
+
+      </div>
+
+      <aside class="summary-card">
+
+        <div class="course-icon">
+          {{
+            course.title
+              .charAt(0)
+              .toUpperCase()
+          }}
+        </div>
+
+        <p class="price-label">
+          Course Price
+        </p>
+
+        <strong class="course-price">
+          {{ getCoursePrice(course) }}
+        </strong>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row">
+          <span>Instructor</span>
+
+          <strong>
+            {{
+              course.instructorName ||
+              'Enterprise Instructor'
+            }}
+          </strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Available Seats</span>
+
+          <strong>
+            {{ getAvailableSeats(course) }}
+          </strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Certificate</span>
+
+          <strong
+            [class.highlight-success]="
+              course.certificateEnabled
+            "
+          >
+            {{
+              course.certificateEnabled
+                ? 'Available'
+                : 'Not Available'
+            }}
+          </strong>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <section class="enrollment-section">
+
+          <p class="enrollment-title">
+            Your Enrollment
+          </p>
+
+          <div
+            *ngIf="isEnrollmentLoading"
+            class="enrollment-checking"
+          >
+            Checking enrollment...
+          </div>
+
+          <ng-container
+            *ngIf="!isEnrollmentLoading"
+          >
+            <div
+              *ngIf="enrollment"
+              class="enrollment-information"
+            >
+              <div class="enrollment-row">
+                <span>Status</span>
+
+                <strong
+                  class="enrollment-badge"
+                  [class.active]="
+                    enrollment.status === 'ACTIVE'
+                  "
+                  [class.pending]="
+                    enrollment.status === 'PENDING'
+                  "
+                  [class.completed]="
+                    enrollment.status === 'COMPLETED'
+                  "
+                >
+                  {{ enrollment.status }}
+                </strong>
+              </div>
+
+              <div class="enrollment-row">
+                <span>Payment</span>
+
+                <strong>
+                  {{ enrollment.paymentStatus }}
+                </strong>
+              </div>
+
+              <div class="enrollment-row">
+                <span>Enrolled Price</span>
+
+                <strong>
+                  {{
+                    getEnrollmentPrice(
+                      enrollment
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="enrollment-row">
+                <span>Course Access</span>
+
+                <strong
+                  [class.highlight-success]="
+                    enrollment.accessAllowed
+                  "
+                >
+                  {{
+                    enrollment.accessAllowed
+                      ? 'Allowed'
+                      : 'Locked'
+                  }}
+                </strong>
+              </div>
+            </div>
+
+            <!-- Learning Room Button -->
+            <a
+              *ngIf="
+                enrollment &&
+                enrollment.accessAllowed
+              "
+              [routerLink]="[
+                '/courses',
+                course.courseId,
+                'learn'
+              ]"
+              class="learning-button"
+            >
+              <span class="learning-button-icon">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              </span>
+
+              {{
+                enrollment.status === 'COMPLETED'
+                  ? 'Review Course'
+                  : 'Start Learning'
+              }}
+            </a>
+
+            <div
+              *ngIf="
+                course.pricingType === 'PAID' &&
+                (
+                  !enrollment ||
+                  enrollment.paymentStatus === 'REJECTED'
+                )
+              "
+              class="payment-reference-box"
+            >
+              <label for="paymentReference">
+                Payment Transaction Reference
+              </label>
+
+              <input
+                id="paymentReference"
+                type="text"
+                [(ngModel)]="paymentReference"
+                placeholder="Enter UPI, bank or transaction reference"
+                maxlength="120"
+              />
+
+              <p>
+                This reference is stored in the backend and must be approved by Admin or HR.
+              </p>
+
+              <button
+                *ngIf="enrollment?.paymentStatus === 'REJECTED'"
+                type="button"
+                class="enroll-button"
+                [disabled]="isPaymentSubmitting"
+                (click)="submitPaymentForVerification()"
+              >
+                {{
+                  isPaymentSubmitting
+                    ? 'Submitting...'
+                    : 'Resubmit Payment'
+                }}
+              </button>
+            </div>
+
+            <button
+              *ngIf="canEnroll()"
+              type="button"
+              class="enroll-button"
+              [disabled]="
+                isEnrollmentActionRunning
+              "
+              (click)="enrollNow()"
+            >
+              {{
+                isEnrollmentActionRunning
+                  ? 'Enrolling...'
+                  : 'Enroll Now'
+              }}
+            </button>
+
+            <p
+              *ngIf="
+                enrollment &&
+                enrollment.paymentStatus === 'REJECTED'
+              "
+              class="enrollment-unavailable"
+            >
+              Payment was rejected: {{ enrollment.paymentRejectionReason || 'No reason provided' }}. Enter a new transaction reference and resubmit it.
+            </p>
+
+            <p
+              *ngIf="
+                enrollment &&
+                enrollment.status === 'PENDING' &&
+                enrollment.paymentStatus === 'PENDING'
+              "
+              class="enrollment-unavailable"
+            >
+              Payment verification is pending. Course access will be activated only after Admin or HR verifies the payment.
+            </p>
+
+            <p
+              *ngIf="
+                !enrollment &&
+                course.status !== 'PUBLISHED'
+              "
+              class="enrollment-unavailable"
+            >
+              Enrollment is unavailable because
+              this course is not published.
+            </p>
+          </ng-container>
+
+          <p
+            *ngIf="enrollmentMessage"
+            class="action-message success-message"
+          >
+            {{ enrollmentMessage }}
+          </p>
+
+          <p
+            *ngIf="enrollmentError"
+            class="action-message failure-message"
+          >
+            {{ enrollmentError }}
+          </p>
+
+        </section>
+
+      </aside>
+
+    </section>
+
+    <section class="information-grid">
+
+      <article class="information-card">
+        <p class="card-label">
+          Course Level
+        </p>
+
+        <h2>
+          {{
+            course.courseLevel ||
+            'All Levels'
+          }}
+        </h2>
+
+        <p>
+          The difficulty level assigned to this
+          learning programme.
+        </p>
+      </article>
+
+      <article class="information-card">
+        <p class="card-label">
+          Estimated Duration
+        </p>
+
+        <h2>
+          {{ course.durationHours || 0 }}
+          Hours
+        </h2>
+
+        <p>
+          Approximate total time needed to
+          complete the course.
+        </p>
+      </article>
+
+      <article class="information-card">
+        <p class="card-label">
+          Passing Score
+        </p>
+
+        <h2>
+          {{ course.passingScore || 0 }}%
+        </h2>
+
+        <p>
+          Minimum assessment score required for
+          successful completion.
+        </p>
+      </article>
+
+      <article class="information-card">
+        <p class="card-label">
+          Course Capacity
+        </p>
+
+        <h2>
+          {{ course.maxCapacity || 0 }}
+        </h2>
+
+        <p>
+          Maximum number of learners who can
+          participate in this course.
+        </p>
+      </article>
+
+    </section>
+
+    <section class="overview-section">
+
+      <article class="overview-card">
+
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">
+              Course Overview
+            </p>
+
+            <h2>Learning Information</h2>
+          </div>
+        </div>
+
+        <div class="details-list">
+
+          <div class="detail-row">
+            <span>Course Code</span>
+
+            <strong>
+              {{ course.courseCode }}
+            </strong>
+          </div>
+
+          <div class="detail-row">
+            <span>Category</span>
+
+            <strong>
+              {{
+                course.category ||
+                'Not specified'
+              }}
+            </strong>
+          </div>
+
+          <div class="detail-row">
+            <span>Delivery Type</span>
+
+            <strong>
+              {{
+                course.courseType ||
+                'Not specified'
+              }}
+            </strong>
+          </div>
+
+          <div class="detail-row">
+            <span>Pricing Type</span>
+
+            <strong>
+              {{
+                course.pricingType ||
+                'Not specified'
+              }}
+            </strong>
+          </div>
+
+          <div class="detail-row">
+            <span>Start Date</span>
+
+            <strong>
+              {{
+                course.startDate
+                  ? (
+                    course.startDate
+                      | date: 'dd MMMM yyyy'
+                  )
+                  : 'Not scheduled'
+              }}
+            </strong>
+          </div>
+
+          <div class="detail-row">
+            <span>End Date</span>
+
+            <strong>
+              {{
+                course.endDate
+                  ? (
+                    course.endDate
+                      | date: 'dd MMMM yyyy'
+                  )
+                  : 'Not scheduled'
+              }}
+            </strong>
+          </div>
+
+        </div>
+      </article>
+
+      <article class="overview-card">
+
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">
+              Course Statistics
+            </p>
+
+            <h2>Performance Summary</h2>
+          </div>
+        </div>
+
+        <div class="statistics-grid">
+
+          <div class="stat-box">
+            <span>Enrolled Learners</span>
+
+            <strong>
+              {{ course.enrolledCount || 0 }}
+            </strong>
+          </div>
+
+          <div class="stat-box">
+            <span>Completed Learners</span>
+
+            <strong>
+              {{ course.completedCount || 0 }}
+            </strong>
+          </div>
+
+          <div class="stat-box">
+            <span>Average Rating</span>
+
+            <strong>
+              {{ course.averageRating || 0 }}
+            </strong>
+          </div>
+
+          <div class="stat-box">
+            <span>Completion Rate</span>
+
+            <strong>
+              {{ course.completionRate || 0 }}%
+            </strong>
+          </div>
+
+        </div>
+      </article>
+
+    </section>
+
+    <!-- CURRICULUM & MODULE LEARNING RESOURCES SECTION -->
+    <section class="curriculum-section" style="margin-top: 2rem;">
+      <div class="section-heading" style="margin-bottom: 1.25rem;">
+        <div>
+          <p class="eyebrow">Curriculum Syllabus</p>
+          <h2>Course Learning Modules &amp; Resource Types</h2>
+        </div>
+        @if (enrollment && enrollment.accessAllowed) {
+          <a [routerLink]="['/courses', course.courseId, 'learn']" class="primary-link" style="font-size: 0.85rem;">
+            Open Classroom &amp; Study Resources
+          </a>
+        }
+      </div>
+
+      @if (isLoadingModules) {
+        <div class="state-panel" style="min-height: 120px; padding: 1.5rem;">
+          <p>Loading course modules...</p>
+        </div>
+      } @else if (modules.length === 0) {
+        <div class="overview-card" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);"><p>No published modules configured yet for this course.</p>
+        </div>
+      } @else {
+        <div class="modules-grid-curriculum" style="display: flex; flex-direction: column; gap: 1rem;">
+          @for (module of modules; track module.moduleId; let mIdx = $index) {
+            <div class="overview-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); font-weight: 700; font-size: 0.85rem;">
+                    {{ mIdx + 1 }}
+                  </span>
+                  <strong style="font-size: 1rem; color: var(--text-primary);">{{ module.title }}</strong>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                  <span style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.12); color: #f87171; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;">
+                    Video Lecture
+                  </span>
+                  <span style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.12); color: #60a5fa; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;">
+                    Study Resource
+                  </span>
+                  <span style="font-size: 0.75rem; background: rgba(245, 158, 11, 0.12); color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;">
+                    Online Quiz
+                  </span>
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                {{ module.description || 'Structured learning module containing video instruction, reading resources, and checkpoint evaluation.' }}
+              </p>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+  </ng-container>
+
+</section>

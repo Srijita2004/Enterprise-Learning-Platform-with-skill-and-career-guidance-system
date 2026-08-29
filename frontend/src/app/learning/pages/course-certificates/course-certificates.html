@@ -1,0 +1,263 @@
+<section class="certificate-page">
+
+  <header class="certificate-header">
+    <div>
+      <p class="eyebrow">
+        Enterprise Achievements
+      </p>
+
+      <h1>Course Certificates</h1>
+
+      <p class="header-description">
+        {{ authService.hasRole('ADMIN', 'HR')
+          ? 'View, verify and download certificates generated for all learners.'
+          : 'View, verify and download certificates earned after successful course completion.' }}
+      </p>
+    </div>
+
+    <a
+      [routerLink]="authService.hasRole('ADMIN', 'HR') ? '/admin/courses' : '/courses'"
+      class="courses-link"
+    >
+      {{ authService.hasRole('ADMIN', 'HR') ? 'Manage Courses' : 'View Courses' }}
+    </a>
+  </header>
+
+  <div
+    *ngIf="isLoading"
+    class="state-panel"
+  >
+    <div class="loader"></div>
+
+    <p>{{ authService.hasRole('ADMIN', 'HR') ? 'Loading learner certificates...' : 'Loading your certificates...' }}</p>
+  </div>
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="message-box error-message"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <div
+    *ngIf="actionMessage"
+    class="message-box success-message"
+  >
+    {{ actionMessage }}
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading &&
+      !errorMessage &&
+      certificates.length === 0
+    "
+    class="state-panel empty-panel"
+  >
+    <div class="empty-icon">C</div>
+
+    <h2>{{ authService.hasRole('ADMIN', 'HR') ? 'No generated course certificates' : 'No course certificates yet' }}</h2>
+
+    <p>
+      {{ authService.hasRole('ADMIN', 'HR')
+        ? 'Certificates will appear here when learners complete eligible courses.'
+        : 'Complete an eligible course to receive your Enterprise Learning Platform certificate.' }}
+    </p>
+
+    <a
+      [routerLink]="authService.hasRole('ADMIN', 'HR') ? '/admin/courses' : '/courses'"
+      class="primary-button"
+    >
+      {{ authService.hasRole('ADMIN', 'HR') ? 'Manage Courses' : 'Explore Courses' }}
+    </a>
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading &&
+      certificates.length > 0
+    "
+    class="certificate-grid"
+  >
+    <article
+      *ngFor="
+        let certificate of certificates;
+        trackBy: trackCertificateById
+      "
+      class="certificate-card"
+      [class.revoked-card]="
+        certificate.status === 'REVOKED'
+      "
+    >
+      <div class="certificate-top">
+
+        <div class="certificate-seal">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+
+        <div>
+          <p class="certificate-label">
+            Certificate of Completion
+          </p>
+
+          <h2>
+            {{ certificate.courseTitle }}
+          </h2>
+        </div>
+
+        <span
+          class="status-badge"
+          [class.valid-status]="
+            certificate.valid
+          "
+          [class.invalid-status]="
+            !certificate.valid
+          "
+        >
+          {{
+            certificate.valid
+              ? 'VALID'
+              : certificate.status
+          }}
+        </span>
+
+      </div>
+
+      <div class="recipient-section">
+        <span>Presented to</span>
+
+        <strong>
+          {{ certificate.recipientName }}
+        </strong>
+
+        <p>
+          For successfully completing
+          {{ certificate.courseTitle }}.
+        </p>
+      </div>
+
+      <div class="certificate-details">
+
+        <div>
+          <span>Certificate Number</span>
+
+          <strong>
+            {{ certificate.certificateNumber }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Course Code</span>
+
+          <strong>
+            {{ certificate.courseCode }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Issued Date</span>
+
+          <strong>
+            {{
+              certificate.issuedAt
+                | date: 'dd MMM yyyy'
+            }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Course Completed</span>
+
+          <strong>
+            {{
+              certificate.courseCompletedAt
+                | date: 'dd MMM yyyy'
+            }}
+          </strong>
+        </div>
+
+      </div>
+
+      <div class="verification-section">
+        <span>Verification Code</span>
+
+        <code>
+          {{ certificate.verificationCode }}
+        </code>
+      </div>
+
+      <p
+        *ngIf="
+          certificate.status === 'REVOKED'
+        "
+        class="revocation-message"
+      >
+        Revoked:
+        {{
+          certificate.revocationReason ||
+          'No reason provided'
+        }}
+      </p>
+
+      <div class="certificate-actions">
+
+        <button
+          type="button"
+          class="verify-button"
+          [disabled]="
+            verifyingCertificateId !== null
+          "
+          (click)="
+            verifyCertificate(certificate)
+          "
+        >
+          {{
+            verifyingCertificateId ===
+            certificate.certificateId
+              ? 'Verifying...'
+              : 'Verify'
+          }}
+        </button>
+
+        <button
+          type="button"
+          class="view-button"
+          [disabled]="
+            viewingCertificateId !== null
+          "
+          (click)="
+            viewCertificatePdf(certificate)
+          "
+        >
+          {{
+            viewingCertificateId ===
+            certificate.certificateId
+              ? 'Opening...'
+              : 'View PDF'
+          }}
+        </button>
+
+        <button
+          type="button"
+          class="download-button"
+          [disabled]="
+            downloadingCertificateId !== null
+          "
+          (click)="
+            downloadCertificatePdf(certificate)
+          "
+        >
+          {{
+            downloadingCertificateId ===
+            certificate.certificateId
+              ? 'Downloading...'
+              : 'Download PDF'
+          }}
+        </button>
+
+      </div>
+
+    </article>
+  </div>
+
+</section>

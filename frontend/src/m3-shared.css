@@ -1,0 +1,1071 @@
+/* =========================================================
+   MILESTONE 3 CERTIFICATION MANAGEMENT DESIGN SYSTEM
+   All rules are scoped to .m3-zone so M1/M2 remain unchanged.
+   M3 colors follow the selected global accent theme.
+   ========================================================= */
+
+.m3-zone {
+  --page-bg: var(--bg-primary);
+  --surface: var(--bg-card);
+  --surface-strong: var(--bg-secondary);
+
+  --surface-soft:
+    color-mix(
+      in srgb,
+      var(--bg-card) 88%,
+      var(--accent-primary) 12%
+    );
+
+  --border: var(--border-color);
+
+  --text-strong: var(--text-primary);
+  --text: var(--text-secondary);
+  --text-muted-m3: var(--text-secondary);
+  --text-faint: var(--text-muted);
+
+  /* Theme-aware aliases */
+  --teal: var(--accent-primary);
+  --teal-strong: var(--accent-secondary);
+  --teal-soft: var(--accent-primary-glow);
+
+  --blue: var(--accent-secondary);
+
+  --blue-soft:
+    color-mix(
+      in srgb,
+      var(--accent-secondary) 12%,
+      transparent
+    );
+
+  /* Semantic state colors */
+  --success-soft: var(--success-glow);
+  --warning-soft: var(--warning-glow);
+  --danger-soft: var(--danger-glow);
+
+  --violet: #8b5cf6;
+  --violet-soft: rgba(139, 92, 246, 0.12);
+
+  color: var(--text-secondary);
+}
+
+
+/* Light Theme Surface */
+.light-theme .m3-zone {
+  --surface-soft:
+    color-mix(
+      in srgb,
+      var(--bg-card) 90%,
+      var(--accent-primary) 10%
+    );
+}
+
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.m3-zone.page {
+  display: grid;
+  gap: 1rem;
+}
+
+
+/* =========================================================
+   PAGE HEADING
+   ========================================================= */
+
+.m3-zone .page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 0.15rem;
+}
+
+.m3-zone .page-heading h2 {
+  margin: 0;
+
+  font-size: clamp(1.45rem, 2vw, 2.15rem);
+  letter-spacing: -0.035em;
+
+  color: var(--text-primary);
+}
+
+.m3-zone .page-heading p {
+  margin: 0.32rem 0 0;
+
+  max-width: 780px;
+
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.m3-zone .page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.m3-zone .panel {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(
+        in srgb,
+        var(--bg-card) 94%,
+        var(--accent-primary) 6%
+      ),
+      var(--bg-card)
+    );
+
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+
+  box-shadow: var(--shadow-md);
+
+  transition:
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.m3-zone .panel-pad {
+  padding: 1rem;
+}
+
+.m3-zone .panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  margin-bottom: 0.9rem;
+}
+
+.m3-zone .panel-title h3 {
+  margin: 0;
+
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.m3-zone .panel-title p {
+  margin: 0.18rem 0 0;
+
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+
+/* =========================================================
+   METRICS
+   ========================================================= */
+
+.m3-zone .metric-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 0.75rem;
+}
+
+.m3-zone .metric-card {
+  position: relative;
+  overflow: hidden;
+
+  padding: 1rem;
+
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--bg-card),
+      color-mix(
+        in srgb,
+        var(--bg-card) 94%,
+        var(--accent-primary) 6%
+      )
+    );
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    transform var(--transition-fast);
+}
+
+.m3-zone .metric-card:hover {
+  transform: translateY(-1px);
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 35%,
+      var(--border-color)
+    );
+}
+
+.m3-zone .metric-card::after {
+  content: "";
+
+  position: absolute;
+  right: -20px;
+  top: -26px;
+
+  width: 90px;
+  height: 90px;
+
+  border-radius: 50%;
+
+  background:
+    var(
+      --metric-glow,
+      var(--accent-primary-glow)
+    );
+
+  filter: blur(2px);
+}
+
+.m3-zone .metric-label {
+  color: var(--text-secondary);
+
+  font-size: 0.66rem;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.m3-zone .metric-value {
+  display: block;
+
+  margin: 0.28rem 0 0.12rem;
+
+  color: var(--text-primary);
+
+  font-size: 1.72rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.m3-zone .metric-foot {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.m3-zone .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.42rem;
+
+  min-height: 36px;
+
+  padding: 0.5rem 0.78rem;
+
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+
+  background: var(--bg-card);
+  color: var(--text-primary);
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.m3-zone .btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  border-color: var(--accent-primary);
+
+  box-shadow: var(--shadow-md);
+}
+
+.m3-zone .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.m3-zone .btn-primary {
+  border-color: transparent;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent-primary),
+      var(--accent-secondary)
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 22px
+    color-mix(
+      in srgb,
+      var(--accent-primary) 24%,
+      transparent
+    );
+}
+
+.m3-zone .btn-primary:hover:not(:disabled) {
+  border-color: transparent;
+
+  box-shadow:
+    0 10px 26px
+    color-mix(
+      in srgb,
+      var(--accent-primary) 32%,
+      transparent
+    );
+}
+
+.m3-zone .btn-danger {
+  background: var(--danger-glow);
+  color: var(--danger);
+
+  border-color:
+    rgba(239, 68, 68, 0.22);
+}
+
+.m3-zone .btn-ghost {
+  background: transparent;
+}
+
+.m3-zone .btn-sm {
+  min-height: 30px;
+
+  padding: 0.34rem 0.55rem;
+
+  font-size: 0.66rem;
+}
+
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.m3-zone .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  gap: 0.55rem;
+}
+
+
+/* =========================================================
+   FORM CONTROLS
+   ========================================================= */
+
+.m3-zone .field,
+.m3-zone .select,
+.m3-zone .textarea {
+  width: 100%;
+
+  padding: 0.62rem 0.72rem;
+
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+
+  background: var(--surface-soft);
+  color: var(--text-primary);
+
+  outline: none;
+
+  font-size: 0.74rem;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.m3-zone .field:focus,
+.m3-zone .select:focus,
+.m3-zone .textarea:focus {
+  border-color: var(--accent-primary);
+
+  box-shadow:
+    0 0 0 3px
+    var(--accent-primary-glow);
+}
+
+.m3-zone .field::placeholder,
+.m3-zone .textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.m3-zone .select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.m3-zone .textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.m3-zone .field-label {
+  display: grid;
+
+  gap: 0.34rem;
+
+  color: var(--text-secondary);
+
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.m3-zone .field-label span {
+  padding-left: 0.1rem;
+}
+
+.m3-zone .form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 0.72rem;
+}
+
+.m3-zone .form-grid .full {
+  grid-column: 1 / -1;
+}
+
+.m3-zone .form-error {
+  color: var(--danger);
+  font-size: 0.62rem;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.m3-zone .table-wrap {
+  overflow: auto;
+
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+}
+
+.m3-zone .data-table {
+  width: 100%;
+
+  min-width: 820px;
+
+  border-collapse: collapse;
+}
+
+.m3-zone .data-table th,
+.m3-zone .data-table td {
+  padding: 0.72rem 0.78rem;
+
+  text-align: left;
+  vertical-align: middle;
+
+  border-bottom:
+    1px solid var(--border-color);
+}
+
+.m3-zone .data-table th {
+  position: sticky;
+  top: 0;
+
+  z-index: 2;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--bg-secondary) 94%,
+      var(--accent-primary) 6%
+    );
+
+  color: var(--text-muted);
+
+  font-size: 0.59rem;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.075em;
+}
+
+.m3-zone .data-table td {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.m3-zone .data-table tbody tr {
+  transition: background 0.16s ease;
+}
+
+.m3-zone .data-table tbody tr:hover {
+  background: var(--surface-soft);
+}
+
+.m3-zone .data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.m3-zone .cell-main {
+  color: var(--text-primary);
+  font-weight: 750;
+}
+
+.m3-zone .cell-sub {
+  display: block;
+
+  margin-top: 0.16rem;
+
+  color: var(--text-muted);
+  font-size: 0.61rem;
+}
+
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.m3-zone .badge {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 0.3rem;
+
+  white-space: nowrap;
+
+  padding: 0.28rem 0.52rem;
+
+  border:
+    1px solid var(--border-color);
+
+  border-radius: 999px;
+
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+
+  font-size: 0.59rem;
+  font-weight: 800;
+
+  letter-spacing: 0.035em;
+}
+
+.m3-zone .badge::before {
+  content: "";
+
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
+
+/* Success States */
+.m3-zone .badge-valid,
+.m3-zone .badge-verified,
+.m3-zone .badge-compliant,
+.m3-zone .badge-completed,
+.m3-zone .badge-acknowledged {
+  background: var(--success-glow);
+  color: var(--success);
+  border-color: transparent;
+}
+
+
+/* Warning States */
+.m3-zone .badge-expiring-soon,
+.m3-zone .badge-expiring,
+.m3-zone .badge-due,
+.m3-zone .badge-pending,
+.m3-zone .badge-upcoming,
+.m3-zone .badge-sent {
+  background: var(--warning-glow);
+  color: var(--warning);
+  border-color: transparent;
+}
+
+
+/* Danger States */
+.m3-zone .badge-expired,
+.m3-zone .badge-rejected,
+.m3-zone .badge-non-compliant,
+.m3-zone .badge-overdue,
+.m3-zone .badge-revoked {
+  background: var(--danger-glow);
+  color: var(--danger);
+  border-color: transparent;
+}
+
+
+/* Neutral Special States */
+.m3-zone .badge-no-expiry,
+.m3-zone .badge-not-required {
+  background: var(--violet-soft);
+  color: var(--violet);
+  border-color: transparent;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.m3-zone .empty-state {
+  display: grid;
+  place-items: center;
+
+  min-height: 180px;
+
+  padding: 2rem;
+
+  text-align: center;
+
+  color: var(--text-secondary);
+}
+
+.m3-zone .empty-state strong {
+  margin-bottom: 0.25rem;
+
+  color: var(--text-primary);
+}
+
+.m3-zone .empty-icon {
+  display: grid;
+  place-items: center;
+
+  width: 46px;
+  height: 46px;
+
+  margin-bottom: 0.7rem;
+
+  border-radius: 14px;
+
+  background: var(--accent-primary-glow);
+  color: var(--accent-primary);
+
+  font-size: 1.2rem;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.m3-zone .loading {
+  display: flex;
+  align-items: center;
+
+  gap: 0.6rem;
+
+  padding: 1rem;
+
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+}
+
+.m3-zone .spinner {
+  width: 16px;
+  height: 16px;
+
+  border:
+    2px solid var(--border-color);
+
+  border-top-color:
+    var(--accent-primary);
+
+  border-radius: 50%;
+
+  animation:
+    m3spin 0.75s linear infinite;
+}
+
+@keyframes m3spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   GRID LAYOUTS
+   ========================================================= */
+
+.m3-zone .split-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.2fr)
+    minmax(300px, 0.8fr);
+
+  gap: 0.85rem;
+}
+
+.m3-zone .three-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 0.8rem;
+}
+
+.m3-zone .two-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 0.8rem;
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.m3-zone .progress-track {
+  height: 8px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: var(--surface-soft);
+}
+
+.m3-zone .progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--accent-primary),
+      var(--accent-secondary)
+    );
+
+  box-shadow:
+    0 0 12px
+    color-mix(
+      in srgb,
+      var(--accent-primary) 30%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   MODAL BACKDROP
+   ========================================================= */
+
+.m3-zone.modal-backdrop {
+  position: fixed;
+  inset: 0;
+
+  z-index: 100;
+
+  display: grid;
+  place-items: center;
+
+  padding: 1rem;
+
+  background: rgba(3, 10, 18, 0.62);
+
+  backdrop-filter: blur(7px);
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.m3-zone .modal {
+  width: min(680px, 100%);
+  max-height: 90vh;
+
+  overflow: auto;
+
+  background:
+    linear-gradient(
+      160deg,
+      var(--bg-secondary),
+      color-mix(
+        in srgb,
+        var(--bg-secondary) 94%,
+        var(--accent-primary) 6%
+      )
+    );
+
+  border:
+    1px solid var(--border-color);
+
+  border-radius: 20px;
+
+  box-shadow: var(--shadow-xl);
+}
+
+.m3-zone .modal-head,
+.m3-zone .modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  padding: 1rem;
+
+  border-bottom:
+    1px solid var(--border-color);
+}
+
+.m3-zone .modal-head h3 {
+  margin: 0;
+
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.m3-zone .modal-body {
+  padding: 1rem;
+}
+
+.m3-zone .modal-foot {
+  justify-content: flex-end;
+
+  border-top:
+    1px solid var(--border-color);
+
+  border-bottom: 0;
+}
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.m3-zone .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  margin-top: 0.75rem;
+
+  color: var(--text-secondary);
+  font-size: 0.66rem;
+}
+
+.m3-zone .pagination-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+
+/* =========================================================
+   CODE / HASH TEXT
+   ========================================================= */
+
+.m3-zone .code-hash {
+  color: var(--text-muted);
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+
+  font-size: 0.58rem;
+}
+
+
+/* =========================================================
+   THEME-AWARE LINKS AND ACCENTS
+   ========================================================= */
+
+.m3-zone a:not(.btn) {
+  color: var(--accent-primary);
+}
+
+.m3-zone a:not(.btn):hover {
+  color: var(--accent-primary-hover);
+}
+
+
+/* =========================================================
+   SELECTION
+   ========================================================= */
+
+.m3-zone ::selection {
+  background:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 30%,
+      transparent
+    );
+
+  color: var(--text-primary);
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.m3-zone * {
+  scrollbar-color:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 45%,
+      transparent
+    )
+    transparent;
+}
+
+.m3-zone *::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.m3-zone *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.m3-zone *::-webkit-scrollbar-thumb {
+  background:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 38%,
+      transparent
+    );
+
+  border-radius: 999px;
+}
+
+.m3-zone *::-webkit-scrollbar-thumb:hover {
+  background:
+    color-mix(
+      in srgb,
+      var(--accent-primary) 58%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   SMOOTH THEME TRANSITIONS
+   ========================================================= */
+
+.m3-zone,
+.m3-zone .panel,
+.m3-zone .metric-card,
+.m3-zone .btn,
+.m3-zone .field,
+.m3-zone .select,
+.m3-zone .textarea,
+.m3-zone .table-wrap,
+.m3-zone .data-table th,
+.m3-zone .data-table td,
+.m3-zone .modal,
+.m3-zone .progress-track {
+  transition:
+    background-color var(--transition-normal),
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+   ========================================================= */
+
+@media (max-width: 1180px) {
+
+  .m3-zone .metric-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .m3-zone .split-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .m3-zone .three-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+   ========================================================= */
+
+@media (max-width: 720px) {
+
+  .m3-zone .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .m3-zone .metric-grid,
+  .m3-zone .three-grid,
+  .m3-zone .two-grid,
+  .m3-zone .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .m3-zone .form-grid .full {
+    grid-column: auto;
+  }
+
+  .m3-zone .panel-pad {
+    padding: 0.8rem;
+  }
+
+  .m3-zone .metric-card {
+    padding: 0.85rem;
+  }
+
+  .m3-zone .modal {
+    border-radius: 16px;
+  }
+
+  .m3-zone .toolbar > * {
+    flex: 1 1 160px;
+  }
+
+}

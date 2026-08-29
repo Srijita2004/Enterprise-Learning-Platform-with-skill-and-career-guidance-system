@@ -1,0 +1,666 @@
+<div class="career-container">
+  <!-- TOP BANNER WITH DROPDOWN -->
+  <div class="career-header-card">
+    <div class="career-header-info">
+      <h1>Career &amp; Analytics Center</h1>
+      <p class="subtitle">Design career paths, monitor promotion criteria, explore job vacancies, and review learning performance dashboards.</p>
+    </div>
+    
+    <div class="employee-selector-group" *ngIf="isManager()">
+      <label for="employeeSelect">Analyze Employee Profile:</label>
+      <select 
+        id="employeeSelect" 
+        class="form-control selector-dropdown" 
+        [value]="selectedEmployeeId()"
+        (change)="onEmployeeChange($event)"
+      >
+        <option *ngFor="let emp of employees()" [value]="emp.employeeId">
+          {{ emp.employeeName }} ({{ emp.designation }})
+        </option>
+      </select>
+    </div>
+
+    <div class="employee-selector-group" *ngIf="!isManager()">
+      <div style="background: var(--bg-card); padding: 0.6rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
+        <span style="color: var(--primary-color, #2563eb); font-weight: 700;">{{ authService.hasRole('LEARNER') ? 'Learner Growth Plan' : 'My Career Profile' }}</span>
+        <span style="color: var(--text-secondary);">&bull;</span>
+        <span style="color: var(--text-primary); font-weight: 600;">{{ careerPlan()?.employeeName || authService.currentUser()?.name }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="tabs-bar">
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'roadmap'" 
+      (click)="activeTab.set('roadmap')"
+    >
+      <span class="tab-icon">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+      </span>
+      Career Roadmap &amp; Criteria
+    </button>
+    
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'jobs'" 
+      (click)="activeTab.set('jobs')"
+    >
+      <span class="tab-icon">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      </span>
+      Internal Job Matchmaker
+    </button>
+    
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'analytics'" 
+      (click)="activeTab.set('analytics')"
+    >
+      <span class="tab-icon">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      </span>
+      Training Analytics Dashboard
+    </button>
+
+    <button 
+      class="tab-btn ai-tab-btn" 
+      [class.active]="activeTab() === 'ai-guidance'" 
+      (click)="activeTab.set('ai-guidance')"
+      style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(6, 182, 212, 0.15)); border: 1px solid rgba(99, 102, 241, 0.35); font-weight: 700;"
+    >
+      <span class="tab-icon">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </span>
+      AI Intelligence &amp; Skill-Gap Matrix
+    </button>
+  </div>
+
+  <!-- ROADMAP AND PROMOTION CRITERIA TAB -->
+  <div *ngIf="activeTab() === 'roadmap'" class="tab-content">
+    <div *ngIf="loadingPlan()" class="loading-state">
+      <div class="spinner"></div>
+      <p>Fetching employee career roadmap and skill gap records...</p>
+    </div>
+
+    <div *ngIf="!loadingPlan() && careerPlan()" class="roadmap-grid">
+      <!-- PANEL A: METADATA & PROGRESS -->
+      <div class="plan-card glass-panel profile-panel">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            {{ careerPlan()?.employeeName?.charAt(0) }}
+          </div>
+          <div>
+            <h2 class="profile-name">{{ careerPlan()?.employeeName }}</h2>
+            <p class="profile-role">Current Designation: <strong>{{ careerPlan()?.currentRole }}</strong></p>
+          </div>
+        </div>
+
+        <div class="career-goal">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <span class="goal-label" style="margin-bottom: 0;">CAREER OBJECTIVE TARGET</span>
+            <button *ngIf="isAdmin() && !editTargetRoleMode()" class="btn btn-secondary-icon" (click)="startEditTargetRole()" aria-label="Change target role" style="padding: 0.2rem 0.55rem; font-size: 0.75rem;">
+              Edit
+            </button>
+          </div>
+          
+          <div *ngIf="!editTargetRoleMode()" class="goal-value">{{ careerPlan()?.targetRole }}</div>
+          
+          <div *ngIf="editTargetRoleMode()" class="mentor-edit-form" style="margin-top: 0.4rem;">
+            <input 
+              type="text" 
+              class="form-control inline-input" 
+              [(ngModel)]="targetRoleInput"
+              placeholder="e.g. Lead Solution Architect, Engineering Manager"
+              id="targetRoleInput"
+              style="padding: 0.4rem 0.6rem; font-size: 0.95rem; font-weight: 600;"
+            />
+            <div class="form-actions-inline" style="margin-top: 0.4rem; display: flex; gap: 0.4rem;">
+              <button class="btn btn-primary-sm" (click)="saveTargetRole()" [disabled]="savingTargetRole()" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; background: var(--primary-color, #2563eb); color: #fff; border-radius: 4px; border: none; cursor: pointer;">
+                {{ savingTargetRole() ? 'Saving...' : 'Save' }}
+              </button>
+              <button class="btn btn-cancel-sm" (click)="cancelEditTargetRole()" [disabled]="savingTargetRole()" style="padding: 0.3rem 0.65rem; font-size: 0.8rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: 4px; cursor: pointer;">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROGRESS BAR & RADIAL GAUGE -->
+        <div class="progress-section">
+          <div class="progress-gauge-wrapper">
+            <svg class="radial-gauge-svg" viewBox="0 0 100 100" width="76" height="76">
+              <circle class="gauge-bg" cx="50" cy="50" r="40" stroke-width="8" />
+              <circle 
+                class="gauge-fill" 
+                cx="50" 
+                cy="50" 
+                r="40" 
+                stroke-width="8" 
+                [style.stroke-dasharray]="251"
+                [style.stroke-dashoffset]="251 - (251 * (careerPlan()?.progress || 0) / 100)"
+              />
+              <text x="50" y="55" class="gauge-text" text-anchor="middle">{{ careerPlan()?.progress }}%</text>
+            </svg>
+            <div class="progress-details-block">
+              <div class="progress-header">
+                <span>Roadmap Completion</span>
+                <span class="progress-val">{{ careerPlan()?.progress }}%</span>
+              </div>
+              <div class="progress-bar-container">
+                <div 
+                  class="progress-bar-fill" 
+                  [style.width.%]="careerPlan()?.progress"
+                  [style.background-color]="getProgressBarColor(careerPlan()?.progress || 0)"
+                ></div>
+              </div>
+              <span class="progress-milestone-hint">Progression trajectory on track</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MENTOR ASSIGNMENT -->
+        <div class="mentor-section">
+          <span class="section-label">ASSISTANCE &amp; MENTORSHIP</span>
+          
+          <div *ngIf="!editMentorMode()" class="mentor-display">
+            <div>
+              <p class="mentor-label">Assigned Mentor</p>
+              <p class="mentor-name">{{ careerPlan()?.mentorName }}</p>
+            </div>
+            <button *ngIf="isManager()" class="btn btn-secondary-icon" (click)="editMentorMode.set(true)" aria-label="Change mentor">
+              Edit
+            </button>
+          </div>
+
+          <div *ngIf="editMentorMode()" class="mentor-edit-form">
+            <input 
+              type="text" 
+              class="form-control inline-input" 
+              [(ngModel)]="mentorNameInput"
+              placeholder="Mentor Name"
+              id="mentorInput"
+            />
+            <div class="form-actions-inline">
+              <button 
+                class="btn btn-success-sm" 
+                (click)="saveMentorName()" 
+                [disabled]="savingMentor()"
+              >
+                Save
+              </button>
+              <button 
+                class="btn btn-secondary-sm" 
+                (click)="cancelEditMentor()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MATCH STATS -->
+        <div class="opportunity-pill">
+          <span class="opp-icon">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </span>
+          <span>Matched Vacancies: <strong>{{ careerPlan()?.jobMatchesCount }} Internal Postings</strong></span>
+        </div>
+      </div>
+
+      <!-- PANEL B: ROADMAP TIMELINE & SKILL GAP -->
+      <div class="plan-card glass-panel roadmap-timeline-panel">
+        <h3 class="panel-title">Interactive Career Roadmap</h3>
+        
+        <div class="roadmap-steps">
+          <!-- Step 1: Current Role -->
+          <div class="roadmap-step step-completed">
+            <div class="step-marker">
+              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8.5 6 11.5 13 4.5"></polyline></svg>
+            </div>
+            <div class="step-details">
+              <h4>Step 1: Current Role Established</h4>
+              <p>Certified in {{ careerPlan()?.currentRole }} competency frameworks.</p>
+              <div class="tags-group">
+                <span class="tag-pill" *ngFor="let s of careerPlan()?.skillsAcquired">{{ s }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Skill Gap Gap-filling -->
+          <div class="roadmap-step" [class.step-completed]="(careerPlan()?.progress || 0) >= 50">
+            <div class="step-marker">2</div>
+            <div class="step-details">
+              <h4>Step 2: Core Capability Development</h4>
+              <p>Develop missing capabilities and review training recommendations.</p>
+              
+              <div class="skill-gap-list">
+                <div class="gap-item" *ngFor="let gap of careerPlan()?.skillGaps">
+                  <span class="gap-bullet">!</span>
+                  <span class="gap-text">Acquisition Required: <strong>{{ gap }}</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Promotion Criteria Checklist -->
+          <div class="roadmap-step" [class.step-completed]="(careerPlan()?.progress || 0) >= 80">
+            <div class="step-marker">3</div>
+            <div class="step-details">
+              <h4>Step 3: Promotion Assessment Checklist</h4>
+              <p>Complete formal certifications and assessments mapped for advancement.</p>
+            </div>
+          </div>
+
+          <!-- Step 4: Target Designation -->
+          <div class="roadmap-step step-target">
+            <div class="step-marker">4</div>
+            <div class="step-details">
+              <h4>Step 4: Transition to {{ careerPlan()?.targetRole }}</h4>
+              <p>Achieve full promotion eligibility and apply to matched job posts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL C: PROMOTION CRITERIA CHECKLIST -->
+      <div class="plan-card glass-panel criteria-panel">
+        <div class="criteria-header">
+          <h3 class="panel-title">Advancement Mapped Criteria</h3>
+          <span class="kpi-tag">{{ careerPlan()?.promotionCriteria?.length }} Criteria Required</span>
+        </div>
+        <p class="panel-desc">Double-check criteria items to simulate updates. Authenticated managers or HR can check items to record progression.</p>
+        
+        <div class="criteria-list">
+          <div 
+            class="criteria-item-card" 
+            *ngFor="let item of careerPlan()?.promotionCriteria"
+            [class.criteria-met]="item.isMet"
+          >
+            <div class="criteria-checkbox-wrapper">
+              <input 
+                type="checkbox" 
+                [id]="'criteria-' + item.criteriaId"
+                class="criteria-checkbox" 
+                [checked]="item.isMet"
+                [disabled]="!isManager()"
+                (change)="toggleCriteria(item.criteriaId)"
+              />
+            </div>
+            <div class="criteria-info">
+              <div class="criteria-title-line">
+                <label [attr.for]="'criteria-' + item.criteriaId" class="criteria-name">{{ item.name }}</label>
+                <span [class]="getCriteriaBadgeClass(item.type)">{{ item.type }}</span>
+              </div>
+              <p class="criteria-desc">{{ item.description }}</p>
+            </div>
+            <span class="criteria-status-badge" [class.met]="item.isMet">
+              {{ item.isMet ? 'Completed' : 'Pending' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL D: RECOMMENDATIONS -->
+      <div class="plan-card glass-panel recommendations-panel">
+        <h3 class="panel-title">Tailored Learning Recommendations</h3>
+        <p class="panel-desc">Suggested course enrollments based on detected gaps in target roadmap:</p>
+        
+        <div class="rec-courses-grid">
+          <div class="rec-course-card" *ngIf="careerPlan()?.skillGaps?.join('')?.includes('Angular')">
+            <div class="rec-badge">Best Match</div>
+            <h4>Modern Web Engineering with Angular 20</h4>
+            <p>Fills gap <strong>Angular +3</strong>. Covers component patterns, RxJS streams, and routing.</p>
+            <div class="rec-footer">
+              <span>LMS Rating: 4.8</span>
+              <a [routerLink]="getRecommendedCourseLink('Modern Web Engineering with Angular 20')" class="btn btn-secondary btn-sm" style="text-decoration: none;">Open Course</a>
+            </div>
+          </div>
+          
+          <div class="rec-course-card" *ngIf="careerPlan()?.skillGaps?.join('')?.includes('Cloud') || careerPlan()?.skillGaps?.join('')?.includes('Architecture')">
+            <div class="rec-badge">Highest Priority</div>
+            <h4>AWS Solutions Architect Training</h4>
+            <p>Fills gap <strong>Cloud Architecture</strong>. Covers microservices deployment, security, and RDS.</p>
+            <div class="rec-footer">
+              <span>LMS Rating: 4.9</span>
+              <a [routerLink]="getRecommendedCourseLink('Cloud Solutions Architecture & AWS Infrastructure')" class="btn btn-secondary btn-sm" style="text-decoration: none;">Open Course</a>
+            </div>
+          </div>
+
+          <div class="rec-course-card">
+            <div class="rec-badge">Development</div>
+            <h4>Enterprise System Design Patterns</h4>
+            <p>Covers clean architecture, design rules, and distributed event logging.</p>
+            <div class="rec-footer">
+              <span>LMS Rating: 4.7</span>
+              <a [routerLink]="getRecommendedCourseLink('Enterprise System Design Patterns & Distributed Scalability')" class="btn btn-secondary btn-sm" style="text-decoration: none;">Open Course</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERNAL JOB MATCHMAKER TAB -->
+  <div *ngIf="activeTab() === 'jobs'" class="tab-content">
+    <div class="job-intro-card glass-panel">
+      <div class="job-intro-text">
+        <h2>Internal Career Opportunity Portal</h2>
+        <p>Your current skill achievements are matched with available vacancies in the enterprise. Showing jobs that correspond with your path.</p>
+      </div>
+      <div class="job-kpis">
+        <div class="job-kpi">
+          <span class="kpi-num">12</span>
+          <span class="kpi-label">Matched Postings</span>
+        </div>
+        <div class="job-kpi">
+          <span class="kpi-num">95%</span>
+          <span class="kpi-label">Highest Match Fit</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="loadingJobs()" class="loading-state">
+      <div class="spinner"></div>
+      <p>Scanning job board and matching skills database...</p>
+    </div>
+
+    <div *ngIf="!loadingJobs()" class="jobs-list-grid">
+      <div class="job-card glass-panel" *ngFor="let job of jobs()">
+        <div class="job-header">
+          <div>
+            <h3 class="job-title">{{ job.title }}</h3>
+            <p class="job-dept">{{ job.department }} &bull; {{ job.location }}</p>
+          </div>
+          <div class="match-score-ring" [style.border-color]="getProgressBarColor(job.matchScore)">
+            <span class="score-val">{{ job.matchScore }}%</span>
+            <span class="score-lbl">fit</span>
+          </div>
+        </div>
+
+        <p class="job-description">{{ job.description }}</p>
+
+        <div class="job-skills-section">
+          <span class="label">Skills Required:</span>
+          <div class="tags-group">
+            <span 
+              class="tag-pill" 
+              *ngFor="let s of job.skillsRequired"
+              [class.matched-tag]="careerPlan()?.skillsAcquired?.includes(s)"
+            >
+              {{ s }}
+            </span>
+          </div>
+        </div>
+
+        <div class="job-footer">
+          <span class="salary-tag">Salary Band: <strong>${{ job.salary | number }} / yr</strong></span>
+          <button class="btn btn-primary" (click)="applyJob(job.title)">
+            {{ isManager() ? 'Nominate ' + (careerPlan()?.employeeName || 'Candidate') : 'Apply Now' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINING ANALYTICS DASHBOARD -->
+  <div *ngIf="activeTab() === 'analytics'" class="tab-content">
+    <div *ngIf="loadingDashboard()" class="loading-state">
+      <div class="spinner"></div>
+      <p>Gathering enterprise learning metrics and compilation charts...</p>
+    </div>
+
+    <div *ngIf="!loadingDashboard() && dashboard()" class="analytics-wrapper">
+      <!-- 4 METRICS CARDS -->
+      <div class="metrics-grid">
+        <div class="metric-card glass-panel">
+          <div class="metric-icon plan-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+          </div>
+          <div class="metric-data">
+            <span class="num">{{ dashboard()?.totalPlans | number }}</span>
+            <span class="lbl">Active Career Plans</span>
+          </div>
+        </div>
+
+        <div class="metric-card glass-panel">
+          <div class="metric-icon promo-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+          </div>
+          <div class="metric-data">
+            <span class="num">{{ dashboard()?.promotionsAnnually | number }}</span>
+            <span class="lbl">Promotions Annually</span>
+          </div>
+        </div>
+
+        <div class="metric-card glass-panel">
+          <div class="metric-icon coverage-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+          </div>
+          <div class="metric-data">
+            <span class="num">{{ dashboard()?.departmentSkillCoverage }}%</span>
+            <span class="lbl">Avg Skill Coverage</span>
+          </div>
+        </div>
+
+        <div class="metric-card glass-panel">
+          <div class="metric-icon jobs-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          </div>
+          <div class="metric-data">
+            <span class="num">{{ dashboard()?.jobMatches | number }}</span>
+            <span class="lbl">Internal Matches Available</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS / TABLES DUAL GRID -->
+      <div class="analytics-details-grid">
+        <!-- BAR GRAPH - SKILL COVERAGE -->
+        <div class="chart-card glass-panel">
+          <h3 class="panel-title">Department Skill Coverage</h3>
+          <p class="panel-desc">Calculated coverage index based on targeted skills mapping by department framework.</p>
+          
+          <div class="bar-chart-container">
+            <div class="bar-chart-row" *ngFor="let dept of dashboard()?.departmentCoverages">
+              <span class="bar-label">{{ dept.department }}</span>
+              <div class="bar-wrapper">
+                <div class="bar-fill" [style.width.%]="dept.coverage"></div>
+              </div>
+              <span class="bar-percentage">{{ dept.coverage }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE - COURSE EFFECTIVENESS -->
+        <div class="chart-card glass-panel table-panel">
+          <h3 class="panel-title">LMS Training Effectiveness Report</h3>
+          <p class="panel-desc">Identifies courses driving the highest competency growth and score improvements.</p>
+          
+          <div class="table-scrollable">
+            <table class="analytics-table">
+              <thead>
+                <tr>
+                  <th>Course Title</th>
+                  <th>Total Enrolls</th>
+                  <th>Completion Rate</th>
+                  <th>Skill Score Growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let report of dashboard()?.effectivenessReports">
+                  <td class="course-name">{{ report.courseName }}</td>
+                  <td>{{ report.enrollments }} learners</td>
+                  <td>
+                    <div class="table-progress-group">
+                      <span class="val">{{ report.completionRate }}%</span>
+                      <div class="mini-bar">
+                        <div class="mini-fill" [style.width.%]="report.completionRate"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-success font-semibold">+{{ report.scoreImprovement }}% points</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI INTELLIGENCE & SKILL-GAP MATRIX TAB -->
+  <div *ngIf="activeTab() === 'ai-guidance'" class="tab-content">
+    <div *ngIf="loadingAi()" class="loading-state">
+      <div class="spinner"></div>
+      <p>Running Vector Space Cosine Similarity Engine &amp; Synthesizing Gemini Career Guidance...</p>
+    </div>
+
+    <div *ngIf="!loadingAi() && aiEvaluation()" class="ai-intelligence-grid">
+      <!-- TOP AI KPI CARDS -->
+      <div class="ai-metrics-row">
+        <!-- 1. VECTOR COSINE MATCH SCORE -->
+        <div class="ai-kpi-card glass-panel glow-hover">
+          <div class="ai-kpi-header">
+            <span class="ai-badge-pill">ML Vector Model</span>
+            <span class="ai-kpi-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path></svg>
+            </span>
+          </div>
+          <div class="ai-kpi-body">
+            <div class="ai-kpi-val">{{ aiEvaluation()?.matchScore }}%</div>
+            <div class="ai-kpi-title">Cosine Similarity Match</div>
+            <div class="ai-kpi-desc">Raw Cosine: {{ aiEvaluation()?.cosineSimilarity }} (Vector Space &bull; Target: {{ aiEvaluation()?.targetRole }})</div>
+          </div>
+          <div class="ai-kpi-bar-wrapper">
+            <div class="ai-kpi-bar-fill" [style.width.%]="aiEvaluation()?.matchScore"></div>
+          </div>
+        </div>
+
+        <!-- 2. PROMOTION READINESS PROBABILITY -->
+        <div class="ai-kpi-card glass-panel glow-hover">
+          <div class="ai-kpi-header">
+            <span class="ai-badge-pill" [class.high]="aiEvaluation()?.readinessTier === 'HIGH_ADVANCEMENT'" [class.mod]="aiEvaluation()?.readinessTier === 'MODERATE_PROGRESSION'">
+              {{ aiEvaluation()?.readinessTier === 'HIGH_ADVANCEMENT' ? 'High Velocity' : 'Advancement Trajectory' }}
+            </span>
+            <span class="ai-kpi-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+            </span>
+          </div>
+          <div class="ai-kpi-body">
+            <div class="ai-kpi-val text-success">{{ aiEvaluation()?.readinessProbability }}%</div>
+            <div class="ai-kpi-title">Promotion Readiness Probability</div>
+            <div class="ai-kpi-desc">Calibrated across assessments, skills L1-L5, certs, and role tenure</div>
+          </div>
+          <div class="ai-kpi-bar-wrapper">
+            <div class="ai-kpi-bar-fill success-fill" [style.width.%]="aiEvaluation()?.readinessProbability"></div>
+          </div>
+        </div>
+
+        <!-- 3. IDENTIFIED SKILL GAPS -->
+        <div class="ai-kpi-card glass-panel glow-hover">
+          <div class="ai-kpi-header">
+            <span class="ai-badge-pill warn">Skill Deficit</span>
+            <span class="ai-kpi-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+            </span>
+          </div>
+          <div class="ai-kpi-body">
+            <div class="ai-kpi-val text-warning">{{ aiEvaluation()?.skillGaps?.length || 0 }}</div>
+            <div class="ai-kpi-title">Identified Competency Gaps</div>
+            <div class="ai-kpi-desc">Target courses available in enterprise learning catalog to bridge shortfall</div>
+          </div>
+          <div class="ai-kpi-bar-wrapper">
+            <div class="ai-kpi-bar-fill warn-fill" [style.width.%]="(aiEvaluation()?.skillGaps?.length || 0) * 25"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN AI GUIDANCE & GEMINI EXECUTIVE SUMMARY -->
+      <div class="ai-guidance-dual-grid">
+        <!-- LEFT: GEMINI GENAI EXECUTIVE SUMMARY -->
+        <div class="ai-card glass-panel gemini-panel">
+          <div class="gemini-card-header">
+            <div class="gemini-title-group">
+              <span class="gemini-sparkle-dot"></span>
+              <div>
+                <h3 class="gemini-title">Gemini AI Executive Talent Summary</h3>
+                <span class="gemini-engine-badge">{{ aiEvaluation()?.aiModelEngine }}</span>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              class="btn-refresh-ai" 
+              (click)="fetchAiEvaluation(selectedEmployeeId())"
+              title="Re-compute AI Evaluation"
+            >
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+              Refresh AI Analysis
+            </button>
+          </div>
+
+          <div class="gemini-summary-content">
+            <p class="gemini-narrative" [innerHTML]="formatAiText(aiEvaluation()?.aiExecutiveSummary)"></p>
+          </div>
+
+          <div class="gemini-strengths-box">
+            <div class="strengths-label">VERIFIED CORE STRENGTHS</div>
+            <div class="strengths-tags">
+              <span class="strength-chip" *ngFor="let s of aiEvaluation()?.topStrengths">
+                {{ s }}
+              </span>
+            </div>
+          </div>
+
+          <!-- STRATEGIC MILESTONE STEPS -->
+          <div class="gemini-steps-section">
+            <h4 class="steps-title">Strategic Promotion Milestones</h4>
+            <div class="milestone-step-item" *ngFor="let step of aiEvaluation()?.strategicNextSteps; let i = index">
+              <div class="step-num">{{ i + 1 }}</div>
+              <div class="step-desc">{{ step }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: MULTI-DIMENSIONAL SKILL GAP VECTOR MATRIX -->
+        <div class="ai-card glass-panel gaps-panel">
+          <div class="gaps-card-header">
+            <h3 class="panel-title">Vector Gap Matrix &amp; Recommended Courses</h3>
+            <p class="panel-desc">Mathematically identified shortfall delta against {{ aiEvaluation()?.targetRole }} benchmark.</p>
+          </div>
+
+          <div class="gaps-list" *ngIf="aiEvaluation()?.skillGaps?.length; else noGapsTpl">
+            <div class="gap-item-card" *ngFor="let gap of aiEvaluation()?.skillGaps">
+              <div class="gap-item-top">
+                <div>
+                  <span class="gap-skill-name">{{ gap.skillName }}</span>
+                  <span class="gap-priority-badge" [class.high]="gap.priority === 'HIGH'">{{ gap.priority }} PRIORITY</span>
+                </div>
+                <div class="gap-levels-tag">
+                  Level {{ gap.currentLevel }} &rarr; <strong>Level {{ gap.requiredLevel }}</strong>
+                  <span class="gap-delta">(+{{ gap.gapLevel }})</span>
+                </div>
+              </div>
+              <p class="gap-rec-action">{{ gap.recommendedAction }}</p>
+              <div class="gap-course-bridge">
+                <span class="bridge-label">Recommended Learning Bridge:</span>
+                <a [routerLink]="getRecommendedCourseLink(gap.targetCourse || gap.skillName)" class="bridge-course" style="text-decoration: underline; cursor: pointer;">{{ gap.targetCourse }}</a>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noGapsTpl>
+            <div class="no-gaps-state">
+              <span class="check-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </span>
+              <h4>Zero Competency Deficits</h4>
+              <p>All required technical competencies meet or exceed the target role benchmark.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

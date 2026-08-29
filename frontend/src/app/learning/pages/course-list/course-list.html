@@ -1,0 +1,183 @@
+<section class="course-page">
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">
+        Enterprise Learning Platform
+      </p>
+
+      <h1>Explore Courses</h1>
+
+      <p class="page-description">
+        Discover structured courses, build new skills and
+        continue your professional learning journey.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="loadCourses()"
+      [disabled]="isLoading"
+    >
+      {{
+        isLoading
+          ? 'Loading...'
+          : 'Refresh Courses'
+      }}
+    </button>
+  </header>
+
+  <div
+    *ngIf="isLoading"
+    class="state-panel"
+  >
+    <div class="loader"></div>
+
+    <p>Loading available courses...</p>
+  </div>
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="state-panel error-panel"
+  >
+    <h2>Unable to load courses</h2>
+
+    <p>{{ errorMessage }}</p>
+
+    <button
+      type="button"
+      class="retry-button"
+      (click)="loadCourses()"
+    >
+      Try Again
+    </button>
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading &&
+      !errorMessage &&
+      courses.length === 0
+    "
+    class="state-panel"
+  >
+    <h2>No courses available</h2>
+
+    <p>Published courses will appear here.</p>
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading &&
+      !errorMessage &&
+      courses.length > 0
+    "
+    class="course-grid"
+  >
+    <article
+      *ngFor="
+        let course of courses;
+        trackBy: trackCourseById
+      "
+      class="course-card"
+      [routerLink]="[
+        '/courses',
+        course.courseId
+      ]"
+      tabindex="0"
+    >
+      <div class="card-top-row">
+        <span class="course-code">
+          {{ course.courseCode }}
+        </span>
+
+        <span
+          class="status-badge"
+          [class.published]="
+            course.status === 'PUBLISHED'
+          "
+          [class.draft]="
+            course.status === 'DRAFT'
+          "
+        >
+          {{ course.status }}
+        </span>
+      </div>
+
+      <div class="course-icon">
+        {{
+          course.title
+            .charAt(0)
+            .toUpperCase()
+        }}
+      </div>
+
+      <div class="course-content">
+        <p class="course-category">
+          {{
+            course.category ||
+            'Professional Learning'
+          }}
+        </p>
+
+        <h2>{{ course.title }}</h2>
+
+        <p class="course-description">
+          {{
+            course.description ||
+            'A structured learning experience designed to help you develop practical skills.'
+          }}
+        </p>
+      </div>
+
+      <div class="course-details">
+        <div class="detail-item">
+          <span class="detail-label">
+            Level
+          </span>
+
+          <strong>
+            {{
+              course.courseLevel ||
+              'All Levels'
+            }}
+          </strong>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">
+            Duration
+          </span>
+
+          <strong>
+            {{
+              course.durationHours || 0
+            }}
+            Hours
+          </strong>
+        </div>
+      </div>
+
+      <footer class="course-footer">
+        <div>
+          <span class="price-label">
+            Course Price
+          </span>
+
+          <strong class="course-price">
+            {{ getCoursePrice(course) }}
+          </strong>
+        </div>
+
+        <span
+          *ngIf="course.certificateEnabled"
+          class="certificate-label"
+        >
+          Certificate Available
+        </span>
+      </footer>
+    </article>
+  </div>
+
+</section>

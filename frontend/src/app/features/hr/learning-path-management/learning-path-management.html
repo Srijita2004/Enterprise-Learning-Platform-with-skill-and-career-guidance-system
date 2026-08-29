@@ -1,0 +1,121 @@
+<section class="management-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Learning Administration</p>
+      <h1>Learning Path Management</h1>
+      <p>Create structured paths, add courses and assign published paths to learners.</p>
+    </div>
+    <button type="button" class="primary-button" (click)="openCreateForm()">Create Learning Path</button>
+  </header>
+
+  <div *ngIf="errorMessage" class="state-panel error-panel">{{ errorMessage }}</div>
+  <div *ngIf="isLoading" class="state-panel">Loading learning path management...</div>
+
+  <section *ngIf="isFormOpen" class="form-panel">
+    <h2>{{ editingPathId ? 'Edit Learning Path' : 'Create Learning Path' }}</h2>
+    <div class="form-grid">
+      <label>
+        Path Code
+        <input [(ngModel)]="form.pathCode" [disabled]="!!editingPathId" placeholder="JAVA-FULL-STACK" />
+      </label>
+      <label>
+        Title
+        <input [(ngModel)]="form.title" placeholder="Java Full Stack Developer" />
+      </label>
+      <label>
+        Category
+        <input [(ngModel)]="form.category" placeholder="Software Development" />
+      </label>
+      <label>
+        Target Role
+        <input [(ngModel)]="form.targetRole" placeholder="Full Stack Developer" />
+      </label>
+      <label>
+        Level
+        <select [(ngModel)]="form.level">
+          <option value="BEGINNER">Beginner</option>
+          <option value="INTERMEDIATE">Intermediate</option>
+          <option value="ADVANCED">Advanced</option>
+        </select>
+      </label>
+      <label>
+        Estimated Hours
+        <input type="number" min="0" [(ngModel)]="form.estimatedDurationHours" />
+      </label>
+      <label class="full-width">
+        Description
+        <textarea rows="3" [(ngModel)]="form.description"></textarea>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="secondary-button" (click)="closeForm()">Cancel</button>
+      <button type="button" class="primary-button" (click)="savePath()" [disabled]="isSaving">
+        {{ isSaving ? 'Saving...' : 'Save Learning Path' }}
+      </button>
+    </div>
+  </section>
+
+  <div *ngIf="!isLoading && paths.length === 0" class="state-panel">No learning paths have been created.</div>
+
+  <div class="path-list" *ngIf="!isLoading && paths.length > 0">
+    <article *ngFor="let path of paths; trackBy: trackPath" class="path-card">
+      <div class="path-heading">
+        <div>
+          <span class="path-code">{{ path.pathCode }}</span>
+          <h2>{{ path.title }}</h2>
+          <p>{{ path.description || 'No description provided.' }}</p>
+        </div>
+        <span class="status-badge" [attr.data-status]="path.status">{{ path.status }}</span>
+      </div>
+
+      <div class="path-stats">
+        <div><span>Category</span><strong>{{ path.category }}</strong></div>
+        <div><span>Target Role</span><strong>{{ path.targetRole || 'Not specified' }}</strong></div>
+        <div><span>Courses</span><strong>{{ path.totalCourses }}</strong></div>
+        <div><span>Assignments</span><strong>{{ path.totalAssignments }}</strong></div>
+      </div>
+
+      <div class="management-actions">
+        <button type="button" class="secondary-button" (click)="openEditForm(path)">Edit</button>
+        <button *ngIf="path.status !== 'PUBLISHED'" type="button" class="primary-button" (click)="publish(path)" [disabled]="processingPathId !== null">Publish</button>
+        <button *ngIf="path.status === 'PUBLISHED'" type="button" class="warning-button" (click)="archive(path)" [disabled]="processingPathId !== null">Archive</button>
+        <button type="button" class="danger-button" (click)="deletePath(path)" [disabled]="processingPathId !== null">Delete</button>
+      </div>
+
+      <div class="operations-grid">
+        <section>
+          <h3>Assign to Learner</h3>
+          <div class="inline-form">
+            <select [(ngModel)]="selectedLearnerByPath[path.pathId]">
+              <option value="">Select learner</option>
+              <option *ngFor="let learner of learners" [value]="learner.userId">{{ learner.fullName }}</option>
+            </select>
+            <button type="button" class="primary-button" (click)="assign(path)" [disabled]="path.status !== 'PUBLISHED' || processingPathId !== null">Assign</button>
+          </div>
+          <p *ngIf="path.status !== 'PUBLISHED'" class="hint">Publish the path before assigning it.</p>
+        </section>
+
+        <section>
+          <h3>Add Course</h3>
+          <div class="course-form">
+            <select [(ngModel)]="selectedCourseByPath[path.pathId]">
+              <option value="">Select published course</option>
+              <option *ngFor="let course of courses" [value]="course.courseId">{{ course.courseCode }} - {{ course.title }}</option>
+            </select>
+            <input type="number" min="1" [(ngModel)]="courseOrderByPath[path.pathId]" placeholder="Order" />
+            <button type="button" class="primary-button" (click)="addCourse(path)" [disabled]="processingPathId !== null">Add</button>
+          </div>
+          <button type="button" class="link-button" (click)="loadPathCourses(path)">Load Path Courses</button>
+        </section>
+      </div>
+
+      <div *ngIf="pathCourses[path.pathId]" class="course-list">
+        <div *ngIf="pathCourses[path.pathId].length === 0" class="hint">No courses added to this path.</div>
+        <div *ngFor="let pathCourse of pathCourses[path.pathId]; trackBy: trackPathCourse" class="course-row">
+          <span>{{ pathCourse.courseOrder }}. {{ pathCourse.courseCode }} - {{ pathCourse.courseTitle }}</span>
+          <button type="button" class="danger-link" (click)="removeCourse(path, pathCourse)">Remove</button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,246 @@
+version: '3.8'
+
+networks:
+  skillsphere-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  kafka_data:
+  zookeeper_data:
+  zookeeper_log:
+
+services:
+
+  # 1. Eureka Discovery Server
+  eureka-server:
+    build: ./infrastructure/eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - skillsphere-net
+
+  # 2. PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-db
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: skillsphere
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres-init:/docker-entrypoint-initdb.d
+
+    networks:
+      - skillsphere-net
+
+  # 3. Zookeeper
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+
+    networks:
+      - skillsphere-net
+
+  # 4. Kafka Broker
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+
+    depends_on:
+      - zookeeper
+
+    ports:
+      - "9092:9092"
+
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+    networks:
+      - skillsphere-net
+
+  # 5. Notification Service
+  notification-service:
+    build: ./backend/notification-service
+    container_name: notification-service
+
+    ports:
+      - "8086:8084"
+
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere_notification
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+    depends_on:
+      - postgres
+      - kafka
+      - eureka-server
+
+    networks:
+      - skillsphere-net
+
+  # 6. Milestone 1 Service - Skill Management
+  milestone1-service:
+    build: ./backend/skill-management-service
+    container_name: m1-service
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+    depends_on:
+      - postgres
+      - kafka
+      - eureka-server
+
+    networks:
+      - skillsphere-net
+
+  # 7. Milestone 2 Service - Learning Service
+  milestone2-service:
+    build: ./backend/learning-service
+    container_name: m2-service
+
+    ports:
+      - "8082:8082"
+
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere_learning
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+    depends_on:
+      - postgres
+      - kafka
+      - eureka-server
+
+    networks:
+      - skillsphere-net
+
+  # 8. Milestone 3 Service - Certification Management
+  milestone3-service:
+    build: ./backend/certification-management-service
+    container_name: m3-service
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere_certification
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - M1_BASE_URL=http://m1-service:8081/api
+
+    depends_on:
+      - postgres
+      - kafka
+      - eureka-server
+
+    networks:
+      - skillsphere-net
+
+  # 9. Milestone 4 Service - Career Development
+  milestone4-service:
+    build: ./backend/career-service
+    container_name: m4-service
+
+    ports:
+      - "8087:8087"
+
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere_career
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+    depends_on:
+      - postgres
+      - eureka-server
+
+    networks:
+      - skillsphere-net
+
+  # 10. API Gateway
+  api-gateway:
+    build: ./infrastructure/api-gateway
+    container_name: api-gateway
+
+    ports:
+      - "8085:8085"
+
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+    depends_on:
+      - eureka-server
+      - milestone1-service
+      - milestone2-service
+      - milestone3-service
+      - milestone4-service
+      - notification-service
+
+    networks:
+      - skillsphere-net
+
+  # 11. Frontend - Angular served through Nginx
+  frontend:
+    build: ./frontend
+    container_name: frontend
+
+    ports:
+      - "4200:80"
+
+    depends_on:
+      - api-gateway
+
+    networks:
+      - skillsphere-net

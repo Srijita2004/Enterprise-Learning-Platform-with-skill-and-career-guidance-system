@@ -1,0 +1,316 @@
+<!-- Floating AI Launcher Trigger Button -->
+<div class="ai-launcher-wrapper">
+  <button 
+    class="ai-floating-btn" 
+    [class.active]="aiService.isOpen()"
+    (click)="toggleOpen()" 
+    aria-label="EIWI"
+    title="Open EIWI"
+  >
+    <div class="ai-btn-glow"></div>
+    <div class="ai-btn-icon">
+      @if (aiService.isOpen()) {
+        <!-- Close / Minimize Icon -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      } @else {
+        <!-- Robot Icon -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+          <rect x="4" y="8" width="16" height="12" rx="4"></rect>
+          <circle cx="9" cy="13" r="1.5" fill="currentColor"></circle>
+          <circle cx="15" cy="13" r="1.5" fill="currentColor"></circle>
+          <path d="M9 17c1 .6 2 .6 3 .6s2 0 3-.6"></path>
+        </svg>
+      }
+    </div>
+    <span class="ai-btn-pulse"></span>
+  </button>
+</div>
+
+<!-- Floating AI Chatbot Panel Drawer -->
+@if (aiService.isOpen()) {
+  <div class="ai-panel-overlay" (click)="close()"></div>
+  <aside class="ai-chat-panel animate-slide-up" (click)="$event.stopPropagation()">
+    
+    <!-- Top Header Bar -->
+    <header class="ai-panel-header">
+      <div class="ai-header-info">
+        <div class="ai-avatar-badge welcome-waving-avatar">
+          <svg class="robot-avatar-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+            <rect x="4" y="8" width="16" height="12" rx="4"></rect>
+            <circle cx="9" cy="13" r="1.5" fill="currentColor"></circle>
+            <circle cx="15" cy="13" r="1.5" fill="currentColor"></circle>
+            <path d="M9 17c1 .6 2 .6 3 .6s2 0 3-.6"></path>
+          </svg>
+          <span class="online-indicator"></span>
+        </div>
+        <div class="ai-title-lockup">
+          <span class="eiwi-brand-title">EIWI</span>
+        </div>
+      </div>
+
+      <!-- Header Action Controls -->
+      <div class="ai-header-controls">
+        <button 
+          class="ai-icon-btn" 
+          [class.active]="showHistoryView()" 
+          (click)="toggleHistoryView()" 
+          title="Conversation History"
+          aria-label="Conversation History"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </button>
+
+        <button 
+          class="ai-icon-btn" 
+          (click)="startNewChat()" 
+          title="Start New Chat"
+          aria-label="Start New Chat"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+
+        <button 
+          class="ai-icon-btn close-btn" 
+          (click)="close()" 
+          title="Minimize EIWI"
+          aria-label="Minimize EIWI"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Context Banner: Active Course / Lesson (Supporting context) -->
+    @if (aiService.activeContext(); as ctx) {
+      <div class="ai-context-banner">
+        <div class="context-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+        <div class="context-text">
+          <span class="context-label">Active Context:</span>
+          <strong>{{ ctx.contentTitle || ctx.courseTitle }}</strong>
+        </div>
+      </div>
+    }
+
+    <!-- Panel Body: History List View OR Chat Stream -->
+    @if (showHistoryView()) {
+      <!-- HISTORY VIEW -->
+      <div class="ai-history-container">
+        <div class="history-header">
+          <span>Your Private Conversations</span>
+          <button class="text-btn" (click)="startNewChat()">+ New Chat</button>
+        </div>
+
+        @if (aiService.conversations().length === 0) {
+          <div class="ai-empty-history">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+              <line x1="9" y1="9" x2="15" y2="9"></line>
+              <line x1="9" y1="13" x2="15" y2="13"></line>
+            </svg>
+            <p>No previous conversations found.</p>
+            <button class="btn-sm-primary" (click)="startNewChat()">Start a conversation</button>
+          </div>
+        } @else {
+          <div class="history-list">
+            @for (conv of aiService.conversations(); track conv.conversationId) {
+              <div 
+                class="history-item" 
+                [class.active]="aiService.activeConversationId() === conv.conversationId"
+                (click)="selectConversation(conv)"
+              >
+                <div class="history-item-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </div>
+                <div class="history-item-body">
+                  <span class="history-item-title">{{ conv.title }}</span>
+                  <span class="history-item-preview">{{ conv.lastMessagePreview || 'Conversation with EIWI' }}</span>
+                </div>
+                <button 
+                  class="history-delete-btn" 
+                  (click)="deleteConversation($event, conv.conversationId)"
+                  title="Delete conversation"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- ACTIVE CHAT STREAM VIEW -->
+      <div class="ai-messages-scroll" #chatScrollContainer>
+        
+        <!-- Empty State / Welcome Greeting -->
+        @if (aiService.messages().length === 0) {
+          <div class="ai-welcome-box">
+            <div class="welcome-avatar-container">
+              <div class="welcome-robot-badge">
+                <svg class="welcome-robot-svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+                  <rect x="4" y="8" width="16" height="12" rx="4"></rect>
+                  <circle cx="9" cy="13" r="1.5" fill="currentColor"></circle>
+                  <circle cx="15" cy="13" r="1.5" fill="currentColor"></circle>
+                  <path d="M9 17c1 .6 2 .6 3 .6s2 0 3-.6"></path>
+                </svg>
+                <span class="welcome-wave-hand">👋</span>
+              </div>
+            </div>
+            <div class="welcome-greeting-text">
+              <h3 class="welcome-heading">{{ welcomeGreeting.title }}</h3>
+              <p class="welcome-subtext">{{ welcomeGreeting.subtitle }}</p>
+            </div>
+            
+            <!-- Suggested Quick Starters -->
+            <div class="quick-actions-grid">
+              <button class="quick-chip" (click)="triggerQuickAction('What is C++?')">
+                <span class="chip-icon">⚡</span> What is C++?
+              </button>
+              <button class="quick-chip" (click)="triggerQuickAction('What is Java?')">
+                <span class="chip-icon">☕</span> What is Java?
+              </button>
+              <button class="quick-chip" (click)="triggerQuickAction('What is Artificial Intelligence?')">
+                <span class="chip-icon">🤖</span> What is AI?
+              </button>
+              <button class="quick-chip" (click)="triggerQuickAction('What is gravity?')">
+                <span class="chip-icon">🌌</span> What is gravity?
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Message Stream -->
+        @for (msg of aiService.messages(); track msg.messageId || $index) {
+          <div class="message-row" [ngClass]="msg.senderType === 'USER' ? 'user-row' : 'assistant-row'">
+            
+            @if (msg.senderType !== 'USER') {
+              <div class="msg-avatar assistant-avatar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="8" width="16" height="12" rx="4"></rect>
+                  <circle cx="9" cy="13" r="1.5" fill="currentColor"></circle>
+                  <circle cx="15" cy="13" r="1.5" fill="currentColor"></circle>
+                </svg>
+              </div>
+            }
+
+            <div class="message-bubble" [ngClass]="msg.senderType === 'USER' ? 'user-bubble' : 'assistant-bubble'">
+              @if (msg.contextSummary) {
+                <div class="msg-context-badge">
+                  <span>{{ msg.contextSummary }}</span>
+                </div>
+              }
+
+              @if (msg.senderType === 'USER') {
+                <div class="user-text">{{ msg.content }}</div>
+              } @else {
+                <div class="assistant-text" [innerHTML]="renderMarkdown(msg.content)"></div>
+              }
+            </div>
+
+            @if (msg.senderType === 'USER') {
+              <div class="msg-avatar user-avatar">
+                {{ (authService.currentUser()?.name || 'U').charAt(0).toUpperCase() }}
+              </div>
+            }
+
+          </div>
+        }
+
+        <!-- Loading Typing State -->
+        @if (aiService.isLoading()) {
+          <div class="message-row assistant-row">
+            <div class="msg-avatar assistant-avatar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="8" width="16" height="12" rx="4"></rect>
+                <circle cx="9" cy="13" r="1.5" fill="currentColor"></circle>
+                <circle cx="15" cy="13" r="1.5" fill="currentColor"></circle>
+              </svg>
+            </div>
+            <div class="message-bubble assistant-bubble typing-bubble">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+        }
+
+        <!-- Error State -->
+        @if (aiService.error(); as err) {
+          <div class="ai-error-banner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>{{ err }}</span>
+          </div>
+        }
+
+      </div>
+
+      <!-- Quick Follow-Up Suggestion Pills -->
+      @if (aiService.messages().length > 0 && aiService.suggestedFollowUps().length > 0 && !aiService.isLoading()) {
+        <div class="follow-up-bar">
+          @for (pill of aiService.suggestedFollowUps(); track pill) {
+            <button class="follow-up-pill" (click)="triggerQuickAction(pill)">
+              {{ pill }}
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Bottom Chat Input Bar -->
+      <footer class="ai-input-area">
+        <div class="input-container">
+          <textarea 
+            rows="1" 
+            [(ngModel)]="userInput" 
+            (keydown)="onKeyDown($event)"
+            placeholder="Ask EIWI anything..."
+            aria-label="Ask a question"
+          ></textarea>
+
+          <button 
+            class="send-btn" 
+            [disabled]="!userInput().trim() || aiService.isLoading()"
+            (click)="sendMessage()" 
+            aria-label="Send message"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+        <div class="input-footer-note">
+          <span>?? Private &amp; encrypted session</span>
+        </div>
+      </footer>
+    }
+
+  </aside>
+}

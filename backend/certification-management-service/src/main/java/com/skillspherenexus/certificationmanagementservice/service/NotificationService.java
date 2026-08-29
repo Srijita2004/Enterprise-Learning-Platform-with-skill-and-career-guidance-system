@@ -1,0 +1,13 @@
+package com.skillspherenexus.certificationmanagementservice.service;
+
+import com.skillspherenexus.certificationmanagementservice.dto.*;
+import com.skillspherenexus.certificationmanagementservice.entity.CertificationRecord;
+import com.skillspherenexus.certificationmanagementservice.enums.*;
+import com.skillspherenexus.certificationmanagementservice.security.RequestActor;
+import java.util.*;
+
+public interface NotificationService {
+    int generateDueNotifications(RequestActor actor);
+    List<NotificationResponse> list(NotificationStatus status);
+    NotificationResponse acknowledge(UUID notificationId, RequestActor actor);
+}

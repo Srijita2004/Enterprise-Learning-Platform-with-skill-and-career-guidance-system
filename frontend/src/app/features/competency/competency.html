@@ -1,0 +1,363 @@
+<div class="module-wrapper">
+  <!-- Module Header -->
+  <div class="module-header">
+    <div>
+      <h1 class="module-title">Competency & Gap Analysis</h1>
+      <p class="module-subtitle">Define organizational frameworks, track professional credentials, and analyze talent gaps.</p>
+    </div>
+    <div class="header-action-buttons">
+      @if (activeView() === 'CATALOG') {
+        <button class="btn btn-primary" (click)='openAddCompModal()'>Add Competency</button>
+      } @else if (activeView() === 'FRAMEWORKS') {
+        <button class="btn btn-primary" (click)='openAddFrameworkModal()'>Define Target</button>
+      } @else {
+        <button class="btn btn-primary" (click)='openRecordModal()'>Record Level</button>
+      }
+    </div>
+  </div>
+
+  <!-- View Sub-tabs -->
+  <div class="filter-tabs glass-panel" style="margin-bottom: 0.5rem;">
+    <button class="tab-btn" [ngClass]="{ 'active': activeView() === 'CATALOG' }" (click)="setView('CATALOG')">Competency Library</button>
+    <button class="tab-btn" [ngClass]="{ 'active': activeView() === 'FRAMEWORKS' }" (click)="setView('FRAMEWORKS')">Role Frameworks</button>
+    <button class="tab-btn" [ngClass]="{ 'active': activeView() === 'GAP_ANALYSIS' }" (click)="setView('GAP_ANALYSIS')">Gap Analysis Engine</button>
+  </div>
+
+  <!-- VIEW 1: CATALOG -->
+  @if (activeView() === 'CATALOG') {
+    @if (loading()) {
+      <div class="loading-overlay">
+        <div class="spinner"></div>
+        <h3 class="state-title">Retrieving Competency Schemes</h3>
+      </div>
+    } @else if (competencies().length === 0) {
+      <div class="empty-state">
+        <h3 class="state-title">Competency Catalog Empty</h3>
+        <p class="state-desc">Establish standard soft skills, domain specialties, or technical benchmarks first.</p>
+        <button class="btn btn-primary" (click)="openAddCompModal()">Add Competency</button>
+      </div>
+    } @else {
+      <div class="table-card glass-panel animate-fade-in">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Competency Name</th>
+                <th>Category</th>
+                <th>Max Level Set</th>
+                <th>Description</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of competencies(); track c.competencyId) {
+                <tr>
+                  <td><strong>{{ c.name }}</strong></td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'badge-success': c.category === 'TECHNICAL',
+                      'badge-warning': c.category === 'DOMAIN',
+                      'badge-danger': c.category === 'SOFT'
+                    }">{{ c.category }}</span>
+                  </td>
+                  <td>L{{ c.maxLevel }}</td>
+                  <td>{{ c.description }}</td>
+                  <td style="text-align: right;">
+                    <div class="action-buttons-group">
+                      <button class="btn btn-secondary btn-sm" (click)="openEditCompModal(c)">Edit</button>
+                      <button class="btn btn-danger btn-sm" (click)="onDeleteComp(c.competencyId)">&times;</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- VIEW 2: ROLE FRAMEWORKS -->
+  @if (activeView() === 'FRAMEWORKS') {
+    @if (frameworks().length === 0) {
+      <div class="empty-state">
+        <h3 class="state-title">No Role Frameworks Configured</h3>
+        <p class="state-desc">Define standard role thresholds mapping to global competencies.</p>
+        <button class="btn btn-primary" (click)="openAddFrameworkModal()">Define Target Level</button>
+      </div>
+    } @else {
+      <div class="table-card glass-panel animate-fade-in">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Corporate Role</th>
+                <th>Target Competency Requirement</th>
+                <th>Required Proficiency Target</th>
+                <th>Category Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (f of frameworks(); track f.frameworkId) {
+                <tr>
+                  <td><strong>{{ f.role }}</strong></td>
+                  <td>{{ f.competency.name }}</td>
+                  <td>
+                    <span class="badge badge-success" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.2)">
+                      Level {{ f.requiredLevel }} / {{ f.competency.maxLevel }}
+                    </span>
+                  </td>
+                  <td>{{ f.competency.category }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- VIEW 3: GAP ANALYSIS ENGINE -->
+  @if (activeView() === 'GAP_ANALYSIS') {
+    <div class="gap-analysis-dashboard animate-fade-in">
+      <div class="selector-card glass-panel">
+        <h3 class="section-title">Configure Query parameters</h3>
+        <p class="card-subtitle">Select an employee and a target role benchmark framework to calculate alignment gaps.</p>
+        
+        <div class="selector-form">
+          <div class="form-group">
+            <label class="form-label" for="targetEmployee">Target Employee</label>
+            <select id="targetEmployee" class="form-select" [value]="selectedEmployeeId()" (change)="selectedEmployeeId.set($any($event.target).value)">
+              <option value="" disabled selected>Select an employee profile...</option>
+              @for (e of employees(); track e.employeeId) {
+                <option [value]="e.employeeId">{{ e.employeeName }} ({{ e.designation }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="targetRole">Target Role Benchmark</label>
+            <select id="targetRole" class="form-select" [value]="selectedRole()" (change)="selectedRole.set($any($event.target).value)">
+              <option value="" disabled selected>Select a target corporate role...</option>
+              @for (role of availableRoles; track role) {
+                <option [value]="role">{{ role }}</option>
+              }
+            </select>
+          </div>
+
+          <button class="btn btn-primary" (click)="runGapAnalysis()" [disabled]="!selectedEmployeeId() || !selectedRole()">
+            Execute Gap Analysis
+          </button>
+        </div>
+      </div>
+
+      <!-- Analysis Results View -->
+      <div class="results-card glass-panel">
+        <h3 class="section-title">Calculated Gaps Matrix</h3>
+        @if (!gapSearched()) {
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 4rem 2rem; color: var(--text-muted);">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p style="margin-top: 1rem; text-align: center;">Set parameters on the left and run analysis to render gap graphs.</p>
+          </div>
+        } @else if (gapResults().length === 0) {
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 4rem 2rem; color: var(--warning);">
+            <p>No framework guidelines have been established for the role "{{ selectedRole() }}" yet.</p>
+            <button class="btn btn-secondary btn-sm" (click)="setView('FRAMEWORKS')" style="margin-top: 1rem;">Go to Role Frameworks</button>
+          </div>
+        } @else {
+          <div class="gap-bars-list">
+            @for (g of gapResults(); track g.competencyName) {
+              <div class="gap-bar-item">
+                <div class="gap-bar-header">
+                  <span class="gap-comp-name">{{ g.competencyName }}</span>
+                  <div class="gap-metrics-badges">
+                    <span class="badge" style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary)">Req: L{{ g.requiredLevel }}</span>
+                    <span class="badge" style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary)">Got: L{{ g.currentLevel }}</span>
+                    <span class="badge" [ngClass]="g.gap > 0 ? 'badge-danger' : 'badge-success'">
+                      @if (g.gap > 0) {
+                        Gap: {{ g.gap }}
+                      } @else {
+                        Qualified
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div class="gap-double-bar-track">
+                  <!-- Required Level Indicator (Dotted vertical line or sub-bar) -->
+                  <div class="gap-level-bar required-bar" [style.width.%]="(g.requiredLevel / 5) * 100"></div>
+                  <!-- Current Employee Level Indicator (Solid colored bar overlay) -->
+                  <div class="gap-level-bar current-bar"
+                    [style.width.%]="g.currentLevel === 0 ? 2 : (g.currentLevel / 5) * 100"
+                    [ngClass]="{
+                        'gap-green': g.gap === 0,
+                        'gap-yellow': g.gap === 1,
+                        'gap-orange': g.gap === 2,
+                        'gap-red': g.gap >= 3
+                    }">
+                </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Add/Edit Competency -->
+  @if (showCompModal()) {
+    <div class="modal-overlay open">
+      <div class="modal-box glass-panel animate-slide-in">
+        <div class="modal-header">
+          <h3 class="modal-box-title">{{ isEditingComp() ? 'Modify Competency Scheme' : 'Add Competency Schema' }}</h3>
+          <button class="close-btn" (click)="closeCompModal()">&times;</button>
+        </div>
+
+        <form [formGroup]="competencyForm" (ngSubmit)="submitCompForm()" class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="name">Competency Name</label>
+            <input type="text" id="name" class="form-input" formControlName="name" placeholder="e.g. System Design Patterns" />
+            @if (competencyForm.get('name')?.touched && competencyForm.get('name')?.invalid) {
+              <span class="form-error">Name is required (min 2 characters).</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="compCategory">Category</label>
+            <select id="compCategory" class="form-select" formControlName="category">
+              <option value="TECHNICAL">Technical Capability</option>
+              <option value="DOMAIN">Industry Domain Specialty</option>
+              <option value="SOFT">Soft Skill/Leadership Behavior</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="maxLevel">Maximum Scale Level</label>
+            <input type="number" id="maxLevel" class="form-input" formControlName="maxLevel" min="1" max="10" />
+            @if (competencyForm.get('maxLevel')?.touched && competencyForm.get('maxLevel')?.invalid) {
+              <span class="form-error">Scale must be between 1 and 10.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="compDescription">Detailed Description</label>
+            <textarea id="compDescription" class="form-textarea" formControlName="description" rows="4" placeholder="Detail the behaviors corresponding to proficiency scales..."></textarea>
+            @if (competencyForm.get('description')?.touched && competencyForm.get('description')?.invalid) {
+              <span class="form-error">Description is required.</span>
+            }
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeCompModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="competencyForm.invalid">
+              Save Competency
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Add Framework Requirement -->
+  @if (showFrameworkModal()) {
+    <div class="modal-overlay open">
+      <div class="modal-box glass-panel animate-slide-in">
+        <div class="modal-header">
+          <h3 class="modal-box-title">Define Target Requirement</h3>
+          <button class="close-btn" (click)="closeFrameworkModal()">&times;</button>
+        </div>
+
+        <form [formGroup]="frameworkForm" (ngSubmit)="submitFrameworkForm()" class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="fwRole">Corporate Role</label>
+            <select id="fwRole" class="form-select" formControlName="role">
+              @for (role of availableRoles; track role) {
+                <option [value]="role">{{ role }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="fwCompetencyId">Target Competency</label>
+            <select id="fwCompetencyId" class="form-select" formControlName="competencyId">
+              <option [value]="null" disabled selected>Choose competency...</option>
+              @for (c of competencies(); track c.competencyId) {
+                <option [value]="c.competencyId">{{ c.name }} (Scale: 1-{{ c.maxLevel }})</option>
+              }
+            </select>
+            @if (frameworkForm.get('competencyId')?.touched && frameworkForm.get('competencyId')?.invalid) {
+              <span class="form-error">A competency must be mapped.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="requiredLevel">Required Target Level</label>
+            <input type="number" id="requiredLevel" class="form-input" formControlName="requiredLevel" min="1" max="10" />
+            @if (frameworkForm.get('requiredLevel')?.touched && frameworkForm.get('requiredLevel')?.invalid) {
+              <span class="form-error">Invalid level target.</span>
+            }
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeFrameworkModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="frameworkForm.invalid">
+              Define Target
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Record Employee Competency level -->
+  @if (showRecordModal()) {
+    <div class="modal-overlay open">
+      <div class="modal-box glass-panel animate-slide-in">
+        <div class="modal-header">
+          <h3 class="modal-box-title">Record Employee Competency Level</h3>
+          <button class="close-btn" (click)="closeRecordModal()">&times;</button>
+        </div>
+
+        <form [formGroup]="recordForm" (ngSubmit)="submitRecordForm()" class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="recEmployeeId">Employee Profile</label>
+            <select id="recEmployeeId" class="form-select" formControlName="employeeId">
+              <option [value]="null" disabled selected>Choose an employee...</option>
+              @for (e of employees(); track e.employeeId) {
+                <option [value]="e.employeeId">{{ e.employeeName }} ({{ e.designation }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="recCompetencyId">Competency Area</label>
+            <select id="recCompetencyId" class="form-select" formControlName="competencyId">
+              <option [value]="null" disabled selected>Select area...</option>
+              @for (c of competencies(); track c.competencyId) {
+                <option [value]="c.competencyId">{{ c.name }} (Scale: 1-{{ c.maxLevel }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="currentLevel">Current Level Checked</label>
+            <input type="number" id="currentLevel" class="form-input" formControlName="currentLevel" min="1" max="10" />
+            @if (recordForm.get('currentLevel')?.touched && recordForm.get('currentLevel')?.invalid) {
+              <span class="form-error">Provide a valid scale evaluation.</span>
+            }
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeRecordModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="recordForm.invalid">
+              Record Level
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

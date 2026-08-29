@@ -1,0 +1,396 @@
+<section class="m3-zone page">
+
+  <header class="page-heading">
+    <div>
+      <h2>Credential Command Center</h2>
+      <p>
+        Live certification health, expiry exposure and renewal performance
+        calculated from the enterprise certification registry.
+      </p>
+    </div>
+
+    <div class="page-actions">
+      <button class="btn" (click)="load()">
+        Refresh data
+      </button>
+
+      <button
+        class="btn btn-primary"
+        (click)="evaluate()"
+        [disabled]="refreshing()"
+      >
+        @if (refreshing()) {
+          <span class="spinner"></span>
+        }
+
+        Run lifecycle check
+      </button>
+    </div>
+  </header>
+
+
+  @if (loading()) {
+
+    <div class="panel loading">
+      <span class="spinner"></span>
+      Loading certification intelligence...
+    </div>
+
+  }
+
+
+  @if (data(); as d) {
+
+    <!-- Summary Metrics -->
+    <div class="metric-grid">
+
+      <article class="metric-card">
+        <span class="metric-label">
+          Active Certifications
+        </span>
+
+        <strong class="metric-value">
+          {{ d.activeCertifications }}
+        </strong>
+
+        <span class="metric-foot">
+          {{ d.totalCertifications }} lifetime records
+        </span>
+      </article>
+
+
+      <article
+        class="metric-card"
+        style="--metric-glow: var(--warning-soft)"
+      >
+        <span class="metric-label">
+          Expiring ≤ 30 Days
+        </span>
+
+        <strong class="metric-value">
+          {{ d.expiringWithin30Days }}
+        </strong>
+
+        <span class="metric-foot">
+          Immediate attention window
+        </span>
+      </article>
+
+
+      <article
+        class="metric-card"
+        style="--metric-glow: var(--danger-soft)"
+      >
+        <span class="metric-label">
+          Expired
+        </span>
+
+        <strong class="metric-value">
+          {{ d.expiredCertifications }}
+        </strong>
+
+        <span class="metric-foot">
+          Renewal or closure required
+        </span>
+      </article>
+
+
+      <article
+        class="metric-card"
+        style="--metric-glow: var(--success-soft)"
+      >
+        <span class="metric-label">
+          Renewal Rate
+        </span>
+
+        <strong class="metric-value">
+          {{ d.renewalRate | number:'1.0-2' }}%
+        </strong>
+
+        <span class="metric-foot">
+          Completed vs finalized renewals
+        </span>
+      </article>
+
+    </div>
+
+
+    <!-- Existing Analytics -->
+    <div class="split-grid">
+
+      <article class="panel panel-pad">
+
+        <div class="panel-title">
+          <div>
+            <h3>Expiry Risk Distribution</h3>
+            <p>
+              Every segment is derived from current database expiry dates.
+            </p>
+          </div>
+        </div>
+
+        <app-donut-chart
+          title="Certification expiry distribution"
+          centerLabel="Active"
+          [segments]="donut(d)"
+        />
+
+      </article>
+
+
+      <article class="panel panel-pad signal-panel">
+
+        <div class="panel-title">
+          <div>
+            <h3>Operational Signals</h3>
+            <p>
+              Real-time lifecycle and governance indicators.
+            </p>
+          </div>
+        </div>
+
+
+        <div class="signal-row">
+          <span>Verified certifications</span>
+          <strong>{{ d.verifiedCertifications }}</strong>
+        </div>
+
+        <div class="signal-row">
+          <span>Compliance verified</span>
+          <strong>{{ d.compliantCertifications }}</strong>
+        </div>
+
+        <div class="signal-row">
+          <span>Renewal due / overdue</span>
+          <strong>{{ d.renewalDue }}</strong>
+        </div>
+
+        <div class="signal-row">
+          <span>Pending approval</span>
+          <strong>{{ d.pendingRenewals }}</strong>
+        </div>
+
+
+        <div class="progress-label">
+          <span>Renewal performance</span>
+
+          <strong>
+            {{ d.renewalRate | number:'1.0-1' }}%
+          </strong>
+        </div>
+
+        <div class="progress-track">
+          <div
+            class="progress-fill"
+            [style.width.%]="d.renewalRate"
+          ></div>
+        </div>
+
+      </article>
+
+    </div>
+
+
+    <!-- New Expiry Horizon Graphic -->
+    <article class="panel panel-pad expiry-horizon">
+
+      <div class="panel-title">
+
+        <div>
+          <h3>Certification Expiry Horizon</h3>
+          <p>
+            Visual exposure map across the certification lifecycle.
+          </p>
+        </div>
+
+        <span class="horizon-live">
+          <span class="live-dot"></span>
+          Live lifecycle data
+        </span>
+
+      </div>
+
+
+      <div class="risk-track">
+
+        @for (
+          bucket of d.expiryDistribution;
+          track bucket.key
+        ) {
+
+          <div
+            class="risk-segment"
+            [attr.data-bucket]="bucket.key"
+            [style.flex-grow]="bucket.count > 0 ? bucket.count : 0.15"
+            [title]="bucket.label + ': ' + bucket.count"
+          ></div>
+
+        }
+
+      </div>
+
+
+      <div class="risk-legend">
+
+        @for (
+          bucket of d.expiryDistribution;
+          track bucket.key
+        ) {
+
+          <article
+            class="risk-item"
+            [attr.data-bucket]="bucket.key"
+          >
+
+            <span class="risk-dot"></span>
+
+            <div>
+              <strong>{{ bucket.count }}</strong>
+              <span>{{ bucket.label }}</span>
+            </div>
+
+          </article>
+
+        }
+
+      </div>
+
+    </article>
+
+
+    <!-- Priority Queue -->
+    <article class="panel panel-pad">
+
+      <div class="panel-title">
+
+        <div>
+          <h3>Next 30 Days · Priority Queue</h3>
+          <p>
+            Nearest expiry dates ordered by urgency.
+          </p>
+        </div>
+
+        <span class="badge badge-expiring">
+          {{ d.upcomingExpirations.length }} shown
+        </span>
+
+      </div>
+
+
+      @if (d.upcomingExpirations.length) {
+
+        <div class="table-wrap">
+
+          <table class="data-table">
+
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Certification</th>
+                <th>Issuer</th>
+                <th>Expiry</th>
+                <th>Days</th>
+                <th>Status</th>
+                <th>Renewal</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (
+                c of d.upcomingExpirations;
+                track c.certificationId
+              ) {
+
+                <tr>
+
+                  <td>
+                    <span class="cell-main">
+                      {{ c.employeeName }}
+                    </span>
+
+                    <span class="cell-sub">
+                      Employee #{{ c.employeeId }}
+                    </span>
+                  </td>
+
+
+                  <td>
+                    <span class="cell-main">
+                      {{ c.certificationName }}
+                    </span>
+
+                    <span class="cell-sub">
+                      {{
+                        c.credentialNumber ||
+                        'No credential number'
+                      }}
+                    </span>
+                  </td>
+
+
+                  <td>
+                    {{ c.issuingOrganization }}
+                  </td>
+
+
+                  <td>
+                    {{ c.expiryDate | date:'dd MMM y' }}
+                  </td>
+
+
+                  <td>
+                    <strong>
+                      {{ c.daysRemaining }}
+                    </strong>
+                  </td>
+
+
+                  <td>
+                    <span [class]="badge(c.status)">
+                      {{ humanize(c.status) }}
+                    </span>
+                  </td>
+
+
+                  <td>
+                    <span [class]="badge(c.renewalStatus)">
+                      {{ humanize(c.renewalStatus) }}
+                    </span>
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      } @else {
+
+        <div class="empty-state">
+
+          <span class="empty-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </span>
+
+          <strong>
+            No certification expires in the next 30 days.
+          </strong>
+
+          <span>
+            The priority queue is clear.
+          </span>
+
+        </div>
+
+      }
+
+    </article>
+
+  }
+
+</section>

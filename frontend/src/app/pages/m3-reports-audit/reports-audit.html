@@ -1,0 +1,484 @@
+<section class="m3-zone page">
+
+  <header class="page-heading">
+
+    <div>
+      <h2>
+        Reports & Immutable Audit
+      </h2>
+
+      <p>
+        Generate operational certification reports and inspect the
+        tamper-evident event chain created by the audit registry.
+      </p>
+    </div>
+
+
+    <div class="page-actions">
+
+      <button
+        class="btn"
+        (click)="downloadExpiring()"
+      >
+        Download 30-day expiry CSV
+      </button>
+
+      <button
+        class="btn btn-primary"
+        (click)="downloadAll()"
+      >
+        Download full certification CSV
+      </button>
+
+    </div>
+
+  </header>
+
+
+  @if (loading()) {
+
+    <div class="panel loading">
+      <span class="spinner"></span>
+      Building reporting view...
+    </div>
+
+  } @else if (summary(); as s) {
+
+
+    <div class="metric-grid">
+
+      <article class="metric-card">
+
+        <span class="metric-label">
+          Reportable Records
+        </span>
+
+        <strong class="metric-value">
+          {{ s.total }}
+        </strong>
+
+        <span class="metric-foot">
+          {{ s.active }} active
+        </span>
+
+      </article>
+
+
+      <article
+        class="metric-card"
+        style="--metric-glow: var(--warning-soft)"
+      >
+
+        <span class="metric-label">
+          Expiring Soon
+        </span>
+
+        <strong class="metric-value">
+          {{ s.expiringSoon }}
+        </strong>
+
+        <span class="metric-foot">
+          Current lifecycle state
+        </span>
+
+      </article>
+
+
+      <article
+        class="metric-card"
+        style="--metric-glow: var(--success-soft)"
+      >
+
+        <span class="metric-label">
+          Verified
+        </span>
+
+        <strong class="metric-value">
+          {{ s.verified }}
+        </strong>
+
+        <span class="metric-foot">
+          Credential verification complete
+        </span>
+
+      </article>
+
+
+      <article
+        class="metric-card"
+        style="--metric-glow: var(--violet-soft)"
+      >
+
+        <span class="metric-label">
+          Renewal Rate
+        </span>
+
+        <strong class="metric-value">
+          {{ s.renewalRate | number:'1.0-2' }}%
+        </strong>
+
+        <span class="metric-foot">
+          Calculated from finalized requests
+        </span>
+
+      </article>
+
+    </div>
+
+
+    <div class="split-grid">
+
+      <article class="panel panel-pad">
+
+        <div class="panel-title">
+
+          <div>
+            <h3>
+              Renewal Outcome Distribution
+            </h3>
+
+            <p>
+              Completed vs rejected finalized renewal requests.
+            </p>
+          </div>
+
+        </div>
+
+
+        <app-donut-chart
+          title="Renewal outcome distribution"
+          centerLabel="Finalized"
+          [segments]="renewalSegments(s)"
+        />
+
+      </article>
+
+
+      <article class="panel panel-pad report-facts">
+
+        <div class="panel-title">
+
+          <div>
+            <h3>
+              Report Snapshot
+            </h3>
+
+            <p>
+              Generated
+              {{ s.generatedAt | date:'medium' }}
+            </p>
+          </div>
+
+        </div>
+
+
+        <div>
+          <span>
+            Valid certifications
+          </span>
+
+          <strong>
+            {{ s.valid }}
+          </strong>
+        </div>
+
+
+        <div>
+          <span>
+            Expired certifications
+          </span>
+
+          <strong>
+            {{ s.expired }}
+          </strong>
+        </div>
+
+
+        <div>
+          <span>
+            Compliance verified
+          </span>
+
+          <strong>
+            {{ s.compliant }}
+          </strong>
+        </div>
+
+
+        <div>
+          <span>
+            Renewal due
+          </span>
+
+          <strong>
+            {{ s.renewalDue }}
+          </strong>
+        </div>
+
+      </article>
+
+    </div>
+
+
+    <!-- New Audit Chain Visualization -->
+    <article class="panel panel-pad audit-chain-panel">
+
+      <div class="panel-title">
+
+        <div>
+          <h3>
+            Tamper-Evident Event Chain
+          </h3>
+
+          <p>
+            Recent certification events linked through SHA-256 event hashes.
+          </p>
+        </div>
+
+        <span class="chain-status">
+          <span class="chain-status-dot"></span>
+          {{ audit().length }} recorded events
+        </span>
+
+      </div>
+
+
+      @if (audit().length) {
+
+        <div class="audit-chain">
+
+          @for (
+            a of audit().slice(0, 6);
+            track a.sequenceNumber
+          ) {
+
+            <article class="audit-chain-node">
+
+              <div class="chain-node-head">
+
+                <span class="chain-sequence">
+                  #{{ a.sequenceNumber }}
+                </span>
+
+                <span class="chain-time">
+                  {{ a.createdAt | date:'dd MMM, HH:mm' }}
+                </span>
+
+              </div>
+
+
+              <strong class="chain-action">
+                {{ humanize(a.action) }}
+              </strong>
+
+
+              <span class="chain-actor">
+                {{ a.actorRole }}
+                ·
+                {{ a.actorUserId }}
+              </span>
+
+
+              <div class="chain-hash">
+
+                <span>
+                  HASH
+                </span>
+
+                <code>
+                  {{ a.eventHash.slice(0, 10) }}...
+                </code>
+
+              </div>
+
+
+              <div class="chain-link-icon">
+                →
+              </div>
+
+            </article>
+
+          }
+
+        </div>
+
+      } @else {
+
+        <div class="empty-state">
+
+          <span class="empty-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </span>
+
+          <strong>
+            No audit chain available yet.
+          </strong>
+
+          <span>
+            Certification events will form the chain automatically.
+          </span>
+
+        </div>
+
+      }
+
+    </article>
+
+
+    <!-- Detailed Audit Table -->
+    <article class="panel panel-pad">
+
+      <div class="panel-title">
+
+        <div>
+
+          <h3>
+            Immutable Certification Audit Trail
+          </h3>
+
+          <p>
+            Append-only events include a SHA-256 hash chained to the previous
+            event for the same certification.
+          </p>
+
+        </div>
+
+
+        <span class="badge">
+          Latest {{ audit().length }} events
+        </span>
+
+      </div>
+
+
+      @if (audit().length) {
+
+        <div class="table-wrap audit-table">
+
+          <table class="data-table">
+
+            <thead>
+
+              <tr>
+                <th>Sequence</th>
+                <th>Event</th>
+                <th>Certification</th>
+                <th>Actor</th>
+                <th>Details</th>
+                <th>Integrity Hash</th>
+                <th>Time</th>
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              @for (
+                a of audit();
+                track a.sequenceNumber
+              ) {
+
+                <tr>
+
+                  <td>
+                    #{{ a.sequenceNumber }}
+                  </td>
+
+
+                  <td>
+                    <span class="badge">
+                      {{ humanize(a.action) }}
+                    </span>
+                  </td>
+
+
+                  <td>
+                    <span class="code-hash">
+                      {{
+                        a.certificationId ||
+                        'System'
+                      }}
+                    </span>
+                  </td>
+
+
+                  <td>
+
+                    <span class="cell-main">
+                      {{ a.actorRole }}
+                    </span>
+
+                    <span class="cell-sub">
+                      {{ a.actorUserId }}
+                    </span>
+
+                  </td>
+
+
+                  <td>
+                    {{ a.details }}
+                  </td>
+
+
+                  <td>
+
+                    <span
+                      class="code-hash"
+                      [title]="a.eventHash"
+                    >
+                      {{ a.eventHash.slice(0, 12) }}...
+                    </span>
+
+                    <span class="cell-sub">
+                      Prev:
+                      {{
+                        a.previousHash
+                          ? a.previousHash.slice(0, 8) + '...'
+                          : 'GENESIS'
+                      }}
+                    </span>
+
+                  </td>
+
+
+                  <td>
+                    {{ a.createdAt | date:'dd MMM y, HH:mm' }}
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      } @else {
+
+        <div class="empty-state">
+
+          <span class="empty-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </span>
+
+          <strong>
+            No audit events yet.
+          </strong>
+
+          <span>
+            Certification registration, status changes and governance actions
+            will appear here.
+          </span>
+
+        </div>
+
+      }
+
+    </article>
+
+  }
+
+</section>

@@ -1,0 +1,481 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1>Module & Content Management</h1>
+      <p class="page-subtitle">Select a course to manage its modules and learning content.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      <button class="btn btn-secondary btn-sm" (click)="loadCoursesAndCheckParam()">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+        Refresh Courses
+      </button>
+      <a routerLink="/admin/courses" class="btn btn-primary btn-sm">
+        + Manage Courses
+      </a>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+    <label class="field course-select" style="margin-bottom: 0; min-width: 320px; flex: 1;">
+      <span>Course</span>
+      <select class="field-input" [(ngModel)]="selectedCourseId" name="selectedCourseId" (ngModelChange)="onCourseChange()">
+        <option value="">-- Select a course --</option>
+        @for (course of courses; track course.courseId) {
+          <option [value]="course.courseId">{{ course.courseCode }} — {{ course.title }} ({{ course.status }})</option>
+        }
+      </select>
+    </label>
+    @if (isLoadingCourses) {
+      <span style="font-size: 0.85rem; color: var(--text-muted);">Loading courses...</span>
+    }
+  </div>
+
+  @if (selectedCourseId) {
+
+    <!-- COURSE OVERVIEW BANNER -->
+    <div class="course-builder-header">
+      <div class="builder-header-info">
+        <div class="builder-tags">
+          <span class="builder-badge-code">{{ selectedCourse?.courseCode }}</span>
+          <span class="builder-badge-level">{{ selectedCourse?.courseLevel || 'INTERMEDIATE' }}</span>
+          <span class="builder-badge-category">{{ selectedCourse?.category || 'Engineering' }}</span>
+          <span class="badge" [ngClass]="selectedCourse?.status === 'PUBLISHED' ? 'badge-published' : 'badge-draft'">
+            {{ selectedCourse?.status }}
+          </span>
+        </div>
+        <h2>{{ selectedCourse?.title }}</h2>
+        <p class="builder-course-desc">{{ selectedCourse?.description || 'Enterprise structured learning curriculum.' }}</p>
+      </div>
+
+      <div class="builder-header-stats">
+        <div class="builder-stat">
+          <span>Modules</span>
+          <strong>{{ moduleItems.length }}</strong>
+        </div>
+        <div class="builder-stat">
+          <span>Total Lessons</span>
+          <strong>{{ totalLessonsCount }}</strong>
+        </div>
+        <div class="builder-stat">
+          <span>Est. Duration</span>
+          <strong>{{ totalCourseDuration }} min</strong>
+        </div>
+        <button class="btn btn-primary" (click)="openCreateModuleForm()">+ Add New Module</button>
+      </div>
+    </div>
+
+    <!-- CURRICULUM TREE ACCORDION -->
+    @if (isLoadingCurriculum) {
+      <div class="state-box" style="margin-top: 1.5rem; padding: 2rem;">Loading course curriculum &amp; learning items...</div>
+    } @else if (moduleItems.length === 0) {
+      <div class="state-box" style="margin-top: 1.5rem; padding: 3rem; text-align: center;">
+        <div style="margin-bottom: 0.75rem; color: var(--text-muted);">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        </div>
+        <h3>No Modules Created Yet</h3>
+        <p style="color: var(--text-secondary); max-width: 480px; margin: 0 auto 1.5rem;">
+          Start building your course journey by adding the first module (e.g. Introduction &amp; Foundations).
+        </p>
+        <button class="btn btn-primary" (click)="openCreateModuleForm()">+ Add First Module</button>
+      </div>
+    } @else {
+
+      <div class="curriculum-tree-container">
+        <div class="curriculum-tree-title">
+          <span>Course Learning Structure (Coursera LMS Model)</span>
+          <small>{{ moduleItems.length }} Modules &bull; {{ totalLessonsCount }} Learning Items</small>
+        </div>
+
+        <div class="modules-tree-list">
+          @for (item of moduleItems; track item.module.moduleId; let mIdx = $index) {
+            <div class="module-block-card">
+              
+              <!-- MODULE HEADER BAR -->
+              <div class="module-block-header" (click)="toggleModuleExpand(item)">
+                <div class="module-header-left">
+                  <span class="module-expand-chevron">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" [style.transform]="item.isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'" style="transition: transform 0.2s ease;">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </span>
+                  <span class="module-order-badge">Module {{ item.module.moduleOrder }}</span>
+                  <div class="module-title-wrap">
+                    <h4>{{ item.module.title }}</h4>
+                    <span class="module-lessons-count">{{ item.contents.length }} Learning Items</span>
+                  </div>
+                  <span class="badge" [ngClass]="item.module.published ? 'badge-published' : 'badge-draft'">
+                    {{ item.module.published ? 'Published' : 'Draft' }}
+                  </span>
+                </div>
+
+                <div class="module-header-actions" (click)="$event.stopPropagation()">
+                  <button class="btn btn-primary btn-xs" (click)="openCreateContentInModule(item.module)" title="Add video, reading, or quiz to this module">
+                    + Add Lesson
+                  </button>
+                  <button class="btn btn-secondary btn-xs" (click)="openEditModuleForm(item.module)">Edit</button>
+                  <button class="btn btn-secondary btn-xs" (click)="togglePublishModule(item.module)">
+                    {{ item.module.published ? 'Unpublish' : 'Publish' }}
+                  </button>
+                  <button class="btn btn-secondary btn-xs" (click)="moveModuleUp(mIdx)" [disabled]="mIdx === 0" title="Move module up">Up</button>
+                  <button class="btn btn-secondary btn-xs" (click)="moveModuleDown(mIdx)" [disabled]="mIdx === moduleItems.length - 1" title="Move module down">Down</button>
+                  <button class="btn btn-danger btn-xs" (click)="deleteModule(item.module)">Delete</button>
+                </div>
+              </div>
+
+              <!-- NESTED LESSONS LIST -->
+              @if (item.isExpanded) {
+                <div class="module-block-body">
+                  @if (item.isLoading) {
+                    <div class="state-box" style="padding: 1rem;">Loading module contents...</div>
+                  } @else if (item.contents.length === 0) {
+                    <div class="empty-lessons-box">
+                      <p>No learning items in this module yet.</p>
+                      <button class="btn btn-secondary btn-sm" (click)="openCreateContentInModule(item.module)">
+                        + Add Video, Reading, or Quiz
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="lessons-tree-list">
+                      @for (content of item.contents; track content.contentId; let cIdx = $index) {
+                        <div class="lesson-row-card">
+                          <div class="lesson-row-left">
+                            <span class="lesson-seq-num">{{ item.module.moduleOrder }}.{{ content.contentOrder }}</span>
+                            
+                            <span class="resource-icon-badge" [ngClass]="getResourceBadgeClass(content.contentType)">
+                              {{ getResourceLabel(content.contentType) }}
+                            </span>
+
+                            <div class="lesson-title-info">
+                              <span class="lesson-row-title">{{ content.title }}</span>
+                              @if (content.description) {
+                                <span class="lesson-row-desc">{{ content.description }}</span>
+                              }
+                            </div>
+                          </div>
+
+                          <div class="lesson-row-meta">
+                            <span class="lesson-duration">{{ content.durationMinutes || 15 }} min</span>
+                            @if (content.mandatory) {
+                              <span class="badge badge-warning" style="font-size: 0.7rem;">Mandatory</span>
+                            }
+                            <span class="badge" [ngClass]="content.published ? 'badge-published' : 'badge-draft'" style="font-size: 0.7rem;">
+                              {{ content.published ? 'Published' : 'Draft' }}
+                            </span>
+                          </div>
+
+                          <div class="lesson-row-actions">
+                            <button class="btn btn-secondary btn-xs" (click)="openEditContentInModule(item.module, content)">Edit</button>
+                            <button class="btn btn-secondary btn-xs" (click)="togglePublishContentInModule(item.module, content)">
+                              {{ content.published ? 'Unpublish' : 'Publish' }}
+                            </button>
+                            <button class="btn btn-secondary btn-xs" (click)="moveContentUp(mIdx, cIdx)" [disabled]="cIdx === 0" title="Move lesson up">Up</button>
+                            <button class="btn btn-secondary btn-xs" (click)="moveContentDown(mIdx, cIdx)" [disabled]="cIdx === item.contents.length - 1" title="Move lesson down">Down</button>
+                            <button class="btn btn-danger btn-xs" (click)="deleteContentInModule(item.module, content)">Delete</button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+            </div>
+          }
+
+          <div style="text-align: center; margin-top: 1.5rem;">
+            <button class="btn btn-primary" (click)="openCreateModuleForm()">+ Add Another Module</button>
+          </div>
+        </div>
+
+      </div>
+
+    }
+
+  } @else {
+    <div class="state-box" style="margin-top: 2rem; padding: 2.5rem; text-align: center; background: rgba(0,0,0,0.03); border: 1px dashed var(--border-color); border-radius: 12px;">
+      <div style="margin-bottom: 0.75rem; color: var(--text-muted);">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      </div>
+      <h3 style="margin-bottom: 0.5rem; color: var(--text-primary);">No Course Selected</h3>
+      <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem;">
+        Please select a course from the dropdown above to create modules, configure video lectures, build interactive online quizzes, or attach study resources.
+      </p>
+      @if (courses.length === 0 && !isLoadingCourses) {
+        <p style="color: #ef4444; font-weight: 600; margin-bottom: 1rem;">No courses found in the system yet.</p>
+        <a routerLink="/admin/courses" class="btn btn-primary btn-sm">+ Create Your First Course</a>
+      }
+    </div>
+  }
+
+  <!-- Module form modal -->
+  @if (isModuleFormOpen) {
+    <div class="modal-overlay open">
+      <div class="modal-box">
+        <h3 class="modal-box-title">{{ isEditingModule ? 'Edit Module' : 'New Module' }}</h3>
+
+        @if (moduleFormErrors.length > 0) {
+          <ul class="form-errors">
+            @for (err of moduleFormErrors; track err) {
+              <li>{{ err }}</li>
+            }
+          </ul>
+        }
+
+        <label class="field">
+          <span>Title</span>
+          <input class="field-input" type="text" [(ngModel)]="moduleForm.title" name="moduleTitle" placeholder="e.g. Module 1: Foundations & Architecture" />
+        </label>
+
+        <label class="field">
+          <span>Description</span>
+          <textarea class="field-input" rows="3" [(ngModel)]="moduleForm.description" name="moduleDescription" placeholder="Overview of learning outcomes in this module..."></textarea>
+        </label>
+
+        <label class="field">
+          <span>Module Order</span>
+          <input class="field-input" type="number" min="1" [(ngModel)]="moduleForm.moduleOrder" name="moduleOrder" />
+        </label>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeModuleForm()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveModule()">Save Module</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Content / Resource form modal -->
+  @if (isContentFormOpen) {
+    <div class="modal-overlay open">
+      <div class="modal-box lg resource-modal-box">
+        <h3 class="modal-box-title">{{ isEditingContent ? 'Edit Learning Resource' : 'Add Module Learning Resource' }}</h3>
+
+        @if (contentFormErrors.length > 0) {
+          <ul class="form-errors">
+            @for (err of contentFormErrors; track err) {
+              <li>{{ err }}</li>
+            }
+          </ul>
+        }
+
+        <!-- 1. RESOURCE TYPE PICKER (3 REQUIRED OPTIONS) -->
+        <div class="resource-type-picker-container">
+          <div class="resource-picker-label">Choose Learning Resource Type:</div>
+          <div class="resource-cards-grid">
+            
+            <!-- OPTION 1: YOUTUBE VIDEO -->
+            <div 
+              class="resource-option-card"
+              [class.selected]="contentForm.resourceType === 'YOUTUBE_VIDEO'"
+              (click)="selectResourceType('YOUTUBE_VIDEO')"
+            >
+              <div class="option-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+              </div>
+              <div class="option-title">1. Video Lecture</div>
+              <div class="option-desc">Embed video lecture with direct playback &amp; player integration</div>
+            </div>
+
+            <!-- OPTION 2: ONLINE QUIZ -->
+            <div 
+              class="resource-option-card"
+              [class.selected]="contentForm.resourceType === 'ONLINE_QUIZ'"
+              (click)="selectResourceType('ONLINE_QUIZ')"
+            >
+              <div class="option-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              </div>
+              <div class="option-title">2. Online Quiz</div>
+              <div class="option-desc">Interactive checkpoint with questions, options &amp; auto-grading</div>
+            </div>
+
+            <!-- OPTION 3: EXTERNAL READING -->
+            <div 
+              class="resource-option-card"
+              [class.selected]="contentForm.resourceType === 'EXTERNAL_READING'"
+              (click)="selectResourceType('EXTERNAL_READING')"
+            >
+              <div class="option-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              </div>
+              <div class="option-title">3. Study Resource / Reading</div>
+              <div class="option-desc">Online PDF documents, official documentation &amp; guides</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="form-grid">
+          
+          <label class="field field-wide">
+            <span>Resource Title *</span>
+            <input 
+              class="field-input" 
+              type="text" 
+              [(ngModel)]="contentForm.title" 
+              name="contentTitle" 
+              [placeholder]="contentForm.resourceType === 'YOUTUBE_VIDEO' ? 'e.g. Video Lecture: Reactive Microservices with Spring' : (contentForm.resourceType === 'ONLINE_QUIZ' ? 'e.g. Checkpoint Quiz: Service Discovery & Routing' : 'e.g. Reference Guide: PostgreSQL Query Optimization PDF')" 
+            />
+          </label>
+
+          <label class="field field-wide">
+            <span>Description / Learning Objectives</span>
+            <textarea class="field-input" rows="2" [(ngModel)]="contentForm.description" name="contentDescription" placeholder="Summary of what learners will study in this resource..."></textarea>
+          </label>
+
+          <!-- DYNAMIC RESOURCE FORM SECTIONS -->
+
+          <!-- IF YOUTUBE VIDEO -->
+          @if (contentForm.resourceType === 'YOUTUBE_VIDEO') {
+            <label class="field field-wide youtube-field-group">
+              <span>YouTube Video URL *</span>
+              <input 
+                class="field-input" 
+                type="text" 
+                [(ngModel)]="contentForm.contentUrl" 
+                name="contentUrl" 
+                placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." 
+              />
+              <small class="field-hint">Enter any standard YouTube watch or share URL. It will be converted into an embedded player with external watch link.</small>
+            </label>
+
+            <label class="field">
+              <span>Video Duration (minutes)</span>
+              <input class="field-input" type="number" min="1" [(ngModel)]="contentForm.durationMinutes" name="durationMinutes" />
+            </label>
+          }
+
+          <!-- IF ONLINE QUIZ (BUILDER) -->
+          @if (contentForm.resourceType === 'ONLINE_QUIZ') {
+            <div class="quiz-builder-section field-wide">
+              <div class="quiz-builder-header">
+                <div>
+                  <h4>Interactive Quiz Question Builder</h4>
+                  <p>Configure multiple choice questions, options, and select the correct answer key.</p>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="addQuizQuestion()">+ Add Question</button>
+              </div>
+
+              <div class="questions-list">
+                @for (q of contentForm.quizQuestions; track q.id; let qIndex = $index) {
+                  <div class="question-builder-card">
+                    <div class="question-header-row">
+                      <span class="question-num-pill">Question {{ qIndex + 1 }}</span>
+                      <button 
+                        type="button" 
+                        class="btn btn-danger btn-xs" 
+                        (click)="removeQuizQuestion(qIndex)"
+                        [disabled]="contentForm.quizQuestions.length <= 1"
+                        title="Remove question"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <label class="field">
+                      <span>Question Text</span>
+                      <input class="field-input" type="text" [(ngModel)]="q.question" [name]="'q_text_' + qIndex" placeholder="Enter question..." />
+                    </label>
+
+                    <div class="options-group">
+                      <span class="options-label">Multiple-Choice Options (select radio for the correct answer):</span>
+                      <div class="options-grid">
+                        @for (opt of q.options; track $index; let optIndex = $index) {
+                          <div class="option-row">
+                            <input 
+                              type="radio" 
+                              [name]="'correct_opt_' + qIndex" 
+                              [value]="optIndex" 
+                              [checked]="q.correctOption === optIndex" 
+                              (change)="q.correctOption = optIndex"
+                              title="Mark as correct answer"
+                            />
+                            <span class="opt-letter">{{ ['A','B','C','D','E','F'][optIndex] }}:</span>
+                            <input 
+                              class="field-input opt-input" 
+                              type="text" 
+                              [(ngModel)]="q.options[optIndex]" 
+                              [name]="'opt_' + qIndex + '_' + optIndex" 
+                            />
+                            @if (q.options.length > 2) {
+                              <button type="button" class="btn-remove-opt" (click)="removeQuizOption(qIndex, optIndex)" title="Delete option">
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
+                      @if (q.options.length < 6) {
+                        <button type="button" class="btn-add-opt" (click)="addQuizOption(qIndex)">+ Add Option</button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <label class="field">
+              <span>Estimated Quiz Duration (minutes)</span>
+              <input class="field-input" type="number" min="1" [(ngModel)]="contentForm.durationMinutes" name="durationMinutes" />
+            </label>
+          }
+
+          <!-- IF EXTERNAL READING -->
+          @if (contentForm.resourceType === 'EXTERNAL_READING') {
+            <label class="field field-wide">
+              <span>Online Reading Resource / PDF URL *</span>
+              <input 
+                class="field-input" 
+                type="text" 
+                [(ngModel)]="contentForm.contentUrl" 
+                name="contentUrl" 
+                placeholder="https://example.com/handbook.pdf or https://docs.spring.io/..." 
+              />
+              <small class="field-hint">Direct link to official documentation, online whitepapers, or cloud-hosted PDF study materials.</small>
+            </label>
+
+            <label class="field field-wide">
+              <span>Study Notes &amp; Guidance for Learners</span>
+              <textarea 
+                class="field-input" 
+                rows="3" 
+                [(ngModel)]="contentForm.textContent" 
+                name="textContent" 
+                placeholder="Key concepts to focus on, chapter sections, or supplementary reading instructions..."
+              ></textarea>
+            </label>
+
+            <label class="field">
+              <span>Estimated Reading Duration (minutes)</span>
+              <input class="field-input" type="number" min="1" [(ngModel)]="contentForm.durationMinutes" name="durationMinutes" />
+            </label>
+          }
+
+          <label class="field">
+            <span>Sequence Order</span>
+            <input class="field-input" type="number" min="1" [(ngModel)]="contentForm.contentOrder" name="contentOrder" />
+          </label>
+
+          <label class="field checkbox-field">
+            <input type="checkbox" [(ngModel)]="contentForm.mandatory" name="mandatory" />
+            <span>Mandatory Requirement</span>
+          </label>
+
+          <label class="field checkbox-field">
+            <input type="checkbox" [(ngModel)]="contentForm.previewAvailable" name="previewAvailable" />
+            <span>Free Preview Available</span>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeContentForm()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveContent()">
+            {{ isEditingContent ? 'Save Changes' : 'Save Learning Resource' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

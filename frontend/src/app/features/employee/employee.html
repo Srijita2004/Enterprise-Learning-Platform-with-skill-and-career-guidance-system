@@ -1,0 +1,213 @@
+<div class="module-wrapper">
+  <!-- Module Header -->
+  <div class="module-header">
+    <div>
+      <h1 class="module-title">Employee Directory</h1>
+      <p class="module-subtitle">Manage personnel roles, financial parameters, and mapped competencies.</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Add Employee
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <h3 class="state-title">Retrieving Employees</h3>
+      <p class="state-desc">Fetching employee records from database and syncing profiles...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <div class="modal-icon-danger">!</div>
+      <h3 class="state-title">Data Fetch Error</h3>
+      <p class="state-desc">{{ error() }}</p>
+      <button class="btn btn-secondary" (click)="loadData()">Retry Connection</button>
+    </div>
+  } @else if (employees().length === 0) {
+    <div class="empty-state">
+      <h3 class="state-title">No Employees Found</h3>
+      <p class="state-desc">Start building the workspace by registering your first employee record.</p>
+      <button class="btn btn-primary" (click)="openAddModal()">Register Employee</button>
+    </div>
+  } @else {
+    <!-- Directory Table -->
+    <div class="table-card glass-panel animate-fade-in">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Employee Name</th>
+              <th>Designation</th>
+              <th>Salary (USD)</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (emp of employees(); track emp.employeeId) {
+              <tr>
+                <td><strong>#{{ emp.employeeId }}</strong></td>
+                <td>{{ emp.employeeName }}</td>
+                <td>
+                  <span class="badge badge-info" style="text-transform: none; padding: 0.2rem 0.5rem; background: rgba(59, 130, 246, 0.08); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.15)">
+                    {{ emp.designation }}
+                  </span>
+                </td>
+                <td>${{ emp.salary.toLocaleString() }}</td>
+                <td style="text-align: right;">
+                  <div class="action-buttons-group">
+                    <a [routerLink]="['/employees', emp.employeeId, 'profile']" class="btn btn-primary btn-sm" title="View 360 Connected Profile" style="text-decoration: none;">
+                      360 Profile
+                    </a>
+                    <button class="btn btn-secondary btn-sm" (click)="openMappingModal(emp)" title="Manage Skill Mappings">
+                      Skills Mapping
+                    </button>
+                    <button class="btn btn-secondary btn-sm" (click)="openEditModal(emp)" title="Edit Profile">
+                      Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm" (click)="onDelete(emp.employeeId)" title="Delete Profile">
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- CRUD Modal -->
+  @if (showModal()) {
+    <div class="modal-overlay open">
+      <div class="modal-box glass-panel animate-slide-in">
+        <div class="modal-header">
+          <h3 class="modal-box-title">{{ isEditing() ? 'Modify Employee Profile' : 'Register Employee' }}</h3>
+          <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+
+        <form [formGroup]="employeeForm" (ngSubmit)="submitForm()" class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="employeeId">Employee ID</label>
+            <input type="number" id="employeeId" class="form-input" formControlName="employeeId" placeholder="e.g. 101" />
+            @if (employeeForm.get('employeeId')?.touched && employeeForm.get('employeeId')?.invalid) {
+              <span class="form-error">ID is required and must be a positive number.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="employeeName">Full Name</label>
+            <input type="text" id="employeeName" class="form-input" formControlName="employeeName" placeholder="e.g. Alice Vance" />
+            @if (employeeForm.get('employeeName')?.touched && employeeForm.get('employeeName')?.invalid) {
+              <span class="form-error">Full name is required (min 2 characters).</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="designation">Designation</label>
+            <input type="text" id="designation" class="form-input" formControlName="designation" placeholder="e.g. Senior Software Architect" />
+            @if (employeeForm.get('designation')?.touched && employeeForm.get('designation')?.invalid) {
+              <span class="form-error">Designation is required.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="salary">Base Salary ($)</label>
+            <input type="number" id="salary" class="form-input" formControlName="salary" placeholder="e.g. 95000" />
+            @if (employeeForm.get('salary')?.touched && employeeForm.get('salary')?.invalid) {
+              <span class="form-error">Salary is required and must be non-negative.</span>
+            }
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid">
+              {{ isEditing() ? 'Save Changes' : 'Register Profile' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Skill Mapping Modal -->
+  @if (showMappingModal()) {
+    <div class="modal-overlay open">
+      <div class="modal-box lg glass-panel animate-slide-in">
+        <div class="modal-header">
+          <h3 class="modal-box-title">Skill Profiling: {{ selectedEmployee()?.employeeName }}</h3>
+          <button class="close-btn" (click)="closeMappingModal()">&times;</button>
+        </div>
+
+        <div class="modal-body-split">
+          <!-- Mapping Form -->
+          <div class="mapping-form-panel">
+            <h4 class="section-subtitle">Add Skill Endorsement</h4>
+            <form [formGroup]="mappingForm" (ngSubmit)="addSkillMapping()" class="modal-form">
+              <div class="form-group">
+                <label class="form-label" for="skillId">Select Skill</label>
+                <select id="skillId" class="form-select" formControlName="skillId">
+                  <option [value]="null" disabled selected>Choose a skill...</option>
+                  @for (s of skills(); track s.skillId) {
+                    <option [value]="s.skillId">{{ s.skillName }} ({{ s.category }})</option>
+                  }
+                </select>
+                @if (mappingForm.get('skillId')?.touched && mappingForm.get('skillId')?.invalid) {
+                  <span class="form-error">A skill must be selected.</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="proficiencyLevel">Proficiency Level (1 - 5)</label>
+                <input type="number" id="proficiencyLevel" class="form-input" formControlName="proficiencyLevel" min="1" max="5" />
+                @if (mappingForm.get('proficiencyLevel')?.touched && mappingForm.get('proficiencyLevel')?.invalid) {
+                  <span class="form-error">Level must be between 1 and 5.</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="yearsOfExperience">Years of Experience</label>
+                <input type="number" id="yearsOfExperience" class="form-input" formControlName="yearsOfExperience" min="0" />
+                @if (mappingForm.get('yearsOfExperience')?.touched && mappingForm.get('yearsOfExperience')?.invalid) {
+                  <span class="form-error">Experience must be non-negative.</span>
+                }
+              </div>
+
+              <button type="submit" class="btn btn-primary" [disabled]="mappingForm.invalid" style="width: 100%;">
+                Add Skill Mapping
+              </button>
+            </form>
+          </div>
+
+          <!-- Mapped Skills List -->
+          <div class="mapping-list-panel">
+            <h4 class="section-subtitle">Currently Endorsed Skills</h4>
+            <div class="mapped-skills-container">
+              @for (es of currentEmployeeSkills(); track es.employeeSkillId) {
+                <div class="mapped-skill-row glass-panel">
+                  <div class="mapped-skill-info">
+                    <span class="mapped-skill-name">{{ es.skillName }}</span>
+                    <span class="mapped-skill-meta">Experience: {{ es.yearsOfExperience }} yrs</span>
+                  </div>
+                  <div class="mapped-skill-level">
+                    <span class="badge badge-success">L{{ es.proficiencyLevel }}</span>
+                  </div>
+                  <button class="btn btn-danger btn-sm" (click)="removeSkillMapping(es.employeeSkillId)" style="padding: 0.25rem 0.5rem;">
+                    &times;
+                  </button>
+                </div>
+              }
+              @if (currentEmployeeSkills().length === 0) {
+                <p class="no-skills-msg">This employee has no skills mapped yet.</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

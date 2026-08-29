@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">SkillSphere Nexus</title>
+  <desc id="desc">A luminous learning sphere connected by an orbital ring.</desc>
+  <defs>
+    <linearGradient id="planet" x1="20" y1="18" x2="102" y2="108" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67E8F9"/>
+      <stop offset="0.44" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="15" y1="40" x2="116" y2="87" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A5F3FC"/>
+      <stop offset="0.48" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#818CF8"/>
+    </linearGradient>
+    <radialGradient id="shine" cx="0" cy="0" r="1" gradientTransform="translate(46 38) rotate(48) scale(58)">
+      <stop stop-color="#ECFEFF" stop-opacity=".95"/>
+      <stop offset=".5" stop-color="#BAE6FD" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#0F172A" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="64" cy="64" r="40" fill="url(#planet)" filter="url(#glow)"/>
+  <circle cx="64" cy="64" r="40" fill="url(#shine)"/>
+  <path d="M29 47c14 5 33 7 51 4 15-2 28-8 34-14-3 10-17 22-36 28-21 7-43 5-57-3-9-5-12-11-8-16 3-4 9-4 16 1Z" fill="#020617" fill-opacity=".5"/>
+  <path d="M15 53c4-10 25-16 50-15 26 1 48 9 49 19 1 12-23 22-53 22-28 0-51-9-51-20 0-2 2-4 5-6Zm10 4c0 7 17 13 38 13 23 0 41-7 40-14 0-6-17-11-39-12-21-1-38 4-39 11v2Z" fill="url(#ring)" filter="url(#glow)"/>
+  <circle cx="28" cy="46" r="4" fill="#F8FAFC"/>
+  <circle cx="104" cy="73" r="3.5" fill="#C4B5FD"/>
+  <path d="M40 86c7 9 17 15 29 17" fill="none" stroke="#BAE6FD" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+</svg>
