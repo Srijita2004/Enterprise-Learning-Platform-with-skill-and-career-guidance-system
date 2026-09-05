@@ -190,9 +190,10 @@
   background:
     linear-gradient(
       135deg,
-      #2563eb,
-      #4f46e5
+      var(--accent-primary, #2563eb),
+      var(--accent-primary-hover, #4f46e5)
     );
+  box-shadow: 0 4px 14px var(--accent-primary-glow);
   color: #ffffff;
   font-size: 12px;
   font-weight: 800;
@@ -251,9 +252,11 @@
   background:
     linear-gradient(
       135deg,
-      #0284c7,
-      #4f46e5
+      var(--accent-primary, #0284c7),
+      var(--accent-secondary, #4f46e5)
     );
+  box-shadow: 0 4px 12px var(--accent-primary-glow);
+  color: #ffffff;
   font-weight: 900;
 }
 

@@ -60,6 +60,18 @@ public class NotificationService {
             String message,
             String referenceId
     ) {
+        createFromEvent(type, sourceService, title, message, referenceId, TargetRole.ALL, null);
+    }
+
+    public void createFromEvent(
+            NotificationType type,
+            String sourceService,
+            String title,
+            String message,
+            String referenceId,
+            TargetRole targetRole,
+            String targetUserId
+    ) {
 
         boolean duplicateRecent =
                 repository
@@ -89,7 +101,8 @@ public class NotificationService {
                         .message(message)
                         .sourceService(sourceService)
                         .referenceId(referenceId)
-                        .targetRole(TargetRole.ALL)
+                        .targetRole(targetRole != null ? targetRole : TargetRole.ALL)
+                        .targetUserId(targetUserId)
                         .isRead(false)
                         .build()
         );

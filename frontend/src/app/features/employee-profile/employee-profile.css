@@ -1,5 +1,5 @@
 .employee-profile-container {
-  padding: 2rem 2.5rem;
+  padding: 1.5rem 2rem;
   max-width: 1440px;
   margin: 0 auto;
   min-height: calc(100vh - 80px);
@@ -33,12 +33,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2rem 2.5rem;
+  padding: 1.5rem 2rem;
   border-radius: 1.25rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1.5rem;
 }
@@ -1003,7 +1003,7 @@
 }
 
 :host-context(.light-theme) .ai-advisor-subtitle {
-  color: #0284c7 !important;
+  color: var(--accent-primary, #0284c7) !important;
 }
 
 .ai-advisor-results {
@@ -1034,9 +1034,10 @@
 }
 
 .ai-kpi-lbl {
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
 }
 
@@ -1050,7 +1051,7 @@
 }
 
 :host-context(.light-theme) .ai-kpi-num.text-primary {
-  color: #2563eb !important;
+  color: var(--accent-primary, #2563eb) !important;
 }
 
 :host-context(.light-theme) .ai-kpi-num.text-success {
@@ -1097,3 +1098,389 @@
   color: #0f172a !important;
   font-weight: 800 !important;
 }
+
+/* =========================================================
+   🌟 SKILL FRESHNESS & DECAY GAUGE STYLES
+   ========================================================= */
+.freshness-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.freshness-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.freshness-status-pill {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.freshness-status-pill.fresh-pill {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.freshness-status-pill.aging-pill {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.freshness-status-pill.stale-pill {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.freshness-refresher-action {
+  font-size: 0.72rem;
+  font-weight: 750;
+  color: var(--accent-primary, #0284c7);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.freshness-track {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.freshness-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.freshness-fill.fresh-pill {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.freshness-fill.aging-pill {
+  background: #f59e0b;
+}
+
+.freshness-fill.stale-pill {
+  background: #ef4444;
+}
+
+/* =========================================================
+   🌟 PROFILE SKILL PASSPORT MODAL STYLES
+   ========================================================= */
+.passport-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+}
+
+.passport-modal-dialog {
+  max-width: 780px;
+  width: 100%;
+  max-height: 90vh;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.passport-card {
+  padding: 2rem 2.25rem;
+  background: var(--bg-card);
+  overflow-y: auto;
+  flex: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.passport-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1.15rem;
+  border-bottom: 2px solid rgba(99, 102, 241, 0.35);
+}
+
+.passport-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.passport-emblem {
+  font-size: 2.25rem;
+}
+
+.passport-title {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.passport-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+}
+
+.passport-seal {
+  text-align: right;
+}
+
+.seal-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.18);
+  color: #10b981;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  display: inline-block;
+  margin-bottom: 0.2rem;
+}
+
+.seal-hash {
+  font-family: monospace;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.passport-identity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+  padding: 1rem 1.25rem;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.identity-field label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+
+.identity-field span {
+  font-size: 0.92rem;
+  font-weight: 750;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.readiness-tag {
+  color: #10b981 !important;
+  font-weight: 800;
+}
+
+.passport-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.passport-section-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.passport-skills-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.passport-skill-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.2fr) 1.5fr minmax(110px, 1fr);
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 600px) {
+  .passport-skill-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .skill-level-text {
+    text-align: left !important;
+  }
+}
+
+.skill-meter-track {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.skill-meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-primary, #0284c7), var(--accent-secondary, #10b981));
+  box-shadow: 0 0 8px var(--accent-primary-glow);
+}
+
+.skill-level-text {
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.passport-lms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.lms-summary-item {
+  padding: 0.75rem 0.9rem;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.lms-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.lms-summary-item strong {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.passport-certs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.passport-cert-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.passport-cert-badge strong {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.passport-cert-badge small {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.passport-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1.15rem;
+  border-top: 1px dashed var(--border-color);
+  margin-top: 0.5rem;
+}
+
+.auth-stamp span {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.auth-stamp strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.auth-stamp small {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.digital-qr {
+  text-align: right;
+}
+
+.qr-box {
+  display: inline-block;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+}
+
+.digital-qr small {
+  display: block;
+  font-size: 0.62rem;
+  color: #10b981;
+  margin-top: 2px;
+}
+
+.passport-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+

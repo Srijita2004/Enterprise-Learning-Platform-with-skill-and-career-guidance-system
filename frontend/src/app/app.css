@@ -578,6 +578,7 @@
 .accent-option.magenta .color-dot { background: #d946ef; }
 .accent-option.lime .color-dot { background: #84cc16; }
 .accent-option.red .color-dot { background: #ef4444; }
+.accent-option.vanilla .color-dot { background: #d97706; }
 
 @media (max-width: 620px) {
   .theme-panel {

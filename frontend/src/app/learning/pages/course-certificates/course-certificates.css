@@ -315,8 +315,8 @@
 }
 
 .verify-button { background: #0f766e; }
-.view-button { background: #4338ca; }
-.download-button { background: linear-gradient(135deg, #0284c7, #2563eb); }
+.view-button { background: var(--accent-secondary, #4338ca); }
+.download-button { background: linear-gradient(135deg, var(--accent-primary, #0284c7), var(--accent-primary-hover, #2563eb)); box-shadow: 0 4px 12px var(--accent-primary-glow); }
 
 @media (max-width: 600px) {
   .certificate-header {

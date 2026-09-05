@@ -36,18 +36,25 @@
       <div class="hero-right-section">
         <div class="career-target-pill glass-card">
           <div class="target-label">CAREER OBJECTIVE TARGET</div>
-          <div class="target-title">{{ careerPlan()?.targetRole || 'Senior Architect' }}</div>
+          <div class="target-title">{{ careerPlan()?.targetRole || 'Not Assigned Yet' }}</div>
           <div class="target-progress-row">
             <div class="mini-progress-track">
-              <div class="mini-progress-bar" [style.width.%]="careerPlan()?.progress || 78"></div>
+              <div class="mini-progress-bar" [style.width.%]="careerPlan()?.progress ?? 0"></div>
             </div>
-            <span class="target-percent">{{ careerPlan()?.progress || 78 }}%</span>
+            <span class="target-percent">{{ careerPlan()?.progress ?? 0 }}%</span>
           </div>
         </div>
 
-        <button type="button" class="btn btn-primary btn-add-cert" (click)="openAddCertModal()">
-          <span>+ Add External Certificate</span>
-        </button>
+        <div class="hero-actions-cluster" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-passport-action" (click)="openSkillPassport()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>View Skill Passport</span>
+          </button>
+          
+          <button type="button" class="btn btn-primary btn-add-cert" (click)="openAddCertModal()">
+            <span>+ Add External Certificate</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -80,7 +87,7 @@
         (click)="activeTab.set('learning')"
       >
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-        <span>Courses &amp; Training ({{ courses().length }})</span>
+        <span>Courses &amp; Training ({{ enrollments().length }})</span>
       </button>
 
       <button 
@@ -256,6 +263,21 @@
                   <div class="meter-fill score-fill" [style.width.%]="s.score"></div>
                 </div>
               </div>
+
+              <!-- 🌟 SKILL FRESHNESS & DECAY GAUGE -->
+              <div class="freshness-container">
+                <div class="freshness-meta-row">
+                  <span class="freshness-status-pill" [ngClass]="getSkillFreshness(s).class">
+                    {{ getSkillFreshness(s).label }}
+                  </span>
+                  <a *ngIf="getSkillFreshness(s).status !== 'FRESH'" routerLink="/courses" class="freshness-refresher-action">
+                    + Refresh Skill
+                  </a>
+                </div>
+                <div class="freshness-track">
+                  <div class="freshness-fill" [style.width.%]="getSkillFreshness(s).percentage" [ngClass]="getSkillFreshness(s).class"></div>
+                </div>
+              </div>
             </div>
 
             <div class="skill-card-footer">
@@ -270,12 +292,46 @@
       <!-- TAB C: COURSES & TRAINING                  -->
       <!-- ========================================== -->
       <section *ngIf="activeTab() === 'learning'" class="tab-pane">
+        <!-- 1. Enrolled Courses Section -->
         <div class="pane-header-row">
           <div>
-            <h2>Course Catalog &amp; Training Journeys</h2>
-            <p>Active learning paths, modular video sessions, and completion tracking.</p>
+            <h2>My Active Course Enrollments ({{ enrollments().length }})</h2>
+            <p>Active learning paths, progress milestones, and ongoing coursework.</p>
           </div>
           <a routerLink="/courses" class="btn btn-primary">Browse All Courses</a>
+        </div>
+
+        <div *ngIf="enrollments().length === 0" class="glass-panel" style="padding: 2.5rem; text-align: center; margin-bottom: 2rem; border-radius: 12px; border: 1px dashed var(--border-color, rgba(255,255,255,0.15));">
+          <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📚</div>
+          <h3 style="margin-bottom: 0.5rem; font-weight: 700;">No Course Enrollments Yet</h3>
+          <p style="color: var(--text-secondary); max-width: 520px; margin: 0 auto 1.25rem; font-size: 0.95rem;">
+            As a newly onboarded employee, you have not enrolled in any courses yet. Browse the enterprise course catalog below to start your personalized learning journey.
+          </p>
+          <a routerLink="/courses" class="btn btn-primary" style="display: inline-block;">Explore Course Catalog</a>
+        </div>
+
+        <div *ngIf="enrollments().length > 0" class="courses-card-grid" style="margin-bottom: 2.5rem;">
+          <div class="course-summary-card glass-panel" *ngFor="let e of enrollments()">
+            <div class="course-card-badge">{{ e.status }}</div>
+            <h3>{{ e.courseTitle }}</h3>
+            <p class="course-card-desc">Category: <strong>{{ e.courseType }}</strong> &bull; Access: <strong>{{ e.accessAllowed ? 'Authorized' : 'Pending' }}</strong></p>
+            
+            <div class="progress-bar-container" style="margin: 0.75rem 0; height: 6px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden;">
+              <div class="progress-bar-fill" [style.width.%]="e.status === 'COMPLETED' ? 100 : (e.status === 'ACTIVE' ? 50 : 15)" style="height: 100%; background: var(--accent-primary, #2563eb);"></div>
+            </div>
+
+            <div class="course-card-actions" style="margin-top: 1rem;">
+              <a [routerLink]="['/courses', e.courseId, 'learning']" class="btn btn-primary btn-sm">Continue Learning</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Course Library Discovery -->
+        <div class="pane-header-row" style="margin-top: 1rem;">
+          <div>
+            <h3>Available Enterprise Course Catalog ({{ courses().length }})</h3>
+            <p>Explore recommended curricula and enroll directly.</p>
+          </div>
         </div>
 
         <div class="courses-card-grid">
@@ -333,7 +389,9 @@
                 <td>{{ cert.issueDate }}</td>
                 <td>{{ cert.expiryDate || 'No Expiry' }}</td>
                 <td>
-                  <span class="badge badge-success">{{ cert.verificationStatus }}</span>
+                  <span class="badge" [ngClass]="{'badge-success': cert.verificationStatus === 'VERIFIED', 'badge-warning': cert.verificationStatus === 'PENDING', 'badge-danger': cert.verificationStatus === 'REJECTED'}">
+                    {{ cert.verificationStatus === 'PENDING' ? 'PENDING VERIFICATION' : cert.verificationStatus }}
+                  </span>
                 </td>
                 <td>
                   <span class="badge" [class]="getCertStatusClass(cert.status)">{{ cert.status }}</span>
@@ -416,10 +474,10 @@
           <div class="roadmap-plan-card glass-panel">
             <div class="roadmap-card-header">
               <div>
-                <h3>Target: {{ careerPlan()?.targetRole || 'Senior Architect' }}</h3>
-                <p>Assigned Mentor: <strong>{{ careerPlan()?.mentorName || 'Jane Doe' }}</strong></p>
+                <h3>Target: {{ careerPlan()?.targetRole || 'Senior Professional Specialist' }}</h3>
+                <p>Assigned Mentor: <strong>{{ careerPlan()?.mentorName || 'Unassigned' }}</strong></p>
               </div>
-              <div class="roadmap-progress-badge">{{ careerPlan()?.progress || 78 }}% Achieved</div>
+              <div class="roadmap-progress-badge">{{ careerPlan()?.progress ?? 0 }}% Achieved</div>
             </div>
 
             <div class="roadmap-steps-vertical">
@@ -583,6 +641,129 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- 🌟 VERIFIED ENTERPRISE SKILL & CAREER PASSPORT MODAL -->
+  <div *ngIf="showSkillPassport()" class="passport-modal-backdrop" (click)="closeSkillPassport()">
+    <div class="passport-modal-dialog" (click)="$event.stopPropagation()">
+      <!-- PASSPORT CARD (PRINTABLE) -->
+      <div class="passport-card" id="printableProfilePassport">
+        <!-- PASSPORT HEADER -->
+        <div class="passport-header">
+          <div class="passport-brand">
+            <div class="passport-emblem">🛡️</div>
+            <div>
+              <h2 class="passport-title">Enterprise Learning Platform</h2>
+              <p class="passport-subtitle">OFFICIAL ENTERPRISE SKILL &amp; CAREER PASSPORT</p>
+            </div>
+          </div>
+          <div class="passport-seal">
+            <div class="seal-badge">VERIFIED CREDENTIAL</div>
+            <div class="seal-hash">{{ getPassportHash() }}</div>
+          </div>
+        </div>
+
+        <!-- PASSPORT HOLDER IDENTITY -->
+        <div class="passport-identity-grid">
+          <div class="identity-field">
+            <label>FULL NAME</label>
+            <span>{{ employee()?.employeeName || 'Employee' }}</span>
+          </div>
+          <div class="identity-field">
+            <label>CURRENT DESIGNATION</label>
+            <span>{{ employee()?.designation || 'Enterprise Specialist' }}</span>
+          </div>
+          <div class="identity-field">
+            <label>TARGET OBJECTIVE</label>
+            <span>{{ careerPlan()?.targetRole || 'Lead Systems Architect' }}</span>
+          </div>
+          <div class="identity-field">
+            <label>PROMOTION READINESS</label>
+            <span class="readiness-tag">{{ careerPlan()?.progress ?? 0 }}% VERIFIED</span>
+          </div>
+        </div>
+
+        <!-- SECTION 1: VERIFIED SKILL COMPETENCIES -->
+        <div class="passport-section">
+          <h4 class="passport-section-title">1. Verified Technical Competencies &amp; Freshness</h4>
+          <div class="passport-skills-table">
+            <div class="passport-skill-row" *ngFor="let s of skills()">
+              <span class="skill-name">{{ s.skillName }}</span>
+              <div class="skill-meter-col">
+                <div class="skill-meter-track">
+                  <div class="skill-meter-fill" [style.width.%]="(s.proficiencyLevel || 1) * 20"></div>
+                </div>
+              </div>
+              <span class="skill-level-text">Level {{ s.proficiencyLevel }} ({{ getSkillFreshness(s).label }})</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: COMPLETED LMS LEARNING PATHWAYS -->
+        <div class="passport-section">
+          <h4 class="passport-section-title">2. Curriculum Completion &amp; Enrolled Pathways</h4>
+          <div class="passport-lms-grid">
+            <div class="lms-summary-item">
+              <span class="lms-label">Curriculum Track</span>
+              <strong>{{ careerPlan()?.targetRole ? (careerPlan()?.targetRole + ' Pathway') : 'Enterprise Technology Track' }}</strong>
+            </div>
+            <div class="lms-summary-item">
+              <span class="lms-label">Enrolled Modules</span>
+              <strong>{{ enrollments().length }} Active Courses</strong>
+            </div>
+            <div class="lms-summary-item">
+              <span class="lms-label">Verified Competencies</span>
+              <strong>{{ competencies().length }} Mapped Standards</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: VALIDATED INDUSTRY CERTIFICATIONS -->
+        <div class="passport-section">
+          <h4 class="passport-section-title">3. Active Enterprise Credentials &amp; Certifications</h4>
+          <div class="passport-certs-grid">
+            <div class="passport-cert-badge" *ngFor="let cert of certifications()">
+              <span class="cert-icon">🏆</span>
+              <div>
+                <strong>{{ cert.certificationName }}</strong>
+                <small>Issuer: {{ cert.issuingOrganization }} &bull; Valid until {{ cert.expiryDate || 'No Expiry' }}</small>
+              </div>
+            </div>
+            <div class="passport-cert-badge" *ngIf="certifications().length === 0">
+              <span class="cert-icon">🎖️</span>
+              <div>
+                <strong>{{ careerPlan()?.targetRole || 'Professional Specialist' }} Track Registered</strong>
+                <small>Issuer: Enterprise Academy &bull; Objective Configured</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSPORT FOOTER & SIGNATURE -->
+        <div class="passport-footer">
+          <div class="auth-stamp">
+            <span>ISSUED BY</span>
+            <strong>Enterprise Talent &amp; Skill Authority</strong>
+            <small>Timestamp: {{ '2026-08-31T22:20:00Z' | date:'medium' }}</small>
+          </div>
+          <div class="digital-qr">
+            <div class="qr-box">
+              <span>[DIGITAL QR]</span>
+            </div>
+            <small>Immutable Ledger Verified</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL ACTION BUTTONS -->
+      <div class="passport-modal-actions">
+        <button class="btn btn-secondary" (click)="closeSkillPassport()">Close</button>
+        <button class="btn btn-primary" (click)="printSkillPassport()" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          <span>Print / Export PDF</span>
+        </button>
+      </div>
     </div>
   </div>
 

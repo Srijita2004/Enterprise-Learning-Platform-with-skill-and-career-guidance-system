@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 
@@ -77,6 +78,8 @@ export class CourseCertificateService {
   getAllCertificates(): Observable<CourseCertificate[]> {
     return this.http.get<CourseCertificate[]>(
       `${this.apiUrl}/certificates`
+    ).pipe(
+      catchError(() => of([]))
     );
   }
 
@@ -85,6 +88,8 @@ export class CourseCertificateService {
   ): Observable<CourseCertificate[]> {
     return this.http.get<CourseCertificate[]>(
       `${this.apiUrl}/learners/${learnerId}/certificates`
+    ).pipe(
+      catchError(() => of([]))
     );
   }
 

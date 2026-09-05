@@ -27,11 +27,12 @@ public class CareerController {
     private final DashboardService dashboardService;
     private final AuditLogService auditLogService;
     private final CareerRoadmapService careerRoadmapService;
+    private final JobNominationService jobNominationService;
 
     // ===== CAREER PLAN ENDPOINTS =====
 
     @PostMapping("/plans")
-    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createCareerPlan(@Valid @RequestBody CareerPlanDTO careerPlanDTO,
                                               HttpServletRequest request) {
         try {
@@ -82,7 +83,7 @@ public class CareerController {
     }
 
     @PutMapping("/plans/{planId}")
-    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateCareerPlan(@PathVariable Long planId,
                                               @Valid @RequestBody CareerPlanDTO careerPlanDTO,
                                               HttpServletRequest request) {
@@ -174,13 +175,25 @@ public class CareerController {
 
     @GetMapping("/jobs")
     @PreAuthorize("hasAnyRole('ADMIN','HR','LEARNER','EMPLOYEE')")
-    public ResponseEntity<?> getAllOpenJobs() {
+    public ResponseEntity<?> getAllJobs(@RequestParam(required = false, defaultValue = "false") boolean all) {
         try {
-            List<JobOpportunityDTO> jobs = jobPortalService.getAllOpenJobs();
+            List<JobOpportunityDTO> jobs = all ? jobPortalService.getAllJobs() : jobPortalService.getAllOpenJobs();
             return ResponseEntity.ok(jobs);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(buildErrorResponse("Error retrieving jobs: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/jobs/{jobId}")
+    @PreAuthorize("hasAnyRole('ADMIN','HR','LEARNER','EMPLOYEE')")
+    public ResponseEntity<?> getJobById(@PathVariable Long jobId) {
+        try {
+            JobOpportunityDTO job = jobPortalService.getJobOpportunity(jobId);
+            return ResponseEntity.ok(job);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(buildErrorResponse("Job not found: " + jobId));
         }
     }
 
@@ -190,12 +203,76 @@ public class CareerController {
                                                   HttpServletRequest request) {
         try {
             JobOpportunityDTO created = jobPortalService.createJobOpportunity(jobDTO);
-            auditLogService.logCreate("JOB_OPPORTUNITY", 1L, getUserId(request),
-                    "Job posted", request.getRemoteAddr());
+            auditLogService.logCreate("JOB_OPPORTUNITY", created.getId() != null ? created.getId() : 1L, getUserId(request),
+                    "Job posted: " + jobDTO.getJobTitle(), request.getRemoteAddr());
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(buildErrorResponse("Failed to create job: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/jobs/{jobId}")
+    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    public ResponseEntity<?> updateJobOpportunity(@PathVariable Long jobId,
+                                                  @Valid @RequestBody JobOpportunityDTO jobDTO,
+                                                  HttpServletRequest request) {
+        try {
+            JobOpportunityDTO updated = jobPortalService.updateJobOpportunity(jobId, jobDTO);
+            auditLogService.logUpdate("JOB_OPPORTUNITY", jobId, "Job updated: " + jobDTO.getJobTitle(),
+                    getUserId(request), "Updated by admin/hr", request.getRemoteAddr());
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(buildErrorResponse("Job not found: " + jobId));
+        }
+    }
+
+    @PatchMapping("/jobs/{jobId}/status")
+    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    public ResponseEntity<?> toggleJobStatus(@PathVariable Long jobId,
+                                             @RequestBody Map<String, String> body,
+                                             HttpServletRequest request) {
+        try {
+            String status = body.getOrDefault("status", "OPEN");
+            JobOpportunityDTO updated = jobPortalService.toggleJobStatus(jobId, status);
+            auditLogService.logUpdate("JOB_OPPORTUNITY", jobId, "Job status changed to " + status,
+                    getUserId(request), "Status toggle", request.getRemoteAddr());
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(buildErrorResponse("Job not found: " + jobId));
+        }
+    }
+
+    @DeleteMapping("/jobs/{jobId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteJobOpportunity(@PathVariable Long jobId,
+                                                  HttpServletRequest request) {
+        try {
+            jobPortalService.deleteJobOpportunity(jobId);
+            auditLogService.logDelete("JOB_OPPORTUNITY", jobId, getUserId(request),
+                    "Job deleted: " + jobId, request.getRemoteAddr());
+            return ResponseEntity.ok(Map.of("message", "Job opportunity deleted successfully", "jobId", jobId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(buildErrorResponse("Job not found: " + jobId));
+        }
+    }
+
+    @GetMapping("/jobs/{jobId}/candidates")
+    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    public ResponseEntity<?> getCandidatesForJob(@PathVariable Long jobId) {
+        try {
+            List<com.skillspherenexus.careerservice.dto.CandidateMatchDTO> candidates =
+                    jobPortalService.findMatchingCandidatesForJob(jobId);
+            return ResponseEntity.ok(candidates);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(buildErrorResponse("Job not found: " + jobId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(buildErrorResponse("Error matching candidates: " + e.getMessage()));
         }
     }
 
@@ -208,6 +285,18 @@ public class CareerController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(buildErrorResponse("Error finding matching jobs: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/jobs/matching/employee/{employeeId}")
+    @PreAuthorize("hasAnyRole('ADMIN','HR','LEARNER','EMPLOYEE')")
+    public ResponseEntity<?> getMatchingJobsForEmployee(@PathVariable Long employeeId) {
+        try {
+            List<JobOpportunityDTO> matchingJobs = jobPortalService.findMatchingJobsForEmployee(employeeId);
+            return ResponseEntity.ok(matchingJobs);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(buildErrorResponse("Error matching jobs for employee: " + e.getMessage()));
         }
     }
 
@@ -226,6 +315,76 @@ public class CareerController {
                     .body(buildErrorResponse("Error calculating match: " + e.getMessage()));
         }
     }
+
+    // ===== JOB NOMINATION ENDPOINTS =====
+
+    @PostMapping("/nominations")
+    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    public ResponseEntity<?> createNomination(@Valid @RequestBody JobNominationDTO dto,
+                                              HttpServletRequest request) {
+        try {
+            Long nominatedBy = getUserId(request);
+            JobNominationDTO created = jobNominationService.createNomination(dto, String.valueOf(nominatedBy));
+            auditLogService.logCreate("JOB_NOMINATION", created.getId() != null ? created.getId() : 1L,
+                    nominatedBy, "Employee #" + dto.getEmployeeId() + " nominated for job #" + dto.getJobId(),
+                    request.getRemoteAddr());
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(buildErrorResponse(e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(buildErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(buildErrorResponse("Failed to create nomination: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/nominations/employee/{employeeId}")
+    @PreAuthorize("hasAnyRole('ADMIN','HR','LEARNER','EMPLOYEE')")
+    public ResponseEntity<?> getNominationsByEmployee(@PathVariable Long employeeId) {
+        try {
+            List<JobNominationDTO> nominations = jobNominationService.getNominationsByEmployee(employeeId);
+            return ResponseEntity.ok(nominations);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(buildErrorResponse("Error retrieving nominations: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/nominations/job/{jobId}")
+    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    public ResponseEntity<?> getNominationsByJob(@PathVariable Long jobId) {
+        try {
+            List<JobNominationDTO> nominations = jobNominationService.getNominationsByJob(jobId);
+            return ResponseEntity.ok(nominations);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(buildErrorResponse("Error retrieving nominations: " + e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/nominations/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    public ResponseEntity<?> updateNominationStatus(@PathVariable Long id,
+                                                    @RequestBody Map<String, String> body,
+                                                    HttpServletRequest request) {
+        try {
+            String status = body.getOrDefault("status", "UNDER_EVALUATION");
+            JobNominationDTO updated = jobNominationService.updateNominationStatus(id, status);
+            auditLogService.logUpdate("JOB_NOMINATION", id, "Nomination status updated to " + status,
+                    getUserId(request), "Status change", request.getRemoteAddr());
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(buildErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(buildErrorResponse("Failed to update nomination status: " + e.getMessage()));
+        }
+    }
+
 
     // ===== CAREER ROADMAP ENDPOINTS =====
 

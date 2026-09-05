@@ -3,6 +3,7 @@ package com.skillspherenexus.notificationservice.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
@@ -21,6 +22,10 @@ public class JwtTokenValidator {
 
     private static final Logger log = LoggerFactory.getLogger(JwtTokenValidator.class);
     public static final String SECRET_KEY = "SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise";
+
+    @Value("${jwt.secret:${JWT_SECRET:SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}}")
+    private String configuredSecretKey;
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public boolean validateToken(String token) {
@@ -34,7 +39,7 @@ public class JwtTokenValidator {
             }
 
             String dataToSign = parts[0] + "." + parts[1];
-            String expectedSignature = signHmacSha256(dataToSign, SECRET_KEY);
+            String expectedSignature = signHmacSha256(dataToSign, getEffectiveSecretKey());
 
             if (!MessageDigest.isEqual(parts[2].getBytes(StandardCharsets.UTF_8), expectedSignature.getBytes(StandardCharsets.UTF_8))) {
                 log.warn("JWT signature mismatch");
@@ -94,5 +99,9 @@ public class JwtTokenValidator {
         mac.init(secretKeySpec);
         byte[] hmacBytes = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
         return Base64.getUrlEncoder().withoutPadding().encodeToString(hmacBytes);
+    }
+
+    private String getEffectiveSecretKey() {
+        return (configuredSecretKey != null && !configuredSecretKey.isBlank()) ? configuredSecretKey : SECRET_KEY;
     }
 }

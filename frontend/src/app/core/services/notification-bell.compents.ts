@@ -425,8 +425,8 @@ const REFRESH_INTERVAL_MS = 30000;
     }
 
     .notification-dot.info {
-      background: #0284c7;
-      color: #0284c7;
+      background: var(--accent-primary, #0284c7);
+      color: var(--accent-primary, #0284c7);
     }
 
     .notification-content {

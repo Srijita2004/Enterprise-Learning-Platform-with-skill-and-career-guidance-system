@@ -30,6 +30,38 @@ export interface JobOpportunity {
   skillsRequired: string[];
   description: string;
   salary: number;
+  requiredExperienceYears?: number;
+  status?: string;
+  postedDate?: string;
+}
+
+export interface TrainingRecord {
+  id?: number;
+  employeeId: number;
+  courseName: string;
+  courseId: string;
+  score: number;
+  completionPercentage: number;
+  status: 'ENROLLED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  enrollmentDate?: string;
+  completionDate?: string;
+  feedback?: string;
+  skillImprovement?: number;
+}
+
+export interface JobNomination {
+  id?: number;
+  jobId: number;
+  jobTitle?: string;
+  employeeId: number;
+  employeeName?: string;
+  nominatedBy?: string;
+  matchScore?: number;
+  status?: 'PENDING_REVIEW' | 'UNDER_EVALUATION' | 'ACCEPTED' | 'REJECTED' | 'INTERVIEW_SCHEDULED';
+  notes?: string;
+  nominationDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DepartmentSkillCoverage {

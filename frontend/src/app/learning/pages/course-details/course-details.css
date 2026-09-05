@@ -149,16 +149,16 @@
   place-items: center;
   width: 72px;
   height: 72px;
-  border: 1px solid rgba(125, 211, 252, 0.35);
+  border: 1px solid var(--accent-primary-glow, rgba(125, 211, 252, 0.35));
   border-radius: 21px;
   background:
     linear-gradient(
       135deg,
-      #0284c7,
-      #4f46e5
+      var(--accent-primary, #0284c7),
+      var(--accent-secondary, #4f46e5)
     );
   box-shadow:
-    0 15px 34px rgba(37, 99, 235, 0.35);
+    0 15px 34px var(--accent-primary-glow, rgba(37, 99, 235, 0.35));
   color: #ffffff;
   font-size: 31px;
   font-weight: 900;
@@ -200,8 +200,9 @@
 
 .summary-row strong,
 .enrollment-row strong {
-  color: #e2e8f0;
+  color: var(--text-primary, #0f172a);
   font-size: 12px;
+  font-weight: 700;
   text-align: right;
 }
 
@@ -262,17 +263,17 @@
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 12px;
-  border: 1px solid rgba(56, 189, 248, 0.38);
+  border: 1px solid var(--accent-primary-glow, rgba(56, 189, 248, 0.38));
   border-radius: 13px;
   padding: 13px 18px;
   background:
     linear-gradient(
       135deg,
-      #0284c7,
-      #4f46e5
+      var(--accent-primary, #0284c7),
+      var(--accent-secondary, #4f46e5)
     );
   box-shadow:
-    0 12px 28px rgba(37, 99, 235, 0.25);
+    0 12px 28px var(--accent-primary-glow, rgba(37, 99, 235, 0.25));
   color: #ffffff;
   font-size: 13px;
   font-weight: 800;
@@ -314,9 +315,10 @@
   background:
     linear-gradient(
       135deg,
-      #2563eb,
-      #4f46e5
+      var(--accent-primary, #2563eb),
+      var(--accent-primary-hover, #4f46e5)
     );
+  box-shadow: 0 4px 12px var(--accent-primary-glow);
 }
 
 .payment-button {
@@ -439,8 +441,9 @@
 }
 
 .detail-row strong {
-  color: #e2e8f0;
+  color: var(--text-primary, #0f172a);
   font-size: 12px;
+  font-weight: 700;
   text-align: right;
 }
 
@@ -492,7 +495,8 @@
   margin-top: 10px;
   border-radius: 10px;
   padding: 10px 16px;
-  background: #2563eb;
+  background: var(--accent-primary, #2563eb);
+  box-shadow: 0 4px 12px var(--accent-primary-glow);
   color: #ffffff;
   font-size: 12px;
   font-weight: 800;

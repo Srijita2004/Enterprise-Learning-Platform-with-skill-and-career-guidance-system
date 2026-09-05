@@ -151,6 +151,9 @@
               <button type="button" class="accent-option red" [class.selected]="themeService.accentTheme() === 'red'" (click)="themeService.setAccent('red')">
                 <span class="color-dot"></span> Red
               </button>
+              <button type="button" class="accent-option vanilla" [class.selected]="themeService.accentTheme() === 'vanilla'" (click)="themeService.setAccent('vanilla')">
+                <span class="color-dot"></span> Vanilla
+              </button>
             </div>
           </div>
         </div>
@@ -229,6 +232,14 @@
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
             </span>
             Career Roadmap
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/internal-jobs" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            </span>
+            Internal Jobs
           </a>
         </li>
       }
@@ -393,11 +404,19 @@
         </li>
         <li class="nav-item nav-section-label">Career &amp; Analytics</li>
         <li class="nav-item">
+          <a routerLink="/internal-jobs" routerLinkActive="active-link" (click)="closeSidebar()">
+            <span class="nav-symbol">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            </span>
+            Internal Job Marketplace
+          </a>
+        </li>
+        <li class="nav-item">
           <a routerLink="/career-analytics" routerLinkActive="active-link" (click)="closeSidebar()">
             <span class="nav-symbol">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
             </span>
-            Career &amp; Analytics Center
+            Career Analytics Center
           </a>
         </li>
       }

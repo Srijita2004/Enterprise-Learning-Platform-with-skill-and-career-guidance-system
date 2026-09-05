@@ -99,6 +99,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/career-analytics/career-analytics').then((m) => m.CareerAnalyticsComponent)
   },
   {
+    path: 'internal-jobs',
+    canActivate: [authGuard, roleGuard('ADMIN', 'HR', 'EMPLOYEE', 'LEARNER')],
+    loadComponent: () => import('./features/internal-jobs/internal-jobs').then((m) => m.InternalJobsComponent)
+  },
+  {
     path: 'courses',
     canActivate: [authGuard, roleGuard('LEARNER', 'EMPLOYEE', 'ADMIN', 'HR')],
     loadComponent: () => import('./learning/pages/course-list/course-list').then((m) => m.CourseList)

@@ -77,6 +77,143 @@
     </button>
   </div>
 
+  <!-- 🌟 DIFFERENTIATOR TOOLS ROW (WHAT-IF SIMULATOR & SKILL PASSPORT) -->
+  <div class="differentiator-toolbar">
+    <div class="differentiator-tag">
+      <span class="sparkle-icon">✨</span>
+      <span>Enterprise Intelligence Tools</span>
+    </div>
+    <div class="differentiator-actions">
+      <button 
+        class="sim-btn" 
+        [class.active]="showSimulator()" 
+        (click)="toggleSimulator()"
+        title="Simulate career progression impact based on acquiring new skills or certifications"
+      >
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>{{ showSimulator() ? 'Hide "What-If" Simulator' : 'Launch "What-If" Scenario Simulator' }}</span>
+      </button>
+
+      <button 
+        class="passport-btn" 
+        (click)="openSkillPassport()"
+        title="Generate official tamper-evident Enterprise Skill & Career Passport"
+      >
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>Generate Verified Skill Passport</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 🌟 INTERACTIVE "WHAT-IF" CAREER SCENARIO SIMULATOR PANEL -->
+  <div *ngIf="showSimulator()" class="simulator-panel glass-panel">
+    <div class="sim-header">
+      <div class="sim-title-group">
+        <div class="sim-badge">PREDICTIVE TALENT ENGINE</div>
+        <h3>"What-If" Career Trajectory &amp; Promotion Simulator</h3>
+        <p class="sim-subtitle">Simulate real-time progression readiness and internal job qualification by acquiring specific skill boosts or verified credentials.</p>
+      </div>
+      <button class="sim-close-btn" (click)="toggleSimulator()">&times;</button>
+    </div>
+
+    <div class="sim-content-grid">
+      <!-- SIMULATION CONTROLS (LEFT) -->
+      <div class="sim-controls-col">
+        <div class="sim-section-label">1. SELECT ASPIRATIONAL TARGET ROLE</div>
+        <select class="form-control sim-role-select" [ngModel]="simulatedTargetRole()" (ngModelChange)="simulatedTargetRole.set($event)">
+          <option value="Staff Cloud &amp; Microservices Architect">Staff Cloud &amp; Microservices Architect</option>
+          <option value="Principal Platform Solutions Engineer">Principal Platform Solutions Engineer</option>
+          <option value="Director of Enterprise Quality Engineering">Director of Enterprise Quality Engineering</option>
+          <option value="Staff AI &amp; MLOps Systems Architect">Staff AI &amp; MLOps Systems Architect</option>
+          <option value="Enterprise Cybersecurity Lead">Enterprise Cybersecurity Lead</option>
+        </select>
+
+        <div class="sim-section-label" style="margin-top: 1.25rem;">2. SIMULATE SKILL ACQUISITION BOOSTS</div>
+        <div class="sim-toggles-list">
+          <div 
+            *ngFor="let s of simulatedSkillBoosts(); let idx = index" 
+            class="sim-toggle-item"
+            [class.active]="s.active"
+            (click)="toggleSimulatorSkill(idx)"
+          >
+            <div class="sim-toggle-checkbox">
+              <span *ngIf="s.active">&#10003;</span>
+            </div>
+            <div class="sim-toggle-info">
+              <span class="sim-toggle-name">{{ s.name }}</span>
+              <span class="sim-toggle-delta">Level {{ s.current }} &rarr; <strong>Level {{ s.boost }}</strong> (+{{ s.boost - s.current }})</span>
+            </div>
+            <span class="sim-impact-pill">+6% Impact</span>
+          </div>
+        </div>
+
+        <div class="sim-section-label" style="margin-top: 1.25rem;">3. SIMULATE CREDENTIALS &amp; CERTIFICATIONS</div>
+        <div class="sim-toggles-list">
+          <div 
+            *ngFor="let c of simulatedCertBoosts(); let idx = index" 
+            class="sim-toggle-item"
+            [class.active]="c.active"
+            (click)="toggleSimulatorCert(idx)"
+          >
+            <div class="sim-toggle-checkbox">
+              <span *ngIf="c.active">&#10003;</span>
+            </div>
+            <div class="sim-toggle-info">
+              <span class="sim-toggle-name">{{ c.name }}</span>
+              <span class="sim-toggle-delta" style="color: var(--text-muted);">Issuer: {{ c.issuer }}</span>
+            </div>
+            <span class="sim-impact-pill highlight">+{{ c.boostPct }}% Impact</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIMULATION PREDICTIVE RESULTS (RIGHT) -->
+      <div class="sim-results-col">
+        <div class="sim-section-label">PREDICTED PROGRESSION OUTCOMES</div>
+        
+        <!-- READINESS GAUGE -->
+        <div class="sim-metric-card">
+          <div class="metric-top">
+            <span class="metric-label">Simulated Promotion Readiness</span>
+            <span class="metric-delta-tag" *ngIf="getSimulatedReadiness() > (careerPlan()?.progress ?? 0)">
+              +{{ getSimulatedReadiness() - (careerPlan()?.progress ?? 0) }}% Projected Boost
+            </span>
+          </div>
+          <div class="sim-gauge-bar">
+            <div class="sim-gauge-fill" [style.width.%]="getSimulatedReadiness()"></div>
+          </div>
+          <div class="metric-readout">
+            <span class="current-value">{{ getSimulatedReadiness() }}%</span>
+            <span class="benchmark-target">Target Threshold: 85%</span>
+          </div>
+        </div>
+
+        <!-- OUTCOME TILES -->
+        <div class="sim-outcomes-grid">
+          <div class="outcome-tile">
+            <span class="outcome-num">{{ getSimulatedMatches() }}</span>
+            <span class="outcome-label">Matching Openings</span>
+            <small class="outcome-sub">Unlocked internal positions</small>
+          </div>
+          <div class="outcome-tile">
+            <span class="outcome-num" style="color: #10b981;">{{ getSimulatedReadiness() >= 85 ? 'READY' : 'EXPEDITED' }}</span>
+            <span class="outcome-label">Nomination Feasibility</span>
+            <small class="outcome-sub">{{ getSimulatedTimeRemaining() }}</small>
+          </div>
+        </div>
+
+        <!-- SIMULATOR ADVISORY -->
+        <div class="sim-advisory-box">
+          <div class="advisory-icon">💡</div>
+          <div class="advisory-text">
+            <strong>System Recommendation:</strong>
+            <p>Completing the active simulated skills will satisfy 100% of {{ simulatedTargetRole() }} requirements and qualify for immediate executive nomination.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ROADMAP AND PROMOTION CRITERIA TAB -->
   <div *ngIf="activeTab() === 'roadmap'" class="tab-content">
     <div *ngIf="loadingPlan()" class="loading-state">
@@ -101,7 +238,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
             <span class="goal-label" style="margin-bottom: 0;">CAREER OBJECTIVE TARGET</span>
             <button *ngIf="isAdmin() && !editTargetRoleMode()" class="btn btn-secondary-icon" (click)="startEditTargetRole()" aria-label="Change target role" style="padding: 0.2rem 0.55rem; font-size: 0.75rem;">
-              Edit
+              Edit Target Role
             </button>
           </div>
           
@@ -660,6 +797,138 @@
             </div>
           </ng-template>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🌟 VERIFIED ENTERPRISE SKILL & CAREER PASSPORT MODAL -->
+  <div *ngIf="showSkillPassport()" class="passport-modal-backdrop" (click)="closeSkillPassport()">
+    <div class="passport-modal-dialog" (click)="$event.stopPropagation()">
+      <!-- PASSPORT CARD (PRINTABLE) -->
+      <div class="passport-card" id="printablePassport">
+        <!-- PASSPORT HEADER -->
+        <div class="passport-header">
+          <div class="passport-brand">
+            <div class="passport-emblem">🛡️</div>
+            <div>
+              <h2 class="passport-title">Enterprise Learning Platform</h2>
+              <p class="passport-subtitle">OFFICIAL ENTERPRISE SKILL &amp; CAREER PASSPORT</p>
+            </div>
+          </div>
+          <div class="passport-seal">
+            <div class="seal-badge">VERIFIED CREDENTIAL</div>
+            <div class="seal-hash">{{ getPassportHash() }}</div>
+          </div>
+        </div>
+
+        <!-- PASSPORT HOLDER IDENTITY -->
+        <div class="passport-identity-grid">
+          <div class="identity-field">
+            <label>FULL NAME</label>
+            <span>{{ careerPlan()?.employeeName || authService.currentUser()?.name || 'Employee' }}</span>
+          </div>
+          <div class="identity-field">
+            <label>CURRENT DESIGNATION</label>
+            <span>{{ careerPlan()?.currentRole || 'Senior Java Developer' }}</span>
+          </div>
+          <div class="identity-field">
+            <label>TARGET OBJECTIVE</label>
+            <span>{{ careerPlan()?.targetRole || 'Staff Cloud Architect' }}</span>
+          </div>
+          <div class="identity-field">
+            <label>PROMOTION READINESS</label>
+            <span class="readiness-tag">{{ careerPlan()?.progress ?? 0 }}% VERIFIED</span>
+          </div>
+        </div>
+
+        <!-- SECTION 1: VERIFIED SKILL COMPETENCIES -->
+        <div class="passport-section">
+          <h4 class="passport-section-title">1. Verified Technical &amp; Domain Competencies</h4>
+          <div class="passport-skills-table">
+            <div class="passport-skill-row" *ngFor="let s of careerPlan()?.skillsAcquired">
+              <span class="skill-name">{{ s }}</span>
+              <div class="skill-meter-col">
+                <div class="skill-meter-track">
+                  <div class="skill-meter-fill" style="width: 85%;"></div>
+                </div>
+              </div>
+              <span class="skill-level-text">Verified (Mastery)</span>
+            </div>
+            <div class="passport-skill-row" *ngFor="let g of careerPlan()?.skillGaps">
+              <span class="skill-name">{{ g }}</span>
+              <div class="skill-meter-col">
+                <div class="skill-meter-track">
+                  <div class="skill-meter-fill" style="width: 60%; background: #f59e0b;"></div>
+                </div>
+              </div>
+              <span class="skill-level-text" style="color: #f59e0b;">In Training Track</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: COMPLETED LMS LEARNING PATHWAYS -->
+        <div class="passport-section">
+          <h4 class="passport-section-title">2. Curriculum Completion &amp; Training Telemetry</h4>
+          <div class="passport-lms-grid">
+            <div class="lms-summary-item">
+              <span class="lms-label">Curriculum Track</span>
+              <strong>{{ careerPlan()?.targetRole ? (careerPlan()?.targetRole + ' Pathway') : 'Enterprise Technology Track' }}</strong>
+            </div>
+            <div class="lms-summary-item">
+              <span class="lms-label">Training Programs</span>
+              <strong>{{ courses().length > 0 ? (courses().length + ' Available Modules') : 'Active Curriculum' }}</strong>
+            </div>
+            <div class="lms-summary-item">
+              <span class="lms-label">Assessment Benchmark Score</span>
+              <strong style="color: #10b981;">{{ careerPlan()?.progress ? (careerPlan()!.progress + '% Benchmark') : 'Ready for Assessment' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: VALIDATED INDUSTRY CERTIFICATIONS -->
+        <div class="passport-section">
+          <h4 class="passport-section-title">3. Active Enterprise Credentials &amp; Verification</h4>
+          <div class="passport-certs-grid">
+            <div class="passport-cert-badge" *ngFor="let cert of employeeCerts()">
+              <span class="cert-icon">🏆</span>
+              <div>
+                <strong>{{ cert.certificationName }}</strong>
+                <small>Issuer: {{ cert.issuingOrganization }} &bull; {{ cert.verificationStatus || 'VERIFIED' }}</small>
+              </div>
+            </div>
+            <div class="passport-cert-badge" *ngIf="employeeCerts().length === 0">
+              <span class="cert-icon">🎖️</span>
+              <div>
+                <strong>{{ careerPlan()?.targetRole || 'Professional Specialist' }} Track Registered</strong>
+                <small>Issuer: Enterprise Academy &bull; Objective Configured</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSPORT FOOTER & SIGNATURE -->
+        <div class="passport-footer">
+          <div class="auth-stamp">
+            <span>ISSUED BY</span>
+            <strong>Enterprise Talent &amp; Skill Authority</strong>
+            <small>Timestamp: {{ '2026-08-31T22:20:00Z' | date:'medium' }}</small>
+          </div>
+          <div class="digital-qr">
+            <div class="qr-box">
+              <span>[DIGITAL QR]</span>
+            </div>
+            <small>Immutable Ledger Verified</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL ACTION BUTTONS -->
+      <div class="passport-modal-actions">
+        <button class="btn btn-secondary" (click)="closeSkillPassport()">Close</button>
+        <button class="btn btn-primary" (click)="printSkillPassport()" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          <span>Print / Export PDF</span>
+        </button>
       </div>
     </div>
   </div>

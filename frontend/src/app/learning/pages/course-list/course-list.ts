@@ -5,6 +5,7 @@ import {
   OnInit,
   inject
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { Course } from '../../models/course.model';
@@ -16,7 +17,8 @@ import { AuthService } from '../../../core/auth/auth.service';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink
+    RouterLink,
+    FormsModule
   ],
   templateUrl: './course-list.html',
   styleUrls: ['./course-list.css']
@@ -32,9 +34,11 @@ export class CourseList implements OnInit {
   private readonly authService = inject(AuthService);
 
   courses: Course[] = [];
+  searchQuery = '';
+  selectedLevel = 'ALL';
+  selectedCategory = 'ALL';
 
   isLoading = true;
-
   errorMessage = '';
 
   ngOnInit(): void {
@@ -75,6 +79,47 @@ export class CourseList implements OnInit {
           this.changeDetector.detectChanges();
         }
       });
+  }
+
+  get categories(): string[] {
+    const set = new Set<string>();
+    this.courses.forEach(c => {
+      if (c.category) set.add(c.category);
+    });
+    return Array.from(set).sort();
+  }
+
+  get filteredCourses(): Course[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.courses.filter(course => {
+      // Level filter
+      if (this.selectedLevel !== 'ALL' && course.courseLevel !== this.selectedLevel) {
+        return false;
+      }
+      // Category filter
+      if (this.selectedCategory !== 'ALL' && course.category !== this.selectedCategory) {
+        return false;
+      }
+      // Search query filter
+      if (q) {
+        const titleMatch = (course.title || '').toLowerCase().includes(q);
+        const codeMatch = (course.courseCode || '').toLowerCase().includes(q);
+        const categoryMatch = (course.category || '').toLowerCase().includes(q);
+        const descMatch = (course.description || '').toLowerCase().includes(q);
+        const levelMatch = (course.courseLevel || '').toLowerCase().includes(q);
+        if (!titleMatch && !codeMatch && !categoryMatch && !descMatch && !levelMatch) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.selectedLevel = 'ALL';
+    this.selectedCategory = 'ALL';
+    this.changeDetector.detectChanges();
   }
 
   trackCourseById(

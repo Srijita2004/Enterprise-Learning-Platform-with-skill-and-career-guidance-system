@@ -1,6 +1,7 @@
 package com.skillspherenexus.notificationservice.kafka;
 
 import com.skillspherenexus.notificationservice.enums.NotificationType;
+import com.skillspherenexus.notificationservice.enums.TargetRole;
 import com.skillspherenexus.notificationservice.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ public class NotificationEventListener {
                 str(event.get("sourceService")),
                 "New employee onboarded",
                 employeeName + " has been added to the workforce",
+                employeeId,
+                TargetRole.HR_MANAGER,
                 employeeId);
     }
 
@@ -46,6 +49,8 @@ public class NotificationEventListener {
                 "Skill profile " + (changeType == null ? "updated" : changeType.toLowerCase()),
                 "Skill " + skillId + " was " + (changeType == null ? "updated" : changeType.toLowerCase())
                         + " for employee " + employeeId,
+                employeeId,
+                TargetRole.EMPLOYEE,
                 employeeId);
     }
 
@@ -60,7 +65,9 @@ public class NotificationEventListener {
                 str(event.get("sourceService")),
                 "Course completed",
                 "Course \"" + courseTitle + "\" was completed by learner " + learnerId,
-                courseId);
+                courseId,
+                TargetRole.LEARNER,
+                learnerId);
     }
 
     @KafkaListener(topics = "${kafka.topic.certificate-issued}", groupId = "${spring.kafka.consumer.group-id}")
@@ -74,7 +81,9 @@ public class NotificationEventListener {
                 str(event.get("sourceService")),
                 "New certification issued",
                 certificationName + " issued to " + employeeName,
-                certificationId);
+                certificationId,
+                TargetRole.EMPLOYEE,
+                null);
     }
 
     @KafkaListener(topics = "${kafka.topic.certificate-renewed}", groupId = "${spring.kafka.consumer.group-id}")
@@ -88,7 +97,9 @@ public class NotificationEventListener {
                 str(event.get("sourceService")),
                 "Certification renewed",
                 certificationName + " renewed, new expiry " + newExpiryDate,
-                certificationId);
+                certificationId,
+                TargetRole.EMPLOYEE,
+                null);
     }
 
     private String str(Object value) {

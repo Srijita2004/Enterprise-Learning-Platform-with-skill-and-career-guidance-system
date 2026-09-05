@@ -924,9 +924,10 @@
   background:
     linear-gradient(
       90deg,
-      #0284c7,
-      #22d3ee
+      var(--accent-primary, #0284c7),
+      var(--accent-secondary, #22d3ee)
     );
+  box-shadow: 0 0 8px var(--accent-primary-glow);
   transition: width 0.35s ease;
 }
 
@@ -999,8 +1000,8 @@
   background:
     linear-gradient(
       135deg,
-      #2563eb,
-      #4f46e5
+      var(--accent-primary, #2563eb),
+      var(--accent-primary-hover, #4f46e5)
     );
   font-size: 18px;
   font-weight: 900;
@@ -1012,7 +1013,7 @@
 
 .module-heading p {
   margin: 0 0 4px;
-  color: #38bdf8;
+  color: var(--accent-secondary, #38bdf8);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -1089,9 +1090,11 @@
   background:
     linear-gradient(
       135deg,
-      #0284c7,
-      #4f46e5
+      var(--accent-primary, #0284c7),
+      var(--accent-secondary, #4f46e5)
     );
+  box-shadow: 0 4px 14px var(--accent-primary-glow);
+  color: #ffffff;
   font-size: 20px;
   font-weight: 900;
 }
@@ -1298,9 +1301,10 @@
   background:
     linear-gradient(
       135deg,
-      #2563eb,
-      #4f46e5
+      var(--accent-primary, #2563eb),
+      var(--accent-primary-hover, #4f46e5)
     );
+  box-shadow: 0 4px 12px var(--accent-primary-glow);
   color: #ffffff;
 }
 
@@ -1361,7 +1365,8 @@
 .primary-link {
   border-radius: 10px;
   padding: 10px 15px;
-  background: #2563eb;
+  background: var(--accent-primary, #2563eb);
+  box-shadow: 0 4px 12px var(--accent-primary-glow);
   color: #ffffff;
   font-weight: 800;
   text-decoration: none;

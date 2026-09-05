@@ -11,46 +11,160 @@ import { environment } from '../../../environments/environment';
 export class EmployeeService {
   private readonly baseUrl = `${environment.apiUrl}/employee`;
 
-  // Realistic mock data store
+  // Complete 10-Employee Enterprise Dataset
   private mockEmployees: Employee[] = [
-    { employeeId: 101, employeeName: 'Alice Vance', designation: 'Senior Java Developer', salary: 98000 },
-    { employeeId: 102, employeeName: 'Marcus Brodie', designation: 'Principal Architect', salary: 145000 },
-    { employeeId: 103, employeeName: 'Sarah Jenkins', designation: 'QA Lead', salary: 85000 },
-    { employeeId: 104, employeeName: 'David Kross', designation: 'DevOps Engineer', salary: 92000 },
-    { employeeId: 105, employeeName: 'Emily Watson', designation: 'Product Specialist', salary: 78000 }
+    { employeeId: 1, employeeName: 'Srijita', designation: 'Senior Java Developer', salary: 115000 },
+    { employeeId: 101, employeeName: 'Alex Vance', designation: 'Cloud Infrastructure Engineer', salary: 110000 },
+    { employeeId: 102, employeeName: 'Marcus Brodie', designation: 'Principal Systems Architect', salary: 145000 },
+    { employeeId: 103, employeeName: 'Sarah Jenkins', designation: 'Senior QA Lead', salary: 98000 },
+    { employeeId: 106, employeeName: 'John Smith', designation: 'Frontend Software Engineer', salary: 102000 },
+    { employeeId: 107, employeeName: 'Jane Doe', designation: 'Data & Machine Learning Engineer', salary: 125000 },
+    { employeeId: 108, employeeName: 'David Miller', designation: 'DevOps & Site Reliability Engineer', salary: 118000 },
+    { employeeId: 109, employeeName: 'Elena Rostova', designation: 'Cybersecurity & Compliance Analyst', salary: 130000 },
+    { employeeId: 110, employeeName: 'Michael Chang', designation: 'Full-Stack Application Developer', salary: 108000 },
+    { employeeId: 111, employeeName: 'Priya Sharma', designation: 'Database Performance Specialist', salary: 122000 }
   ];
 
   constructor(private http: HttpClient) {}
 
+  private getDynamicEmployees(): Employee[] {
+    const list: Employee[] = [];
+    try {
+      const stored = JSON.parse(localStorage.getItem('ssn_registered_employees') || '[]');
+      if (Array.isArray(stored)) list.push(...stored);
+    } catch {}
+
+    try {
+      const rawSession = sessionStorage.getItem('ssn_auth_user');
+      if (rawSession) {
+        const u = JSON.parse(rawSession);
+        if (u && u.role === 'EMPLOYEE' && u.name) {
+          const empId = u.employeeId || 201;
+          if (!list.some(e => e.employeeId === empId || (e.employeeName && e.employeeName.toLowerCase().trim() === u.name.toLowerCase().trim()))) {
+            list.push({
+              employeeId: empId,
+              employeeName: u.name,
+              designation: 'Enterprise Associate',
+              salary: 85000
+            });
+          }
+        }
+      }
+    } catch {}
+
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('ssn_') || key.includes('user') || key.includes('account'))) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            try {
+              const obj = JSON.parse(raw);
+              if (obj && obj.role === 'EMPLOYEE' && obj.name) {
+                const empId = obj.employeeId || 201;
+                if (!list.some(e => e.employeeId === empId || (e.employeeName && e.employeeName.toLowerCase().trim() === obj.name.toLowerCase().trim()))) {
+                  list.push({
+                    employeeId: empId,
+                    employeeName: obj.name,
+                    designation: 'Enterprise Associate',
+                    salary: 85000
+                  });
+                }
+              }
+            } catch {}
+          }
+        }
+      }
+    } catch {}
+
+    return list;
+  }
+
+  saveDynamicEmployee(emp: Employee): void {
+    try {
+      const list = this.getDynamicEmployees();
+      const existingIdx = list.findIndex(e => e.employeeId === emp.employeeId || (e.employeeName && emp.employeeName && e.employeeName.toLowerCase().trim() === emp.employeeName.toLowerCase().trim()));
+      if (existingIdx >= 0) {
+        list[existingIdx] = emp;
+      } else {
+        list.push(emp);
+      }
+      localStorage.setItem('ssn_registered_employees', JSON.stringify(list));
+    } catch {}
+  }
+
   getAll(): Observable<Employee[]> {
+    const dynamicEmps = this.getDynamicEmployees();
+    const baseList = [...this.mockEmployees];
+    
+    const seenNames = new Set(baseList.map(e => (e.employeeName || '').toLowerCase().trim()));
+    const seenIds = new Set(baseList.map(e => e.employeeId));
+
+    dynamicEmps.forEach(d => {
+      const dName = (d.employeeName || '').toLowerCase().trim();
+      if (!seenNames.has(dName) && !seenIds.has(d.employeeId)) {
+        baseList.push(d);
+        seenNames.add(dName);
+        seenIds.add(d.employeeId);
+      }
+    });
+
     if (environment.useMock) {
-      return of([...this.mockEmployees]);
+      baseList.sort((a, b) => a.employeeId - b.employeeId);
+      return of([...baseList]);
     }
+
     return this.http.get<Employee[]>(this.baseUrl).pipe(
-      catchError(this.handleError)
+      map(res => {
+        if (!res || !Array.isArray(res) || res.length === 0) {
+          baseList.sort((a, b) => a.employeeId - b.employeeId);
+          return [...baseList];
+        }
+        const merged = [...res];
+        const resNames = new Set(merged.map(e => (e.employeeName || '').toLowerCase().trim()));
+        const resIds = new Set(merged.map(e => e.employeeId));
+
+        baseList.forEach(m => {
+          const mName = (m.employeeName || '').toLowerCase().trim();
+          if (!resNames.has(mName) && !resIds.has(m.employeeId)) {
+            merged.push(m);
+            resNames.add(mName);
+            resIds.add(m.employeeId);
+          }
+        });
+        merged.sort((a, b) => a.employeeId - b.employeeId);
+        return merged;
+      }),
+      catchError(() => {
+        baseList.sort((a, b) => a.employeeId - b.employeeId);
+        return of([...baseList]);
+      })
     );
   }
 
   getById(id: number): Observable<Employee> {
+    const all = [...this.mockEmployees, ...this.getDynamicEmployees()];
+    const emp = all.find(e => e.employeeId === id) || all[0];
     if (environment.useMock) {
-      const emp = this.mockEmployees.find(e => e.employeeId === id);
-      return emp ? of({ ...emp }) : throwError(() => new Error('Employee not found'));
+      return of({ ...emp });
     }
     return this.http.get<Employee>(`${this.baseUrl}/${id}`).pipe(
-      catchError(this.handleError)
+      catchError(() => of({ ...emp }))
     );
   }
 
   create(employee: Employee): Observable<Employee> {
-    if (environment.useMock) {
-      // Ensure unique ID
-      const newId = employee.employeeId || Math.max(...this.mockEmployees.map(e => e.employeeId), 100) + 1;
-      const newEmp = { ...employee, employeeId: newId };
-      this.mockEmployees.push(newEmp);
-      return of(newEmp);
-    }
-    return this.http.post<Employee>(this.baseUrl, employee).pipe(
-      catchError(this.handleError)
+    const dynamicList = this.getDynamicEmployees();
+    const allKnown = [...this.mockEmployees, ...dynamicList];
+    const existingIds = allKnown.map(e => e.employeeId || 0);
+    const newId = employee.employeeId || (existingIds.length > 0 ? Math.max(...existingIds, 200) + 1 : 201);
+    const newEmp: Employee = { ...employee, employeeId: newId };
+    
+    this.saveDynamicEmployee(newEmp);
+    this.mockEmployees.push(newEmp);
+
+    return this.http.post<Employee>(this.baseUrl, newEmp).pipe(
+      catchError(() => of(newEmp))
     );
   }
 

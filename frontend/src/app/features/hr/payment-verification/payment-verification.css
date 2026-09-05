@@ -4,7 +4,7 @@
 .page-header p { max-width: 760px; margin: 0; opacity: 0.75; }
 .eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.75rem; font-weight: 800; }
 .primary-button, .approve-button, .reject-button { border: 0; border-radius: 9px; padding: 0.72rem 1rem; cursor: pointer; font-weight: 700; }
-.primary-button, .approve-button { background: #2563eb; color: white; }
+.primary-button, .approve-button { background: var(--accent-primary, #2563eb); color: white; box-shadow: 0 4px 12px var(--accent-primary-glow); }
 .reject-button { background: #b91c1c; color: white; }
 button:disabled { opacity: 0.55; cursor: not-allowed; }
 .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }

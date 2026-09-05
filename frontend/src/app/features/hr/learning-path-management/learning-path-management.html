@@ -5,12 +5,19 @@
       <h1>Learning Path Management</h1>
       <p>Create structured paths, add courses and assign published paths to learners.</p>
     </div>
-    <button type="button" class="primary-button" (click)="openCreateForm()">Create Learning Path</button>
+    <button type="button" class="primary-button" (click)="openCreateForm()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: -2px; margin-right: 4px;">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Create Learning Path
+    </button>
   </header>
 
   <div *ngIf="errorMessage" class="state-panel error-panel">{{ errorMessage }}</div>
-  <div *ngIf="isLoading" class="state-panel">Loading learning path management...</div>
+  <div *ngIf="isLoading && paths.length === 0" class="state-panel">Loading learning path management...</div>
 
+  <!-- Create / Edit Form Panel -->
   <section *ngIf="isFormOpen" class="form-panel">
     <h2>{{ editingPathId ? 'Edit Learning Path' : 'Create Learning Path' }}</h2>
     <div class="form-grid">
@@ -57,63 +64,95 @@
 
   <div *ngIf="!isLoading && paths.length === 0" class="state-panel">No learning paths have been created.</div>
 
-  <div class="path-list" *ngIf="!isLoading && paths.length > 0">
-    <article *ngFor="let path of paths; trackBy: trackPath" class="path-card">
-      <div class="path-heading">
-        <div>
-          <span class="path-code">{{ path.pathCode }}</span>
-          <h2>{{ path.title }}</h2>
-          <p>{{ path.description || 'No description provided.' }}</p>
+  <!-- Compact, Structured Learning Path List -->
+  <div class="path-list" *ngIf="paths.length > 0">
+    <article *ngFor="let path of paths; trackBy: trackPath" class="path-card" [class.is-expanded]="expandedOperations[path.pathId]">
+      <!-- Compact Top Header Row -->
+      <div class="path-card-top">
+        <div class="path-title-group">
+          <div class="path-badge-row">
+            <span class="path-code">{{ path.pathCode }}</span>
+            <span class="status-badge" [attr.data-status]="path.status">{{ path.status }}</span>
+            <span class="level-pill" [attr.data-level]="path.level">{{ path.level }}</span>
+          </div>
+          <h2 class="path-title">{{ path.title }}</h2>
         </div>
-        <span class="status-badge" [attr.data-status]="path.status">{{ path.status }}</span>
+
+        <div class="management-actions">
+          <button type="button" class="action-btn secondary-btn" (click)="openEditForm(path)" title="Edit path properties">Edit</button>
+          <button *ngIf="path.status !== 'PUBLISHED'" type="button" class="action-btn publish-btn" (click)="publish(path)" [disabled]="processingPathId !== null">Publish</button>
+          <button *ngIf="path.status === 'PUBLISHED'" type="button" class="action-btn warning-btn" (click)="archive(path)" [disabled]="processingPathId !== null">Archive</button>
+          <button type="button" class="action-btn danger-btn" (click)="deletePath(path)" [disabled]="processingPathId !== null">Delete</button>
+          <button type="button" class="action-btn toggle-op-btn" (click)="toggleOperations(path.pathId)" title="Toggle courses and learner assignment">
+            {{ expandedOperations[path.pathId] ? 'Close Details ▲' : 'Manage Courses & Learners ▼' }}
+          </button>
+        </div>
       </div>
 
-      <div class="path-stats">
-        <div><span>Category</span><strong>{{ path.category }}</strong></div>
-        <div><span>Target Role</span><strong>{{ path.targetRole || 'Not specified' }}</strong></div>
-        <div><span>Courses</span><strong>{{ path.totalCourses }}</strong></div>
-        <div><span>Assignments</span><strong>{{ path.totalAssignments }}</strong></div>
+      <!-- Compact Meta Bar -->
+      <div class="path-meta-row">
+        <div class="meta-item"><span class="meta-label">Category:</span> <strong class="meta-val">{{ path.category }}</strong></div>
+        <div class="meta-item"><span class="meta-label">Target Role:</span> <strong class="meta-val">{{ path.targetRole || 'General' }}</strong></div>
+        <div class="meta-item"><span class="meta-label">Courses:</span> <strong class="meta-val">{{ path.totalCourses || 0 }}</strong></div>
+        <div class="meta-item"><span class="meta-label">Assignments:</span> <strong class="meta-val">{{ pathAssignments[path.pathId]?.length || path.totalAssignments || 0 }}</strong></div>
+        <div class="meta-item" *ngIf="path.estimatedDurationHours"><span class="meta-label">Duration:</span> <strong class="meta-val">{{ path.estimatedDurationHours }}h</strong></div>
       </div>
 
-      <div class="management-actions">
-        <button type="button" class="secondary-button" (click)="openEditForm(path)">Edit</button>
-        <button *ngIf="path.status !== 'PUBLISHED'" type="button" class="primary-button" (click)="publish(path)" [disabled]="processingPathId !== null">Publish</button>
-        <button *ngIf="path.status === 'PUBLISHED'" type="button" class="warning-button" (click)="archive(path)" [disabled]="processingPathId !== null">Archive</button>
-        <button type="button" class="danger-button" (click)="deletePath(path)" [disabled]="processingPathId !== null">Delete</button>
-      </div>
+      <p class="path-desc">{{ path.description || 'No description provided.' }}</p>
 
-      <div class="operations-grid">
-        <section>
-          <h3>Assign to Learner</h3>
-          <div class="inline-form">
-            <select [(ngModel)]="selectedLearnerByPath[path.pathId]">
-              <option value="">Select learner</option>
-              <option *ngFor="let learner of learners" [value]="learner.userId">{{ learner.fullName }}</option>
-            </select>
-            <button type="button" class="primary-button" (click)="assign(path)" [disabled]="path.status !== 'PUBLISHED' || processingPathId !== null">Assign</button>
-          </div>
-          <p *ngIf="path.status !== 'PUBLISHED'" class="hint">Publish the path before assigning it.</p>
-        </section>
+      <!-- Expandable In-Place Operations Panel (Assign Learner & Add Course) -->
+      <div class="operations-drawer" *ngIf="expandedOperations[path.pathId]">
+        <div class="operations-grid">
+          <!-- Assign to Learner -->
+          <section class="op-section">
+            <div class="op-header">
+              <h3>Assign to Learner</h3>
+            </div>
+            <div class="inline-form">
+              <select [(ngModel)]="selectedLearnerByPath[path.pathId]">
+                <option value="">Select learner to assign...</option>
+                <option *ngFor="let learner of learners" [value]="learner.userId">{{ learner.fullName }} (Learner)</option>
+              </select>
+              <button type="button" class="primary-button" (click)="assign(path)" [disabled]="processingPathId !== null">Assign</button>
+            </div>
+            <p *ngIf="path.status !== 'PUBLISHED'" class="hint">Assigning will auto-publish this learning path to the learner.</p>
+            
+            <div *ngIf="pathAssignments[path.pathId] && pathAssignments[path.pathId].length > 0" class="assigned-learners-box">
+              <h4>Assigned Learners ({{ pathAssignments[path.pathId].length }})</h4>
+              <div class="assigned-badges">
+                <span class="learner-badge" *ngFor="let asg of pathAssignments[path.pathId]">
+                  👤 {{ asg.learnerName || getLearnerName(asg.learnerId) }}
+                  <small>({{ asg.status }})</small>
+                </span>
+              </div>
+            </div>
+          </section>
 
-        <section>
-          <h3>Add Course</h3>
-          <div class="course-form">
-            <select [(ngModel)]="selectedCourseByPath[path.pathId]">
-              <option value="">Select published course</option>
-              <option *ngFor="let course of courses" [value]="course.courseId">{{ course.courseCode }} - {{ course.title }}</option>
-            </select>
-            <input type="number" min="1" [(ngModel)]="courseOrderByPath[path.pathId]" placeholder="Order" />
-            <button type="button" class="primary-button" (click)="addCourse(path)" [disabled]="processingPathId !== null">Add</button>
-          </div>
-          <button type="button" class="link-button" (click)="loadPathCourses(path)">Load Path Courses</button>
-        </section>
-      </div>
+          <!-- Add Course Section -->
+          <section class="op-section">
+            <div class="op-header">
+              <h3>Courses in Path</h3>
+              <button type="button" class="link-button" (click)="loadPathCourses(path)">
+                {{ pathCourses[path.pathId] ? 'Refresh' : 'Load Courses' }}
+              </button>
+            </div>
+            <div class="course-form">
+              <select [(ngModel)]="selectedCourseByPath[path.pathId]">
+                <option value="">Select published course</option>
+                <option *ngFor="let course of courses" [value]="course.courseId">{{ course.courseCode }} - {{ course.title }}</option>
+              </select>
+              <input type="number" min="1" [(ngModel)]="courseOrderByPath[path.pathId]" placeholder="Order" />
+              <button type="button" class="primary-button" (click)="addCourse(path)" [disabled]="processingPathId !== null">Add</button>
+            </div>
 
-      <div *ngIf="pathCourses[path.pathId]" class="course-list">
-        <div *ngIf="pathCourses[path.pathId].length === 0" class="hint">No courses added to this path.</div>
-        <div *ngFor="let pathCourse of pathCourses[path.pathId]; trackBy: trackPathCourse" class="course-row">
-          <span>{{ pathCourse.courseOrder }}. {{ pathCourse.courseCode }} - {{ pathCourse.courseTitle }}</span>
-          <button type="button" class="danger-link" (click)="removeCourse(path, pathCourse)">Remove</button>
+            <div *ngIf="pathCourses[path.pathId]" class="course-list">
+              <div *ngIf="pathCourses[path.pathId].length === 0" class="hint">No courses added to this path.</div>
+              <div *ngFor="let pathCourse of pathCourses[path.pathId]; trackBy: trackPathCourse" class="course-row">
+                <span><strong>{{ pathCourse.courseOrder }}.</strong> {{ pathCourse.courseCode }} - {{ pathCourse.courseTitle }}</span>
+                <button type="button" class="danger-link" (click)="removeCourse(path, pathCourse)">Remove</button>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </article>

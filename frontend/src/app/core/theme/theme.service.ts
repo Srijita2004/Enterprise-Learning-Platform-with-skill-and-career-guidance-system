@@ -11,7 +11,8 @@ export type AccentTheme =
   | 'cyan'
   | 'magenta'
   | 'lime'
-  | 'red';
+  | 'red'
+  | 'vanilla';
 
 const THEME_KEY = 'ssn_theme';
 const ACCENT_KEY = 'ssn_accent';
@@ -95,7 +96,8 @@ export class ThemeService {
       'cyan',
       'magenta',
       'lime',
-      'red'
+      'red',
+      'vanilla'
     ];
 
     return stored && allowed.includes(stored)

@@ -103,13 +103,20 @@
           <span class="live-pulse-dot"></span>
           <span class="hud-live-tag">LIVE ENTERPRISE PLATFORM CORE</span>
         </div>
-        <div class="hud-broker-badge">
-          <span class="broker-icon">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-          </span>
-          <span>Kafka Event Stream: <strong>Active (9092)</strong></span>
+        <div class="hud-actions-group" style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="hud-broker-badge">
+            <span class="broker-icon">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </span>
+            <span>Kafka Event Stream: <strong>Active (9092)</strong></span>
+          </div>
+
+          <button class="inspect-kafka-btn" (click)="openKafkaInspector()" title="Inspect live Kafka event stream across microservices">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span>Inspect Event Fabric</span>
+          </button>
         </div>
       </div>
 
@@ -592,6 +599,89 @@
 
       }
     </section>
+  }
+
+  <!-- 🌟 LIVE KAFKA ARCHITECTURE EVENT STREAM INSPECTOR MODAL -->
+  @if (showKafkaInspector()) {
+    <div class="kafka-modal-backdrop" (click)="closeKafkaInspector()">
+      <div class="kafka-modal-dialog" (click)="$event.stopPropagation()">
+        <!-- MODAL HEADER -->
+        <div class="kafka-modal-header">
+          <div class="kafka-header-brand">
+            <div class="kafka-pulse-chip">
+              <span class="live-pulse-dot"></span>
+              <span>LIVE EVENT STREAM</span>
+            </div>
+            <h3>Apache Kafka Architecture Event Fabric</h3>
+            <p class="kafka-header-sub">Telemetry stream capturing decoupled asynchronous events across M1, M2, M3, and M4 microservices.</p>
+          </div>
+          <button class="kafka-close-btn" (click)="closeKafkaInspector()">&times;</button>
+        </div>
+
+        <!-- MODAL BODY -->
+        <div class="kafka-modal-body">
+          <!-- LEFT: STREAM EVENT LIST -->
+          <div class="kafka-stream-col">
+            <div class="stream-col-label">INCOMING TOPIC EVENTS (PORT 9092)</div>
+            <div class="kafka-events-list">
+              @for (evt of kafkaEvents(); track evt.eventId) {
+                <div 
+                  class="kafka-event-card" 
+                  [class.selected]="selectedKafkaEvent()?.eventId === evt.eventId"
+                  (click)="selectKafkaEvent(evt)"
+                >
+                  <div class="event-card-top">
+                    <span class="event-type-badge">{{ evt.eventType }}</span>
+                    <span class="event-time">{{ evt.timestamp | date:'HH:mm:ss' }}</span>
+                  </div>
+                  <div class="event-topic">{{ evt.topic }}</div>
+                  <div class="event-source">Source: <strong>{{ evt.sourceService }}</strong></div>
+                  <div class="event-meta">P:{{ evt.partition }} &bull; Off:{{ evt.offset }} &bull; {{ evt.status }}</div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- RIGHT: JSON PAYLOAD INSPECTOR -->
+          <div class="kafka-payload-col">
+            <div class="stream-col-label">EVENT DESERIALIZER &amp; JSON PAYLOAD</div>
+            @if (selectedKafkaEvent(); as sel) {
+              <div class="payload-container">
+                <div class="payload-header-meta">
+                  <div>
+                    <span class="payload-label">EVENT ID</span>
+                    <strong>{{ sel.eventId }}</strong>
+                  </div>
+                  <div>
+                    <span class="payload-label">BROKER TOPIC</span>
+                    <strong style="color: #38bdf8;">{{ sel.topic }}</strong>
+                  </div>
+                  <div>
+                    <span class="payload-label">PARTITION / OFFSET</span>
+                    <span>Partition {{ sel.partition }}, Offset {{ sel.offset }}</span>
+                  </div>
+                </div>
+
+                <div class="payload-json-box">
+                  <pre><code>{{ sel.payload | json }}</code></pre>
+                </div>
+
+                <div class="payload-architecture-note">
+                  <div class="note-icon">⚡</div>
+                  <p>Event serialized using Jackson JSON Serializer and distributed across Kafka cluster. Handled asynchronously by <strong>com.enterprise.notificationservice</strong> consumer listener.</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- MODAL FOOTER -->
+        <div class="kafka-modal-footer">
+          <span class="broker-status-tag">Cluster: <strong>kafka:9092</strong> &bull; Zookeeper: <strong>2181</strong></span>
+          <button class="btn btn-secondary" (click)="closeKafkaInspector()">Close Inspector</button>
+        </div>
+      </div>
+    </div>
   }
 
 </div>

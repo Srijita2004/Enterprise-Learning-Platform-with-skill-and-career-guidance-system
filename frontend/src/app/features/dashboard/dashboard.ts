@@ -8,7 +8,8 @@ import {
 import {
   DatePipe,
   DecimalPipe,
-  KeyValuePipe
+  KeyValuePipe,
+  JsonPipe
 } from '@angular/common';
 
 import { RouterLink } from '@angular/router';
@@ -57,6 +58,7 @@ import { AuthService } from '../../core/auth/auth.service';
     KeyValuePipe,
     DecimalPipe,
     DatePipe,
+    JsonPipe,
     RouterLink
   ],
   templateUrl: './dashboard.html',
@@ -317,16 +319,29 @@ export class Dashboard implements OnInit {
       return;
     }
 
+    const syncLocalCounts = (d: LearnerDashboard) => {
+      try {
+        const stored = JSON.parse(localStorage.getItem('ssn_learning_path_assignments') || '[]');
+        const matches = stored.filter((a: any) => a.learnerId === this.learnerId);
+        if (matches.length > 0) {
+          d.assignedLearningPaths = matches.length;
+          d.inProgressLearningPaths = matches.filter((a: any) => a.status === 'IN_PROGRESS').length;
+          d.completedLearningPaths = matches.filter((a: any) => a.status === 'COMPLETED').length;
+        }
+      } catch {}
+      return d;
+    };
+
     this.learnerDashboardService
       .getLearnerDashboard(this.learnerId)
       .subscribe({
         next: (dashboard) => {
-          this.learnerDashboard.set(dashboard);
+          this.learnerDashboard.set(syncLocalCounts(dashboard));
           this.learningStatusLoading.set(false);
         },
         error: (error: unknown) => {
           console.error('Error fetching learner dashboard:', error);
-          this.learnerDashboard.set(emptyLearnerDashboard);
+          this.learnerDashboard.set(syncLocalCounts(emptyLearnerDashboard));
           this.learningStatusLoading.set(false);
         }
       });
@@ -366,5 +381,121 @@ export class Dashboard implements OnInit {
       dashboard.assignedLearningPaths *
       100
     );
+  }
+
+  // =========================================================
+  // 🌟 KAFKA ARCHITECTURE EVENT STREAM INSPECTOR STATE
+  // =========================================================
+  readonly showKafkaInspector = signal<boolean>(false);
+  readonly selectedKafkaEvent = signal<any | null>(null);
+  readonly kafkaEvents = signal<any[]>([
+    {
+      eventId: 'evt-kfk-9042',
+      eventType: 'PAYMENT_VERIFIED',
+      topic: 'skillsphere.learning.payments',
+      sourceService: 'LEARNING-SERVICE (Port 8082)',
+      partition: 0,
+      offset: 1042,
+      timestamp: '2026-08-31T22:20:15Z',
+      status: 'ACKNOWLEDGED',
+      payload: {
+        transactionRef: '#TXN-98421-WIRE',
+        learnerId: '101',
+        learnerName: 'Alex Vance',
+        courseCode: 'CRS-SPRING-01',
+        amountPaid: 450.00,
+        currency: 'USD',
+        status: 'PAID',
+        verifiedBy: 'HR_MANAGER'
+      }
+    },
+    {
+      eventId: 'evt-kfk-9041',
+      eventType: 'CERTIFICATE_ISSUED',
+      topic: 'skillsphere.certification.events',
+      sourceService: 'CERTIFICATION-MANAGEMENT-SERVICE (Port 8083)',
+      partition: 1,
+      offset: 874,
+      timestamp: '2026-08-31T22:15:30Z',
+      status: 'ACKNOWLEDGED',
+      payload: {
+        certificateId: 'CERT-94120-AWS',
+        employeeId: 1,
+        employeeName: 'Srijita',
+        certificationName: 'AWS Certified Solutions Architect - Professional',
+        issuingAuthority: 'Amazon Web Services',
+        validityYears: 3,
+        complianceImpact: '+4.2% Department Rating'
+      }
+    },
+    {
+      eventId: 'evt-kfk-9040',
+      eventType: 'PROMOTION_NOMINATED',
+      topic: 'skillsphere.career.nominations',
+      sourceService: 'CAREER-SERVICE (Port 8087)',
+      partition: 0,
+      offset: 319,
+      timestamp: '2026-08-31T22:05:10Z',
+      status: 'ACKNOWLEDGED',
+      payload: {
+        nominationId: 'NOM-3012',
+        candidateId: 1,
+        candidateName: 'Srijita',
+        targetRole: 'Staff Cloud & Microservices Architect',
+        fitScorePercentage: 97,
+        nominatedBy: 'HR_MANAGER',
+        status: 'SUBMITTED_FOR_EXECUTIVE_APPROVAL'
+      }
+    },
+    {
+      eventId: 'evt-kfk-9039',
+      eventType: 'SKILL_COMPETENCY_EVALUATED',
+      topic: 'skillsphere.skill.assessments',
+      sourceService: 'SKILL-MANAGEMENT-SERVICE (Port 8081)',
+      partition: 2,
+      offset: 2490,
+      timestamp: '2026-08-31T21:50:00Z',
+      status: 'ACKNOWLEDGED',
+      payload: {
+        assessmentId: 'ASM-882',
+        employeeId: 101,
+        employeeName: 'Alex Vance',
+        competencyName: 'Cloud Native & Kubernetes',
+        levelEvaluated: 5,
+        benchmarkScore: 96,
+        status: 'BENCHMARK_EXCEEDED'
+      }
+    },
+    {
+      eventId: 'evt-kfk-9038',
+      eventType: 'LEARNING_PATH_ASSIGNED',
+      topic: 'skillsphere.learning.assignments',
+      sourceService: 'LEARNING-SERVICE (Port 8082)',
+      partition: 1,
+      offset: 615,
+      timestamp: '2026-08-31T21:30:00Z',
+      status: 'ACKNOWLEDGED',
+      payload: {
+        assignmentId: 'ASG-4401',
+        pathCode: 'LP-ARCH-01',
+        pathTitle: 'Full-Stack Enterprise Cloud Architecture Track',
+        learnerId: '1',
+        targetRole: 'Senior Backend Architect',
+        assignedBy: 'HR_DIRECTOR'
+      }
+    }
+  ]);
+
+  openKafkaInspector(): void {
+    this.selectedKafkaEvent.set(this.kafkaEvents()[0]);
+    this.showKafkaInspector.set(true);
+  }
+
+  closeKafkaInspector(): void {
+    this.showKafkaInspector.set(false);
+  }
+
+  selectKafkaEvent(evt: any): void {
+    this.selectedKafkaEvent.set(evt);
   }
 }

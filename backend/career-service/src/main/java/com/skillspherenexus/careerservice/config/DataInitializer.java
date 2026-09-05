@@ -19,6 +19,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PromotionCriteriaRepository promotionCriteriaRepository;
     private final JobOpportunityRepository jobOpportunityRepository;
     private final SkillGapRepository skillGapRepository;
+    private final TrainingRecordRepository trainingRecordRepository;
 
     @Override
     public void run(String... args) {
@@ -90,83 +91,7 @@ public class DataInitializer implements CommandLineRunner {
             ));
         }
 
-        // 2. Seed Career Plan for John Smith (106)
-        if (!careerPlanRepository.findByEmployeeId(106L).isPresent()) {
-            CareerPlan johnPlan = careerPlanRepository.save(CareerPlan.builder()
-                    .employeeId(106L)
-                    .employeeName("John Smith")
-                    .currentRole("Developer")
-                    .targetRole("Tech Lead")
-                    .progressPercentage(67)
-                    .mentorId("107")
-                    .mentorName("Jane Doe")
-                    .status(CareerPlanStatus.ACTIVE)
-                    .description("Targeting Technical Lead transition by Q4. Gaps identified in Angular (+3) and System Design (+2).")
-                    .startDate(LocalDateTime.now().minusMonths(6))
-                    .targetCompletionDate(LocalDateTime.now().plusMonths(6))
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build());
-
-            promotionCriteriaRepository.saveAll(List.of(
-                    PromotionCriteria.builder()
-                            .careerPlan(johnPlan)
-                            .name("Angular Mastery")
-                            .description("Acquire Angular skills (+3 levels)")
-                            .isMet(false)
-                            .type(PromotionCriteriaType.SKILL)
-                            .sequenceOrder(1)
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build(),
-                    PromotionCriteria.builder()
-                            .careerPlan(johnPlan)
-                            .name("System Architecture")
-                            .description("Complete enterprise distributed system design assessment")
-                            .isMet(false)
-                            .type(PromotionCriteriaType.ASSESSMENT)
-                            .sequenceOrder(2)
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build(),
-                    PromotionCriteria.builder()
-                            .careerPlan(johnPlan)
-                            .name("Tenure in Role")
-                            .description("Serve at least 18 months as core developer")
-                            .isMet(true)
-                            .metDate(LocalDateTime.now().minusMonths(1))
-                            .type(PromotionCriteriaType.TENURE)
-                            .sequenceOrder(3)
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build()
-            ));
-
-            skillGapRepository.saveAll(List.of(
-                    SkillGap.builder()
-                            .careerPlan(johnPlan)
-                            .skillName("Angular")
-                            .currentLevel(2)
-                            .requiredLevel(5)
-                            .gapLevel(3)
-                            .trainingPlan("Modern Web Engineering with Angular 20")
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build(),
-                    SkillGap.builder()
-                            .careerPlan(johnPlan)
-                            .skillName("System Design")
-                            .currentLevel(3)
-                            .requiredLevel(5)
-                            .gapLevel(2)
-                            .trainingPlan("Enterprise System Design Patterns")
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build()
-            ));
-        }
-
-        // 3. Seed Career Plan for Alex Vance (101)
+        // 2. Seed Career Plan for Alex Vance (101)
         if (!careerPlanRepository.findByEmployeeId(101L).isPresent()) {
             CareerPlan alexPlan = careerPlanRepository.save(CareerPlan.builder()
                     .employeeId(101L)
@@ -210,7 +135,7 @@ public class DataInitializer implements CommandLineRunner {
             ));
         }
 
-        // 4. Seed Career Plan for Sarah Jenkins (103)
+        // 3. Seed Career Plan for Sarah Jenkins (103)
         if (!careerPlanRepository.findByEmployeeId(103L).isPresent()) {
             CareerPlan sarahPlan = careerPlanRepository.save(CareerPlan.builder()
                     .employeeId(103L)
@@ -253,8 +178,9 @@ public class DataInitializer implements CommandLineRunner {
             ));
         }
 
-        // 2. Seed Job Opportunities (12 matches available)
-        jobOpportunityRepository.saveAll(List.of(
+        // 4. Seed Initial Job Opportunities if table is empty
+        if (jobOpportunityRepository.count() == 0) {
+            jobOpportunityRepository.saveAll(List.of(
                 JobOpportunity.builder()
                         .jobTitle("Technical Lead - Banking Core")
                         .department("Retail Banking")
@@ -315,7 +241,115 @@ public class DataInitializer implements CommandLineRunner {
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
                         .build()
-        ));
+            ));
+        }
+
+        // 5. Seed Training Analytics Records for Employees
+        if (trainingRecordRepository.count() == 0) {
+            trainingRecordRepository.saveAll(List.of(
+                    // Employee 1 (Srijita)
+                    TrainingRecord.builder()
+                            .employeeId(1L)
+                            .courseName("Spring Boot 4 & Cloud Microservices Architecture")
+                            .courseId("1")
+                            .score(94)
+                            .completionPercentage(100)
+                            .status(TrainingStatus.COMPLETED)
+                            .enrollmentDate(LocalDateTime.now().minusMonths(4))
+                            .completionDate(LocalDateTime.now().minusMonths(2))
+                            .skillImprovement(28.0)
+                            .feedback("Exceptional mastery in reactive streams, resilience patterns, and distributed microservices.")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build(),
+                    TrainingRecord.builder()
+                            .employeeId(1L)
+                            .courseName("Enterprise System Design Patterns & Distributed Scalability")
+                            .courseId("2")
+                            .score(88)
+                            .completionPercentage(85)
+                            .status(TrainingStatus.IN_PROGRESS)
+                            .enrollmentDate(LocalDateTime.now().minusMonths(2))
+                            .skillImprovement(20.0)
+                            .feedback("Demonstrated strong understanding of event sourcing, distributed caching, and CQRS.")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build(),
+                    TrainingRecord.builder()
+                            .employeeId(1L)
+                            .courseName("Advanced PostgreSQL & High-Performance Data Architecture")
+                            .courseId("3")
+                            .score(92)
+                            .completionPercentage(100)
+                            .status(TrainingStatus.COMPLETED)
+                            .enrollmentDate(LocalDateTime.now().minusMonths(6))
+                            .completionDate(LocalDateTime.now().minusMonths(4))
+                            .skillImprovement(25.0)
+                            .feedback("Successfully designed high-throughput relational schemas and optimized query execution plans.")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build(),
+
+                    // Employee 101 (Alex Vance)
+                    TrainingRecord.builder()
+                            .employeeId(101L)
+                            .courseName("Certified Kubernetes Administrator (CKA) Masterclass")
+                            .courseId("4")
+                            .score(96)
+                            .completionPercentage(100)
+                            .status(TrainingStatus.COMPLETED)
+                            .enrollmentDate(LocalDateTime.now().minusMonths(5))
+                            .completionDate(LocalDateTime.now().minusMonths(3))
+                            .skillImprovement(35.0)
+                            .feedback("Top tier performance in cluster setup, ingress routing, and multi-tenant security policies.")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build(),
+                    TrainingRecord.builder()
+                            .employeeId(101L)
+                            .courseName("Multi-Cloud Security & Zero-Trust Infrastructure")
+                            .courseId("5")
+                            .score(91)
+                            .completionPercentage(100)
+                            .status(TrainingStatus.COMPLETED)
+                            .enrollmentDate(LocalDateTime.now().minusMonths(3))
+                            .completionDate(LocalDateTime.now().minusMonths(1))
+                            .skillImprovement(30.0)
+                            .feedback("Implemented end-to-end IAM role federation, mTLS encryption, and cloud secrets vaulting.")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build(),
+
+                    // Employee 103 (Sarah Jenkins)
+                    TrainingRecord.builder()
+                            .employeeId(103L)
+                            .courseName("Enterprise Test Automation & Continuous Quality Verification")
+                            .courseId("6")
+                            .score(89)
+                            .completionPercentage(100)
+                            .status(TrainingStatus.COMPLETED)
+                            .enrollmentDate(LocalDateTime.now().minusMonths(4))
+                            .completionDate(LocalDateTime.now().minusMonths(2))
+                            .skillImprovement(24.0)
+                            .feedback("Designed robust end-to-end regression pipelines, API contract testing, and CI automated suites.")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build(),
+                    TrainingRecord.builder()
+                            .employeeId(103L)
+                            .courseName("Security Testing & Application Penetration Review")
+                            .courseId("7")
+                            .score(78)
+                            .completionPercentage(60)
+                            .status(TrainingStatus.IN_PROGRESS)
+                            .enrollmentDate(LocalDateTime.now().minusMonths(1))
+                            .skillImprovement(15.0)
+                            .feedback("Progressing well through dynamic vulnerability scanning and OWASP automated testing.")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build()
+            ));
+        }
 
         log.info("Career service initial benchmark data seeded successfully.");
     }

@@ -9,18 +9,18 @@
 [![Google Gemini AI](https://img.shields.io/badge/Google_Gemini-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-An enterprise-grade, cloud-native workforce intelligence ecosystem engineered to unify **employee competency benchmarking (L1–L5)**, **continuous learning journeys (LMS)**, **ISO-aligned certification compliance**, **AI-driven career progression matching**, and **EIWI Universal AI Assistant**.
+An enterprise-grade, cloud-native workforce intelligence ecosystem engineered to unify **employee competency benchmarking (L1–L5)**, **continuous learning journeys (LMS)**, **ISO-aligned certification compliance**, **AI-driven career progression matching**, **verifiable skill passports**, and the **EIWI Universal AI Assistant**.
 
 ---
 
-## Architecture Overview
+## 🏛️ Architecture Overview
 
 The system is built on an event-driven, distributed microservices architecture orchestrating inter-service communication through **Spring Cloud Gateway**, **Netflix Eureka Service Discovery**, and **Apache Kafka Event Streams**.
 
 ```mermaid
 flowchart TD
     subgraph ClientLayer ["Client Layer"]
-        UI["Angular 20 Frontend\n(Nginx :4200)\n+ EIWI Assistant Drawer"]
+        UI["Angular 20 Standalone Web App\n(Nginx :4200)\n+ EIWI AI Assistant + Live Telemetry HUD"]
     end
 
     subgraph GatewayLayer ["Routing & Discovery"]
@@ -30,10 +30,10 @@ flowchart TD
 
     subgraph Microservices ["Enterprise Microservices Ecosystem"]
         M1["Skill Management Service\n(:8081)"]
-        M2["Learning Service & EIWI Engine\n(:8082)"]
+        M2["Learning Service & LMS Engine\n(:8082)"]
         M3["Certification Management Service\n(:8083)"]
         M4["Career & AI Guidance Service\n(:8087)"]
-        NOTIF["Notification Service\n(:8086)"]
+        NOTIF["Notification Hub Service\n(:8086)"]
     end
 
     subgraph Messaging ["Event Streaming & Message Bus"]
@@ -71,31 +71,32 @@ flowchart TD
 
 ---
 
-## Core Microservice Modules
+## 📦 Core Microservice Ecosystem
 
 ### 1. Skill & Talent Management Service (`backend/skill-management-service`)
 * **Port**: `8081` | **Database**: `skillsphere`
 * **Features**:
-  * Comprehensive Employee 360 Profile management.
-  * Hierarchical Competency Framework & Skill Matrix (Proficiency levels 1 to 5).
-  * Skill assessments, score recordings, and real-time gap evaluations.
+  * Comprehensive Employee 360 Profile management and career objective configuration.
+  * Hierarchical Competency Framework & Skill Matrix (Proficiency levels L1–L5).
+  * Skill assessments, freshness decay monitoring, and real-time gap evaluations.
   * Emits `skill-created`, `skill-assigned`, and `assessment-completed` Kafka events.
 
-### 2. Learning Service / LMS & EIWI Assistant (`backend/learning-service`)
+### 2. Learning Service / LMS Engine (`backend/learning-service`)
 * **Port**: `8082` | **Database**: `skillsphere_learning`
 * **Features**:
   * Course catalog management with module content, video streams, and interactive resources.
-  * Student enrollment tracking, progress telemetry, and scoring engine.
-  * Automated certificate generation and completion badges upon passing criteria.
+  * Multi-course Learning Path curation and sequential module ordering.
+  * Student enrollment tracking, progress telemetry, quiz scoring, and payment approval workflows.
+  * Automated certificate generation and verifiable badge registry upon passing criteria.
   * **EIWI Universal AI Assistant**: Integrates **Google Gemini 2.5 Flash** for dynamic question answering across any domain, curriculum grounding, and contextual doubt resolution.
-  * Publishes `course-completed` events consumed by Certification & Career services.
+  * Publishes `course-completed` and `path-assigned` events consumed by Certification, Career, and Notification services.
 
 ### 3. Certification Management Service (`backend/certification-management-service`)
 * **Port**: `8083` | **Database**: `skillsphere_certification`
 * **Features**:
   * ISO-aligned professional certification registry and lifecycle verification.
-  * Expiration tracking, automated renewal notifications, and compliance reporting.
-  * Synchronization with Employee Skill Matrix upon certificate verification.
+  * Expiration monitoring, automated renewal notifications, and compliance audit reporting.
+  * Direct synchronization with the Employee Skill Matrix upon credential verification.
 
 ### 4. Career Development & AI Guidance Service (`backend/career-service`)
 * **Port**: `8087` | **Database**: `skillsphere_career`
@@ -103,34 +104,57 @@ flowchart TD
   * **Mathematical Vector Space Model**: Computes multidimensional Cosine Similarity ($\cos\theta$) between employee skill profiles and benchmark target roles.
   * **Calibrated Promotion Readiness Probability**: Weighted formula evaluating assessments ($25\%$), external certs ($15\%$), tenure ($10\%$), and vector similarity ($50\%$).
   * **Explainable AI (XAI) Gap Matrix**: Identifies exact level deficits ($L0 \rightarrow L3, +3$) and maps targeted curriculum bridges.
-  * **Google Gemini 2.5 Flash GenAI**: Synthesizes executive talent coaching summaries and strategic milestone plans with zero hallucination.
+  * **Google Gemini 2.5 Flash GenAI**: Synthesizes executive talent coaching summaries and strategic milestone acceleration plans with zero hallucination.
 
 ### 5. Notification Hub Service (`backend/notification-service`)
 * **Port**: `8086` | **Database**: `skillsphere_notification`
 * **Features**:
-  * Real-time reactive notification delivery.
-  * Consumes Kafka topics across all microservices for enrollment, completion, and certification renewal events.
+  * Real-time reactive notification delivery with strict recipient isolation.
+  * Consumes Kafka topics across all microservices for enrollment, assignment, completion, and certification renewal events.
 
 ---
 
-## Role-Based Access Control (RBAC)
+## 🌟 Enterprise Capabilities & Workspaces
+
+### 🛡️ Administrator & HR Workspace
+- **System & Operations Command**: Real-time KPI cards for enrollments, courses, payments, certificates, and learning paths.
+- **Live Kafka Telemetry HUD**: Interactive modal inspector to monitor live event streams (Topic, Partition, Offset, JSON Deserialization).
+- **Learning Path Management**: Create, publish, archive paths, order courses sequentially, and assign structured tracks directly to learners.
+- **Payment Verification**: Review and approve course enrollment transactions.
+- **Employee Directory**: Search, inspect 360 profiles, update designations, and configure Target Career Objectives.
+
+### 👤 Employee Workspace
+- **My 360 Profile**: Personal skill breakdown, proficiency levels, and active curriculum progress.
+- **Career Analytics Center**: Target role simulation, skill radar charts, promotion milestone checklist, and gap analysis.
+- **Verifiable Skill Passport**: Official printable credential passport featuring cryptographic verification hash, seal, and issuing authority signatures.
+- **Internal Job Marketplace**: Discover matched job vacancies aligned with verified skills.
+
+### 🎓 Learner Workspace
+- **My Learning Dashboard**: Live assessment pass rates, learning path progress tracks, and earned completion certificates.
+- **Course Exploration & Catalog**: Searchable course library with category filters, difficulty tags (Beginner, Intermediate, Advanced), and duration metadata.
+- **Interactive Classroom**: Syllabus navigation, rich reading modules, video lessons, and final course assessments.
+
+---
+
+## 🔒 Role-Based Access Control (RBAC)
 
 The platform enforces strict enterprise security boundaries across all views, actions, and API routes:
 
 | Feature / Workspace | Learner | Employee | HR Manager | Administrator |
 | :--- | :---: | :---: | :---: | :---: |
-| **Personal Learning & Enrolled Courses** | Allowed | Allowed | Allowed | Allowed |
-| **Course Catalog & Interactive Learn View** | Allowed | Allowed | Allowed | Allowed |
-| **Personal 360 Profile & Roadmap** | - | Allowed | Allowed | Allowed |
-| **Talent & Employee Management** | - | - | Allowed | Allowed |
-| **LMS Course Creation & Content Management**| - | - | Allowed | Allowed |
-| **Certification Governance & Compliance** | - | - | Allowed | Allowed |
-| **Assign Mentors & Toggle Promotion Criteria** | - | - | Allowed | Allowed |
-| **Set & Edit Career Objective Target** | - | - | - | **Allowed (Admin Only)** |
+| **Personal Learning & Course Classroom** | ✅ Allowed | ✅ Allowed | ✅ Allowed | ✅ Allowed |
+| **Course Catalog & Search** | ✅ Allowed | ✅ Allowed | ✅ Allowed | ✅ Allowed |
+| **Personal 360 Profile & Career Analytics** | ❌ | ✅ Allowed | ✅ Allowed | ✅ Allowed |
+| **Talent & Employee Management** | ❌ | ❌ | ✅ Allowed | ✅ Allowed |
+| **Learning Path Management & Assignment** | ❌ | ❌ | ✅ Allowed | ✅ Allowed |
+| **Payment Verification & Approvals** | ❌ | ❌ | ✅ Allowed | ✅ Allowed |
+| **Certification Governance & Compliance** | ❌ | ❌ | ✅ Allowed | ✅ Allowed |
+| **Assign Mentors & Toggle Promotion Criteria** | ❌ | ❌ | ✅ Allowed | ✅ Allowed |
+| **Set & Edit Employee Career Objective** | ❌ | ❌ | ❌ | ✅ **Allowed (Admin Only)** |
 
 ---
 
-## Machine Learning & AI Architecture
+## 🧠 Machine Learning & AI Guidance Models
 
 ```
                        ┌──────────────────────────────────────────────┐
@@ -204,10 +228,18 @@ The platform enforces strict enterprise security boundaries across all views, ac
 
 ---
 
-## Technology Stack
+## 🎨 Design System & Theme Engine
+
+* **Bento Grid Layout**: Structured modular panels with specular top sheen (`inset 0 1px 0 rgba(255, 255, 255, 0.08)` in dark mode, `inset 0 1px 0 rgba(255, 255, 255, 0.9)` in light mode) and micro-elevation hover interactions.
+* **12 Dynamic Accent Themes**: Supports **Blue**, **Violet**, **Vanilla**, **Emerald**, **Rose**, **Amber**, **Orange**, **Teal**, **Cyan**, **Magenta**, **Lime**, and **Red** with dynamic CSS variable inheritance across buttons, charts, badges, and focus rings.
+* **WCAG AAA Contrast Compliance**: 14.5:1 text contrast in Light Mode and 15.2:1 in Dark Mode for high readability.
+
+---
+
+## 🛠️ Technology Stack
 
 ### Backend & Infrastructure
-* **Core Language**: Java 17 (LTS)
+* **Language & Runtime**: Java 17 (LTS)
 * **Framework**: Spring Boot 3.x / 4.x, Spring Cloud Gateway, Netflix Eureka
 * **Security & Auth**: Spring Security, JWT (JSON Web Tokens), BCrypt
 * **Data Persistence**: Spring Data JPA, Hibernate, PostgreSQL 16
@@ -216,13 +248,13 @@ The platform enforces strict enterprise security boundaries across all views, ac
 
 ### Frontend
 * **Framework**: Angular 20 (Standalone Components, Signals, Reactive State)
-* **Styling**: Vanilla Custom CSS, CSS Grid, Glassmorphism, Aurora Ambient Glow
-* **Icons**: Handcrafted Minimalist SVG Iconography (Zero AI-generated emojis)
+* **Styling**: Vanilla Custom CSS, CSS Grid, Glassmorphism, Specular Lighting
+* **Icons**: Handcrafted Minimalist SVG Iconography
 * **Build & Bundle**: Angular CLI, Vite/esbuild, Nginx
 
 ---
 
-## Quick Start Guide
+## 🚀 Quick Start Guide
 
 ### Prerequisites
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/) (v24+) & Docker Compose
@@ -239,12 +271,12 @@ The platform enforces strict enterprise security boundaries across all views, ac
    cd Enterprise-Learning-Platform-with-skill-and-career-guidance-system
    ```
 
-2. **Build and launch all 11 microservices & containers**:
+2. **Build and launch all containers**:
    ```bash
    docker compose up -d --build
    ```
 
-3. **Verify running containers**:
+3. **Verify container health**:
    ```bash
    docker compose ps
    ```
@@ -256,7 +288,7 @@ The platform enforces strict enterprise security boundaries across all views, ac
 
 ---
 
-## Environment Configuration
+## ⚙️ Environment Configuration
 
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
@@ -268,8 +300,9 @@ The platform enforces strict enterprise security boundaries across all views, ac
 
 ---
 
-## Default Service Ports
+## 🔑 Default Service Ports & Credentials
 
+### Default Ports
 | Service | Port | Description |
 | :--- | :--- | :--- |
 | **Frontend** | `4200` | Angular Web Application (via Nginx) |
@@ -283,12 +316,7 @@ The platform enforces strict enterprise security boundaries across all views, ac
 | **PostgreSQL Database** | `5432` | Multi-Schema Relational Storage |
 | **Apache Kafka Broker** | `9092` | Distributed Event Streaming Bus |
 
----
-
-## Default Login Credentials
-
-Use the demo credentials on the landing authentication screen to explore different permission levels:
-
+### Demo Credentials
 | Role | Username / Email | Password | Access Level |
 | :--- | :--- | :--- | :--- |
 | **Administrator** | `admin` | `admin123` | Full enterprise control, edit career targets |
@@ -298,7 +326,7 @@ Use the demo credentials on the landing authentication screen to explore differe
 
 ---
 
-## Project Structure
+## 📁 Project Directory Structure
 
 ```
 Enterprise-Learning-Platform/
@@ -311,10 +339,11 @@ Enterprise-Learning-Platform/
 ├── frontend/                              # Angular 20 Standalone Web App
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── core/                      # Guards, Interceptors, API Services
-│   │   │   ├── features/                  # Login, Auth, Dashboards
-│   │   │   ├── learning/                  # Courses, Assessments, Certificates
-│   │   │   └── pages/                     # Career Analytics, Talent Management
+│   │   │   ├── core/                      # Guards, Interceptors, Theme & Auth Services
+│   │   │   ├── features/                  # Login, Dashboards, Employee & HR Modules
+│   │   │   ├── learning/                  # Courses, Assessments, Learning Paths, Certificates
+│   │   │   ├── pages/                     # Career Analytics, Talent Management
+│   │   │   └── shared/                    # AI Assistant, Notifications, UI Components
 │   │   └── assets/                        # SVG Branding & Icons
 ├── infrastructure/
 │   ├── api-gateway/                       # Spring Cloud Gateway
@@ -327,13 +356,13 @@ Enterprise-Learning-Platform/
 
 ---
 
-## License
+## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## Author & Acknowledgements
+## 👤 Author & Acknowledgements
 
 Developed by **[Srijita2004](https://github.com/Srijita2004)**.
 * Engineered with modern Cloud-Native Microservice best practices.

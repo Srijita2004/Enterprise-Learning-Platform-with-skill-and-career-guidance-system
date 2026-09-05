@@ -42,6 +42,8 @@ public class JobOpportunityDTO {
     private String managerId;
     private String managerName;
     
+    private Integer matchScore;
+    
     private LocalDateTime postedDate;
     private LocalDateTime closedDate;
     

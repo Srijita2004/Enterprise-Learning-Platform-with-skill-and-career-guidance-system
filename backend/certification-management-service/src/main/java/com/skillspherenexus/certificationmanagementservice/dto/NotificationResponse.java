@@ -4,5 +4,5 @@ import com.skillspherenexus.certificationmanagementservice.enums.*;
 import java.time.*;
 import java.util.UUID;
 
-public record NotificationResponse(UUID notificationId, UUID certificationId, String certificationName, String employeeName,
+public record NotificationResponse(UUID notificationId, UUID certificationId, String certificationName, String employeeName, Integer employeeId,
         NotificationType type, NotificationStatus status, String message, LocalDate dueDate, LocalDateTime sentAt, LocalDateTime acknowledgedAt) {}

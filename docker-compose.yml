@@ -27,8 +27,8 @@ services:
     container_name: postgres-db
 
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: skillsphere
 
     healthcheck:
@@ -98,11 +98,12 @@ services:
 
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere_notification
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-password}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - JWT_SECRET=${JWT_SECRET:-SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}
 
     depends_on:
       - postgres
@@ -122,11 +123,12 @@ services:
 
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-password}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - JWT_SECRET=${JWT_SECRET:-SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}
 
     depends_on:
       - postgres
@@ -148,11 +150,12 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere_learning
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-password}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - JWT_SECRET=${JWT_SECRET:-SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}
 
     depends_on:
       - postgres
@@ -172,12 +175,13 @@ services:
 
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere_certification
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-password}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - M1_BASE_URL=http://m1-service:8081/api
+      - JWT_SECRET=${JWT_SECRET:-SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}
 
     depends_on:
       - postgres
@@ -196,11 +200,14 @@ services:
       - "8087:8087"
 
     environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/skillsphere_career
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-password}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - JWT_SECRET=${JWT_SECRET:-SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}
 
     depends_on:
       - postgres
@@ -219,6 +226,7 @@ services:
 
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET:-SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}
 
     depends_on:
       - eureka-server

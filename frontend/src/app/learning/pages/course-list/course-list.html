@@ -28,6 +28,60 @@
     </button>
   </header>
 
+  <div class="search-filter-bar" *ngIf="!isLoading && !errorMessage && courses.length > 0">
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Search courses by title, code, category, or skill..."
+        class="search-input"
+      />
+      <button
+        *ngIf="searchQuery"
+        type="button"
+        class="clear-input-btn"
+        (click)="searchQuery = ''"
+        title="Clear search"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="filters-row">
+      <div class="filter-group">
+        <label for="categoryFilter">Category:</label>
+        <select id="categoryFilter" [(ngModel)]="selectedCategory" class="filter-select">
+          <option value="ALL">All Categories ({{ courses.length }})</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="levelFilter">Level:</label>
+        <select id="levelFilter" [(ngModel)]="selectedLevel" class="filter-select">
+          <option value="ALL">All Levels</option>
+          <option value="BEGINNER">Beginner</option>
+          <option value="INTERMEDIATE">Intermediate</option>
+          <option value="ADVANCED">Advanced</option>
+        </select>
+      </div>
+
+      <button
+        *ngIf="searchQuery || selectedCategory !== 'ALL' || selectedLevel !== 'ALL'"
+        type="button"
+        class="reset-filters-btn"
+        (click)="clearSearch()"
+      >
+        Reset Filters
+      </button>
+    </div>
+  </div>
+
+  <div class="results-meta" *ngIf="!isLoading && !errorMessage && courses.length > 0">
+    <span>Showing <strong>{{ filteredCourses.length }}</strong> of <strong>{{ courses.length }}</strong> courses</span>
+  </div>
+
   <div
     *ngIf="isLoading"
     class="state-panel"
@@ -71,13 +125,27 @@
     *ngIf="
       !isLoading &&
       !errorMessage &&
-      courses.length > 0
+      courses.length > 0 &&
+      filteredCourses.length === 0
+    "
+    class="state-panel"
+  >
+    <h2>No courses match your search</h2>
+    <p>No results found for your search query or filter criteria.</p>
+    <button type="button" class="retry-button" (click)="clearSearch()">Clear Filters</button>
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading &&
+      !errorMessage &&
+      filteredCourses.length > 0
     "
     class="course-grid"
   >
     <article
       *ngFor="
-        let course of courses;
+        let course of filteredCourses;
         trackBy: trackCourseById
       "
       class="course-card"

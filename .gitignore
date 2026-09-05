@@ -1,4 +1,4 @@
-﻿# =========================================================================
+# =========================================================================
 # SkillsSphere Nexus - Root .gitignore
 # =========================================================================
 
@@ -56,14 +56,37 @@ Thumbs.db
 
 # 5. Environment & Secrets
 .env
+.env.*
 .env.local
 .env.*.local
+*.env
 *.pem
 *.key
 *.p12
+*.jks
+*.pfx
+*.crt
+*.cer
+*.secret
+*.secrets
+secrets.json
+credentials.json
+*.credentials
+application-local.properties
+application-local.yml
 
 # Allow example files
 !.env.example
+!*.env.example
+
+# Logs & Local Databases
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.sqlite
+*.sqlite3
 
 # 6. Python Artifacts
 .venv/

@@ -1,6 +1,3 @@
-/* Google Fonts import: Outfit */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-
 /* Core Theme Variables */
 :root {
   /* Dark Mode Palette (Default) */
@@ -567,8 +564,8 @@ body {
 }
 
 .toast-info {
-  background: #2563eb;
-  border-left: 4px solid #3b82f6;
+  background: var(--accent-primary, #2563eb);
+  border-left: 4px solid var(--accent-secondary, #3b82f6);
 }
 
 .toast-close {
@@ -583,7 +580,7 @@ body {
   color: #ffffff;
 }
 
-/* SkillSphere Nexus visual system additions */
+/* Enterprise Learning Platform visual system additions */
 :root {
   color-scheme: dark;
   --surface-raised: rgba(15, 23, 42, 0.78);
@@ -864,12 +861,23 @@ select option {
   --accent-secondary-hover: #ef4444;
 }
 
+:root[data-accent="vanilla"] {
+  --accent-primary: #d97706;
+  --accent-primary-hover: #b45309;
+  --accent-secondary: #f59e0b;
+  --accent-secondary-hover: #d97706;
+}
 
 /* ---------------------------------------------------------
    SHARED ACCENT EFFECTS
    --------------------------------------------------------- */
 
 :root[data-accent] {
+  --primary-color: var(--accent-primary);
+  --color-primary: var(--accent-primary);
+  --color-primary-hover: var(--accent-primary-hover);
+  --color-secondary: var(--accent-secondary);
+
   --accent-primary-glow:
     color-mix(
       in srgb,
@@ -1416,3 +1424,187 @@ body,
     color var(--transition-normal),
     box-shadow var(--transition-normal);
 }
+
+/* =========================================================
+   🌟 GLOBAL ENTERPRISE SKILL PASSPORT & PRINT STYLES
+   ========================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Completely hide all app layout chrome, sidebars, headers, controls, and background pages */
+  .app-header,
+  .app-sidebar,
+  .sidebar,
+  .header,
+  .main-content > *:not(app-career-analytics):not(app-employee-profile),
+  .career-header-card,
+  .tabs-bar,
+  .differentiator-toolbar,
+  .simulator-panel,
+  .tab-content,
+  .profile-hero-card,
+  .profile-tabs-nav,
+  .tab-pane,
+  .telemetry-hud-banner,
+  .chatbot-floating-btn,
+  .chat-widget,
+  .passport-modal-actions,
+  .btn,
+  .toast-container {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Reset modal backdrop so passport card renders cleanly on the printed page */
+  .passport-modal-backdrop {
+    position: static !important;
+    display: block !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    z-index: auto !important;
+  }
+
+  .passport-modal-dialog {
+    position: static !important;
+    display: block !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .passport-card,
+  #printablePassport,
+  #printableProfilePassport {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 2px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    box-sizing: border-box !important;
+  }
+
+  .passport-header {
+    border-bottom: 2px solid #4f46e5 !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .passport-title {
+    color: #0f172a !important;
+    font-size: 1.4rem !important;
+  }
+
+  .passport-subtitle {
+    color: #4338ca !important;
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+  }
+
+  .seal-badge {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+    border: 1px solid #86efac !important;
+  }
+
+  .seal-hash {
+    color: #64748b !important;
+  }
+
+  .passport-identity-grid,
+  .lms-summary-item,
+  .passport-cert-badge {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+  }
+
+  .identity-field label,
+  .lms-label,
+  .passport-section-title {
+    color: #334155 !important;
+    font-weight: 800 !important;
+  }
+
+  .identity-field span,
+  .passport-skill-row span,
+  .lms-summary-item strong,
+  .passport-cert-badge strong {
+    color: #0f172a !important;
+  }
+
+  .readiness-tag {
+    color: #059669 !important;
+    font-weight: 800 !important;
+  }
+
+  .skill-meter-track {
+    background: #e2e8f0 !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  .skill-meter-fill {
+    background: #0284c7 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .passport-footer {
+    border-top: 1px dashed #cbd5e1 !important;
+    margin-top: 20px !important;
+    padding-top: 14px !important;
+  }
+
+  .auth-stamp strong {
+    color: #0f172a !important;
+  }
+
+  .auth-stamp small,
+  .auth-stamp span {
+    color: #64748b !important;
+  }
+
+  .qr-box {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+  }
+}

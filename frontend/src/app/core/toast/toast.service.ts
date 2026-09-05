@@ -17,4 +17,8 @@ export class ToastService {
   info(message: string): void {
     this.shared.showInfo(message);
   }
+
+  warning(message: string): void {
+    this.shared.showWarning(message);
+  }
 }

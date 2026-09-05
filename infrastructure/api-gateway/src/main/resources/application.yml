@@ -58,3 +58,6 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
+
+jwt:
+  secret: ${JWT_SECRET:SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}

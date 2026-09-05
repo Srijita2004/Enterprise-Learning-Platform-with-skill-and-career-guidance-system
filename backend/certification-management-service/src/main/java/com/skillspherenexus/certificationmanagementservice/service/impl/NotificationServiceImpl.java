@@ -61,5 +61,5 @@ public class NotificationServiceImpl implements NotificationService {
         auditService.record(cert.getCertificationId(), AuditAction.NOTIFICATION_SENT, actor, message, null, saved.getNotificationId());
         return 1;
     }
-    private NotificationResponse map(RenewalNotification n) { CertificationRecord c=n.getCertification(); return new NotificationResponse(n.getNotificationId(), c.getCertificationId(), c.getCertificationName(), c.getEmployeeName(), n.getType(), n.getStatus(), n.getMessage(), n.getDueDate(), n.getSentAt(), n.getAcknowledgedAt()); }
+    private NotificationResponse map(RenewalNotification n) { CertificationRecord c=n.getCertification(); return new NotificationResponse(n.getNotificationId(), c.getCertificationId(), c.getCertificationName(), c.getEmployeeName(), c.getEmployeeId(), n.getType(), n.getStatus(), n.getMessage(), n.getDueDate(), n.getSentAt(), n.getAcknowledgedAt()); }
 }

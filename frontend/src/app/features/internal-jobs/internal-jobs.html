@@ -1,0 +1,667 @@
+<div class="jobs-marketplace-wrapper">
+  <!-- TOP HEADER & CONTROLS -->
+  <header class="marketplace-header">
+    <div class="header-intro">
+      <div class="badge-pill">
+        <span class="pulse-dot"></span>
+        <span>Enterprise Talent Exchange</span>
+      </div>
+      <h1 class="marketplace-title">Internal Job Marketplace</h1>
+      <p class="marketplace-subtitle">
+        Discover open internal vacancies across the enterprise, align with skill competency prerequisites, and mobilize internal workforce mobility.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      @if (isAdmin()) {
+        <button type="button" class="btn-primary-action" (click)="openCreateModal()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Post Internal Vacancy</span>
+        </button>
+      }
+      <a routerLink="/career-analytics" class="btn-secondary-action">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+          <polyline points="16 7 22 7 22 13"></polyline>
+        </svg>
+        <span>Career Analytics</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MARKETPLACE METRICS OVERVIEW -->
+  <div class="metrics-strip">
+    <div class="metric-card glass-panel">
+      <div class="metric-icon-box cyan">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      </div>
+      <div class="metric-content">
+        <span class="metric-value">{{ jobs().length }}</span>
+        <span class="metric-label">Total Listings</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-panel">
+      <div class="metric-icon-box emerald">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <div class="metric-content">
+        <span class="metric-value text-emerald">{{ totalOpenCount }}</span>
+        <span class="metric-label">Actively Hiring</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-panel">
+      <div class="metric-icon-box violet">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      <div class="metric-content">
+        <span class="metric-value text-violet">{{ departments().length }}</span>
+        <span class="metric-label">Active Departments</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-panel">
+      <div class="metric-icon-box amber">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+        </svg>
+      </div>
+      <div class="metric-content">
+        <span class="metric-value text-amber">100%</span>
+        <span class="metric-label">Skill Matched</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH & FILTER TOOLBAR -->
+  <div class="filter-toolbar glass-panel">
+    <div class="search-input-wrapper">
+      <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        class="search-field"
+        placeholder="Search jobs by title, skills (e.g. Java, Angular), department, or location..."
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+      />
+      @if (searchQuery()) {
+        <button type="button" class="clear-search-btn" (click)="searchQuery.set('')" title="Clear search">
+          &times;
+        </button>
+      }
+    </div>
+
+    <div class="filter-controls-group">
+      <!-- Department Filter -->
+      <div class="select-wrapper">
+        <label for="deptFilter" class="select-label">Department:</label>
+        <select
+          id="deptFilter"
+          class="custom-select"
+          [value]="selectedDepartment()"
+          (change)="selectedDepartment.set($any($event.target).value)"
+        >
+          <option value="ALL">All Departments ({{ jobs().length }})</option>
+          @for (dept of departments(); track dept) {
+            <option [value]="dept">{{ dept }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Experience Filter -->
+      <div class="select-wrapper">
+        <label for="expFilter" class="select-label">Experience:</label>
+        <select
+          id="expFilter"
+          class="custom-select"
+          [value]="selectedExperience()"
+          (change)="selectedExperience.set($any($event.target).value)"
+        >
+          <option value="ALL">All Levels</option>
+          <option value="ENTRY">Entry (0–2 yrs)</option>
+          <option value="MID">Mid-Level (3–5 yrs)</option>
+          <option value="SENIOR">Senior (6+ yrs)</option>
+        </select>
+      </div>
+
+      <!-- Status Filter (HR / Admin only) -->
+      @if (isHR()) {
+        <div class="select-wrapper">
+          <label for="statusFilter" class="select-label">Status:</label>
+          <select
+            id="statusFilter"
+            class="custom-select"
+            [value]="selectedStatus()"
+            (change)="selectedStatus.set($any($event.target).value)"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="OPEN">Open Only</option>
+            <option value="CLOSED">Closed Only</option>
+          </select>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- JOB CARDS LISTING -->
+  <main class="job-list-container">
+    @if (loading()) {
+      <div class="loading-state-card glass-panel">
+        <div class="spinner"></div>
+        <h3>Loading Internal Job Marketplace</h3>
+        <p>Scanning workforce opportunities and matching required competencies...</p>
+      </div>
+    } @else if (error()) {
+      <div class="error-state-card glass-panel">
+        <span class="error-icon">!</span>
+        <h3>Error Connecting to Marketplace</h3>
+        <p>{{ error() }}</p>
+        <button type="button" class="btn-retry" (click)="loadJobs()">Retry</button>
+      </div>
+    } @else if (filteredJobs().length === 0) {
+      <div class="empty-state-card glass-panel">
+        <div class="empty-icon-circle">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+        <h3>No Job Vacancies Found</h3>
+        <p>There are no internal jobs matching your current filter criteria.</p>
+        @if (searchQuery() || selectedDepartment() !== 'ALL' || selectedStatus() !== 'ALL') {
+          <button type="button" class="btn-clear-filters" (click)="searchQuery.set(''); selectedDepartment.set('ALL'); selectedStatus.set('ALL'); selectedExperience.set('ALL')">
+            Reset Filters
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="jobs-grid">
+        @for (job of filteredJobs(); track job.jobId) {
+          <article class="job-card glass-panel" [class.closed-card]="(job.status || 'OPEN').toUpperCase() === 'CLOSED'">
+            <!-- Header -->
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="department-tag">{{ job.department }}</span>
+                <h2 class="job-title" (click)="openJobDetail(job)">{{ job.title }}</h2>
+              </div>
+
+              <div class="status-indicator">
+                @if ((job.status || 'OPEN').toUpperCase() === 'OPEN') {
+                  <span class="badge-status open">
+                    <span class="status-dot"></span>
+                    Open
+                  </span>
+                } @else {
+                  <span class="badge-status closed">
+                    Closed
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Meta Attributes -->
+            <div class="meta-row">
+              <div class="meta-item">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>{{ job.location }}</span>
+              </div>
+
+              <div class="meta-item">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <span>${{ job.salary | number:'1.0-0' }} / yr</span>
+              </div>
+
+              <div class="meta-item">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                <span>{{ job.requiredExperienceYears || 3 }}+ yrs exp</span>
+              </div>
+            </div>
+
+            <!-- Description Snippet -->
+            <p class="job-description-snippet">
+              {{ job.description || 'Enterprise role in skill competency framework.' }}
+            </p>
+
+            <!-- Skills Required Tags -->
+            <div class="skills-block">
+              <span class="skills-title">Required Competencies:</span>
+              <div class="skills-chips">
+                @for (skill of job.skillsRequired; track skill) {
+                  <span class="skill-chip">{{ skill }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="card-footer">
+              <div class="footer-left">
+                <button type="button" class="btn-view-details" (click)="openJobDetail(job)">
+                  <span>View Details</span>
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="footer-actions">
+                @if (isHR()) {
+                  <button
+                    type="button"
+                    class="btn-action-candidates"
+                    (click)="openCandidatesModal(job)"
+                    title="Find matched employees for this position"
+                  >
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Match Talent</span>
+                  </button>
+                }
+
+                @if (isAdmin()) {
+                  <button
+                    type="button"
+                    class="btn-icon-action"
+                    (click)="openEditModal(job)"
+                    title="Edit job requirements"
+                  >
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn-icon-action"
+                    (click)="toggleStatus(job)"
+                    [title]="(job.status || 'OPEN').toUpperCase() === 'OPEN' ? 'Close job' : 'Re-open job'"
+                  >
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn-icon-action danger"
+                    (click)="confirmDelete(job)"
+                    title="Delete vacancy"
+                  >
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </main>
+
+  <!-- =========================================================
+       MODAL 1: CREATE / EDIT INTERNAL JOB (Admin & HR)
+       ========================================================= -->
+  @if (showJobModal()) {
+    <div class="modal-backdrop" (click)="showJobModal.set(false)">
+      <div class="modal-card glass-panel" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title">{{ isEditing() ? 'Edit Internal Job' : 'Post New Internal Vacancy' }}</h2>
+            <p class="modal-subtitle">Enter vacancy details, competency criteria, and compensation specifications.</p>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="showJobModal.set(false)">
+            &times;
+          </button>
+        </div>
+
+        <form (submit)="$event.preventDefault(); saveJob()" class="modal-form">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="jobTitle">Job Title *</label>
+              <input
+                id="jobTitle"
+                type="text"
+                class="form-input"
+                [(ngModel)]="jobForm.title"
+                name="title"
+                required
+                placeholder="e.g. Lead Distributed Systems Engineer"
+              />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="jobDept">Department *</label>
+              <input
+                id="jobDept"
+                type="text"
+                class="form-input"
+                [(ngModel)]="jobForm.department"
+                name="department"
+                required
+                placeholder="e.g. Engineering"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="jobLoc">Location / Workplace Model</label>
+              <input
+                id="jobLoc"
+                type="text"
+                class="form-input"
+                [(ngModel)]="jobForm.location"
+                name="location"
+                placeholder="e.g. New York, NY (Hybrid)"
+              />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="jobSalary">Annual Compensation ($)</label>
+              <input
+                id="jobSalary"
+                type="number"
+                class="form-input"
+                [(ngModel)]="jobForm.salary"
+                name="salary"
+                min="30000"
+                step="5000"
+              />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="jobExp">Experience (Yrs)</label>
+              <input
+                id="jobExp"
+                type="number"
+                class="form-input"
+                [(ngModel)]="jobForm.requiredExperienceYears"
+                name="requiredExperienceYears"
+                min="0"
+                max="25"
+              />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="jobStatus">Status</label>
+              <select
+                id="jobStatus"
+                class="form-input custom-select"
+                [(ngModel)]="jobForm.status"
+                name="status"
+              >
+                <option value="OPEN">OPEN (Hiring)</option>
+                <option value="CLOSED">CLOSED</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="jobSkills">Required Skills &amp; Competencies (Comma-separated)</label>
+            <input
+              id="jobSkills"
+              type="text"
+              class="form-input"
+              [(ngModel)]="jobForm.skillsInput"
+              name="skillsInput"
+              placeholder="e.g. Java 17, Spring Boot 4, Angular 20, Microservices, System Design"
+            />
+            <small class="form-hint">These tags are used by the AI/matching engine to score internal employees.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="jobDesc">Job Description &amp; Responsibilities</label>
+            <textarea
+              id="jobDesc"
+              rows="4"
+              class="form-textarea"
+              [(ngModel)]="jobForm.description"
+              name="description"
+              placeholder="Describe core initiatives, team domain, architecture ownership, and advancement milestones..."
+            ></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="showJobModal.set(false)">
+              Cancel
+            </button>
+            <button type="submit" class="btn-submit" [disabled]="savingJob()">
+              @if (savingJob()) {
+                <span class="spinner-inline"></span>
+                <span>Saving Vacancy...</span>
+              } @else {
+                <span>{{ isEditing() ? 'Update Vacancy' : 'Publish Vacancy' }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================
+       MODAL 2: TALENT MATCHING DRAWER / MODAL (HR & Admin)
+       ========================================================= -->
+  @if (showCandidatesModal()) {
+    <div class="modal-backdrop" (click)="showCandidatesModal.set(false)">
+      <div class="modal-card modal-candidates glass-panel" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <div class="candidate-eyebrow">
+              <span>Candidate Matchmaker</span>
+              <span class="dept-badge">{{ selectedJobForCandidates()?.department }}</span>
+            </div>
+            <h2 class="modal-title">{{ selectedJobForCandidates()?.title }}</h2>
+            <p class="modal-subtitle">
+              Automated scoring evaluates registered employee career plans against this job's competencies and required tenure.
+            </p>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="showCandidatesModal.set(false)">
+            &times;
+          </button>
+        </div>
+
+        <div class="candidates-body">
+          @if (loadingCandidates()) {
+            <div class="loading-state-card">
+              <div class="spinner"></div>
+              <p>Analyzing workforce competency profiles &amp; computing suitability scores...</p>
+            </div>
+          } @else if (candidates().length === 0) {
+            <div class="empty-state-card">
+              <p>No candidate profiles currently available in the career registry.</p>
+            </div>
+          } @else {
+            <div class="candidates-list">
+              @for (c of candidates(); track c.employeeId) {
+                <div class="candidate-row-card glass-panel" [class.high-fit]="c.suitabilityTier === 'HIGH_FIT'">
+                  <div class="candidate-avatar">
+                    {{ c.employeeName ? c.employeeName.charAt(0) : 'E' }}
+                  </div>
+
+                  <div class="candidate-main-info">
+                    <div class="candidate-name-row">
+                      <h3 class="candidate-name">{{ c.employeeName }}</h3>
+                      <span class="tier-badge" [class]="c.suitabilityTier.toLowerCase()">
+                        {{ c.suitabilityTier === 'HIGH_FIT' ? 'High Match' : c.suitabilityTier === 'POTENTIAL_FIT' ? 'Potential Fit' : 'Developing' }}
+                      </span>
+                    </div>
+
+                    <p class="candidate-roles">
+                      Current: <strong>{{ c.currentRole }}</strong> &rarr; Target: <strong>{{ c.targetRole }}</strong>
+                    </p>
+
+                    <div class="candidate-skills-breakdown">
+                      @if (c.missingSkills && c.missingSkills.length > 0) {
+                        <div class="gap-tags">
+                          <span class="gap-label">Detected Gaps:</span>
+                          @for (gap of c.missingSkills; track gap) {
+                            <span class="gap-tag">{{ gap }}</span>
+                          }
+                        </div>
+                      } @else {
+                        <span class="text-emerald text-sm font-semibold">&check; Full Skill Requirement Satisfied</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="candidate-score-box">
+                    <div class="score-circle" [class.high]="c.matchScore >= 80" [class.mid]="c.matchScore >= 60 && c.matchScore < 80">
+                      <span class="score-num">{{ c.matchScore }}%</span>
+                      <span class="score-label">Fit</span>
+                    </div>
+                    <span class="roadmap-prog">{{ c.progressPercentage }}% Roadmap</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-primary-action" (click)="showCandidatesModal.set(false)">
+            Close Matchmaker
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================
+       MODAL 3: JOB DETAILS DRAWER (All Roles)
+       ========================================================= -->
+  @if (showDetailModal() && selectedJobDetail(); as detail) {
+    <div class="modal-backdrop" (click)="showDetailModal.set(false)">
+      <div class="modal-card modal-detail glass-panel" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <span class="department-tag">{{ detail.department }}</span>
+            <h2 class="modal-title">{{ detail.title }}</h2>
+            <p class="modal-subtitle">{{ detail.location }} &bull; ${{ detail.salary | number:'1.0-0' }} / yr</p>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="showDetailModal.set(false)">
+            &times;
+          </button>
+        </div>
+
+        <div class="detail-body">
+          <div class="detail-section">
+            <h3>Position Overview</h3>
+            <p>{{ detail.description || 'Enterprise role supporting core digital platform objectives and scaling competency capabilities.' }}</p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Prerequisite Competencies &amp; Skills</h3>
+            <div class="skills-chips">
+              @for (skill of detail.skillsRequired; track skill) {
+                <span class="skill-chip large">{{ skill }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Eligibility &amp; Career Path Alignment</h3>
+            <div class="eligibility-grid">
+              <div class="eligibility-item">
+                <span class="label">Minimum Tenure:</span>
+                <span class="value">{{ detail.requiredExperienceYears || 3 }} Years in professional software / domain</span>
+              </div>
+              <div class="eligibility-item">
+                <span class="label">Workforce Status:</span>
+                <span class="value">{{ detail.status || 'OPEN' }}</span>
+              </div>
+              <div class="eligibility-item">
+                <span class="label">Learning Path:</span>
+                <span class="value">Mapped to Enterprise Full-Stack &amp; Cloud Curriculum</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <a [routerLink]="['/career-analytics']" class="btn-secondary-action" (click)="showDetailModal.set(false)">
+            Check My Career Match
+          </a>
+          <button type="button" class="btn-primary-action" (click)="showDetailModal.set(false)">
+            Close Details
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================
+       MODAL 4: DELETE CONFIRMATION (Admin Only)
+       ========================================================= -->
+  @if (showDeleteModal() && jobToDelete(); as toDelete) {
+    <div class="modal-backdrop" (click)="showDeleteModal.set(false)">
+      <div class="modal-card modal-delete glass-panel" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title text-rose">Confirm Vacancy Deletion</h2>
+          <button type="button" class="btn-close-modal" (click)="showDeleteModal.set(false)">
+            &times;
+          </button>
+        </div>
+
+        <div class="delete-body">
+          <p>
+            Are you sure you want to permanently delete the job vacancy:
+            <strong>"{{ toDelete.title }}"</strong> ({{ toDelete.department }})?
+          </p>
+          <p class="delete-warning">
+            This action will remove the vacancy from the database and candidate matchmaker in real time.
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="showDeleteModal.set(false)">
+            Cancel
+          </button>
+          <button type="button" class="btn-danger" [disabled]="deletingJob()" (click)="executeDelete()">
+            @if (deletingJob()) {
+              <span class="spinner-inline"></span>
+              <span>Deleting...</span>
+            } @else {
+              <span>Confirm Delete</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

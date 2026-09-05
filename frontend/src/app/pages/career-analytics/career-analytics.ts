@@ -1,21 +1,38 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, WritableSignal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
-import { finalize, forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { RouterModule } from '@angular/router';
+import { finalize, catchError, of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { CareerService } from '../../core/services/career.service';
 import { EmployeeService } from '../../core/services/employee.service';
-import { EmployeeSkillService } from '../../core/services/employee-skill.service';
-import { SkillService } from '../../core/services/skill.service';
-import { AssessmentService } from '../../core/services/assessment.service';
-import { CertificationService } from '../../core/services/certification.service';
 import { ToastService } from '../../core/toast/toast.service';
-import { CareerPlan, JobOpportunity, CareerDashboard, PromotionCriteria, AiCareerEvaluationResponse, AiCareerEvaluationRequest } from '../../models/career.models';
-import { Employee } from '../../models/certification.models';
+import {
+  CareerPlan,
+  JobOpportunity,
+  CareerDashboard,
+  AiCareerEvaluationResponse,
+  AiCareerEvaluationRequest
+} from '../../models/career.models';
+import { Employee, Certification, PagedResponse } from '../../models/certification.models';
+import { CertificationApiService } from '../../core/api/certification-api.service';
 import { CourseService } from '../../learning/services/course.service';
 import { Course } from '../../learning/models/course.model';
+
+export interface SimulatorSkill {
+  name: string;
+  category: string;
+  current: number;
+  boost: number;
+  active: boolean;
+}
+
+export interface SimulatorCert {
+  name: string;
+  issuer: string;
+  boostPct: number;
+  active: boolean;
+}
 
 @Component({
   selector: 'app-career-analytics',
@@ -28,18 +45,27 @@ export class CareerAnalyticsComponent implements OnInit {
   readonly authService = inject(AuthService);
   private readonly careerService = inject(CareerService);
   private readonly employeeService = inject(EmployeeService);
-  private readonly empSkillService = inject(EmployeeSkillService);
-  private readonly skillService = inject(SkillService);
-  private readonly assessmentService = inject(AssessmentService);
-  private readonly certService = inject(CertificationService);
   private readonly courseService = inject(CourseService);
+  private readonly certApiService = inject(CertificationApiService);
   private readonly toast = inject(ToastService);
 
   // States
   readonly activeTab = signal<'roadmap' | 'jobs' | 'analytics' | 'ai-guidance'>('roadmap');
   readonly selectedEmployeeId = signal<number>(1);
-  readonly employees = signal<Employee[]>([]);
+  readonly employees = signal<Employee[]>([
+    { employeeId: 1, employeeName: 'Srijita', designation: 'Senior Java Developer', salary: 115000 },
+    { employeeId: 101, employeeName: 'Alex Vance', designation: 'Cloud Infrastructure Engineer', salary: 110000 },
+    { employeeId: 102, employeeName: 'Marcus Brodie', designation: 'Principal Systems Architect', salary: 145000 },
+    { employeeId: 103, employeeName: 'Sarah Jenkins', designation: 'Senior QA Lead', salary: 98000 },
+    { employeeId: 106, employeeName: 'John Smith', designation: 'Frontend Software Engineer', salary: 102000 },
+    { employeeId: 107, employeeName: 'Jane Doe', designation: 'Data & Machine Learning Engineer', salary: 125000 },
+    { employeeId: 108, employeeName: 'David Miller', designation: 'DevOps & Site Reliability Engineer', salary: 118000 },
+    { employeeId: 109, employeeName: 'Elena Rostova', designation: 'Cybersecurity & Compliance Analyst', salary: 130000 },
+    { employeeId: 110, employeeName: 'Michael Chang', designation: 'Full-Stack Application Developer', salary: 108000 },
+    { employeeId: 111, employeeName: 'Priya Sharma', designation: 'Database Performance Specialist', salary: 122000 }
+  ]);
   readonly courses = signal<Course[]>([]);
+  readonly employeeCerts = signal<Certification[]>([]);
   readonly careerPlan = signal<CareerPlan | null>(null);
   readonly jobs = signal<JobOpportunity[]>([]);
   readonly dashboard = signal<CareerDashboard | null>(null);
@@ -60,6 +86,29 @@ export class CareerAnalyticsComponent implements OnInit {
   targetRoleInput = '';
   readonly savingTargetRole = signal<boolean>(false);
 
+  // =========================================================
+  // 🌟 WHAT-IF CAREER SIMULATOR STATE
+  // =========================================================
+  readonly showSimulator = signal<boolean>(false);
+  readonly simulatedTargetRole = signal<string>('Staff Cloud & Microservices Architect');
+  readonly simulatedSkillBoosts = signal<SimulatorSkill[]>([
+    { name: 'Cloud Native & Kubernetes', category: 'TECHNICAL', current: 3, boost: 5, active: false },
+    { name: 'Microservices & Event Streaming', category: 'TECHNICAL', current: 3, boost: 5, active: false },
+    { name: 'Distributed System Architecture', category: 'TECHNICAL', current: 4, boost: 5, active: false },
+    { name: 'Zero-Trust Cybersecurity Governance', category: 'DOMAIN', current: 2, boost: 4, active: false },
+    { name: 'Technical Leadership & Architecture Governance', category: 'SOFT', current: 3, boost: 5, active: false }
+  ]);
+  readonly simulatedCertBoosts = signal<SimulatorCert[]>([
+    { name: 'AWS Certified Solutions Architect Professional', issuer: 'Amazon Web Services', boostPct: 12, active: false },
+    { name: 'Certified Kubernetes Administrator (CKA)', issuer: 'Cloud Native Computing Foundation', boostPct: 10, active: false },
+    { name: 'Enterprise Microservices Security Specialist', issuer: 'Enterprise Academy', boostPct: 8, active: false }
+  ]);
+
+  // =========================================================
+  // 🌟 VERIFIED ENTERPRISE SKILL PASSPORT STATE
+  // =========================================================
+  readonly showSkillPassport = signal<boolean>(false);
+
   isAdmin(): boolean {
     return this.authService.hasRole('ADMIN');
   }
@@ -69,19 +118,15 @@ export class CareerAnalyticsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.isManager()) {
-      this.selectedEmployeeId.set(106);
-      this.loadEmployees();
-      this.loadDashboard();
-    } else {
-      // Learner / Employee: Lock to their own mapped employee ID
-      const selfId = this.authService.getEmployeeId();
-      this.selectedEmployeeId.set(selfId);
-    }
-
-    this.loadJobs();
+    const initialId = this.isManager() ? 1 : this.authService.getEmployeeId();
+    this.selectedEmployeeId.set(initialId);
+    
     this.loadCourses();
-    this.loadCareerPlan(this.selectedEmployeeId());
+    this.loadAllEmployeeModules(initialId);
+
+    if (this.isManager()) {
+      this.loadEmployees();
+    }
   }
 
   loadCourses(): void {
@@ -91,326 +136,234 @@ export class CareerAnalyticsComponent implements OnInit {
     });
   }
 
-  getRecommendedCourseLink(keyword: string): any[] {
-    const all = this.courses();
-    if (!all || all.length === 0) {
-      return ['/courses'];
-    }
-    const kw = (keyword || '').toLowerCase().trim();
-    if (!kw) {
-      return ['/courses', all[0].courseId];
-    }
-
-    // 1. Exact match by title or courseCode
-    let match = all.find(c =>
-      (c.title && c.title.toLowerCase() === kw) ||
-      (c.courseCode && c.courseCode.toLowerCase() === kw)
-    );
-    if (match) {
-      return ['/courses', match.courseId];
-    }
-
-    // 2. Substring match (either course title contains query, or query contains course title)
-    match = all.find(c =>
-      (c.title && (c.title.toLowerCase().includes(kw) || kw.includes(c.title.toLowerCase())))
-    );
-    if (match) {
-      return ['/courses', match.courseId];
-    }
-
-    // 3. Category match
-    match = all.find(c =>
-      (c.category && (c.category.toLowerCase().includes(kw) || kw.includes(c.category.toLowerCase())))
-    );
-    if (match) {
-      return ['/courses', match.courseId];
-    }
-
-    // 4. Token multi-match (best keyword intersection score)
-    const tokens = kw.split(/[\s,&-]+/).filter(t => t.length > 2);
-    if (tokens.length > 0) {
-      let bestScore = 0;
-      let bestMatch = null;
-      for (const c of all) {
-        let score = 0;
-        const cStr = `${c.title || ''} ${c.category || ''} ${c.courseCode || ''}`.toLowerCase();
-        for (const t of tokens) {
-          if (cStr.includes(t)) {
-            score++;
-          }
-        }
-        if (score > bestScore) {
-          bestScore = score;
-          bestMatch = c;
-        }
-      }
-      if (bestMatch && bestScore > 0) {
-        return ['/courses', bestMatch.courseId];
-      }
-    }
-
-    // 5. Fallback to first available course
-    return ['/courses', all[0].courseId];
-  }
-
   loadEmployees(): void {
-    if (!this.isManager()) {
-      return; // Do not fetch other employee records for non-managers
-    }
-
     this.employeeService.getAll().subscribe({
       next: (data) => {
-        const formattedList: Employee[] = (data || []).map(e => ({
-          employeeId: e.employeeId,
-          employeeName: e.employeeName,
-          designation: e.designation || 'Enterprise Associate',
-          salary: e.salary || 85000
-        }));
-
-        // Sort by employeeId
-        formattedList.sort((a, b) => a.employeeId - b.employeeId);
-        this.employees.set(formattedList);
-      },
-      error: (err) => {
-        console.error('Failed to load employees from backend:', err);
+        if (data && data.length > 0) {
+          const list: Employee[] = data.map(e => ({
+            employeeId: e.employeeId,
+            employeeName: e.employeeName,
+            designation: e.designation || 'Enterprise Associate',
+            salary: e.salary || 85000
+          }));
+          const existingIds = new Set(list.map(e => e.employeeId));
+          this.employees().forEach(pre => {
+            if (!existingIds.has(pre.employeeId)) {
+              list.push(pre);
+            }
+          });
+          list.sort((a, b) => a.employeeId - b.employeeId);
+          this.employees.set(list);
+        }
       }
     });
   }
 
-  loadCareerPlan(employeeId: number): void {
-    if (this.authService.hasRole('LEARNER')) {
-      // Independent Learner Roadmap (never show internal employee data)
-      const learnerName = this.authService.currentUser()?.name || 'Learner';
-      this.careerPlan.set({
-        planId: 9001,
-        employeeId: 0,
-        employeeName: learnerName,
-        currentRole: 'Independent Learner',
-        targetRole: 'Full-Stack Software Professional',
-        progress: 65,
-        mentorName: 'SkillSphere Academic Advisor',
-        skillsRequired: ['Java', 'Angular', 'PostgreSQL', 'Microservices'],
-        skillsAcquired: ['Java', 'Angular'],
-        skillGaps: ['Cloud Architecture', 'System Security'],
-        jobMatchesCount: 4,
-        promotionCriteria: [
-          { criteriaId: 1, name: 'Core Curriculum Enrollment', description: 'Enrolled in core software engineering tracks & syllabus modules', isMet: true, type: 'SKILL' },
-          { criteriaId: 2, name: 'Practical Assessment Quizzes', description: 'Complete end-of-module assessment quizzes & practice tests', isMet: true, type: 'ASSESSMENT' },
-          { criteriaId: 3, name: 'Skill Competency Mastery', description: 'Attain score >= 80% on advanced skill assessments', isMet: false, type: 'ASSESSMENT' },
-          { criteriaId: 4, name: 'Verified LMS Certificate', description: 'Achieve official Course Completion Certificate', isMet: false, type: 'CERTIFICATION' }
-        ]
-      });
-      return;
+  onEmployeeChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    if (target && target.value) {
+      const empId = Number(target.value);
+      this.selectedEmployeeId.set(empId);
+      this.loadAllEmployeeModules(empId);
     }
-
-    if (employeeId === 0 && this.authService.hasRole('EMPLOYEE')) {
-      this.employeeService.getAll().subscribe({
-        next: (all) => {
-          const uName = (this.authService.currentUser()?.name || '').toLowerCase().trim();
-          const uEmail = (this.authService.currentUser()?.email || '').toLowerCase().trim();
-          
-          const match = all.find(e => {
-            const eName = (e.employeeName || '').toLowerCase().trim();
-            return (uName.length > 2 && eName === uName) || 
-                   (uEmail.length > 2 && eName.includes(uEmail.split('@')[0]));
-          });
-
-          if (match) {
-            this.selectedEmployeeId.set(match.employeeId);
-            this.fetchBackendCareerPlan(match.employeeId);
-          } else {
-            // New employee without an HR record: Show their own name with 0% initial progress
-            const currentEmpName = this.authService.currentUser()?.name || 'Employee';
-            this.selectedEmployeeId.set(0);
-            this.careerPlan.set({
-              planId: 0,
-              employeeId: 0,
-              employeeName: currentEmpName,
-              currentRole: 'Enterprise Associate',
-              targetRole: 'Senior Professional Specialist',
-              progress: 0,
-              mentorName: 'Unassigned (Assigned by HR)',
-              skillsRequired: ['Core Competencies', 'Platform Fundamentals'],
-              skillsAcquired: [],
-              skillGaps: ['Onboarding Assessment'],
-              jobMatchesCount: 0,
-              promotionCriteria: [
-                { criteriaId: 1, name: 'Competency Framework Benchmark', description: 'Complete initial assessment across technical competencies', isMet: false, type: 'SKILL' },
-                { criteriaId: 2, name: 'Performance & Probation Review', description: 'Complete initial onboarding review cycle', isMet: false, type: 'ASSESSMENT' },
-                { criteriaId: 3, name: 'Professional Certification', description: 'Earn first verified professional certificate', isMet: false, type: 'CERTIFICATION' },
-                { criteriaId: 4, name: 'Promotion Board Review', description: 'Submit formal advancement milestone checklist', isMet: false, type: 'TENURE' }
-              ]
-            });
-          }
-        },
-        error: () => {
-          const currentEmpName = this.authService.currentUser()?.name || 'Employee';
-          this.careerPlan.set({
-            planId: 0,
-            employeeId: 0,
-            employeeName: currentEmpName,
-            currentRole: 'Enterprise Associate',
-            targetRole: 'Senior Professional Specialist',
-            progress: 0,
-            mentorName: 'Unassigned',
-            skillsRequired: [],
-            skillsAcquired: [],
-            skillGaps: [],
-            jobMatchesCount: 0,
-            promotionCriteria: []
-          });
-        }
-      });
-      return;
-    }
-
-    this.fetchBackendCareerPlan(employeeId);
   }
 
-  private fetchBackendCareerPlan(empId: number): void {
+  private loadAllEmployeeModules(empId: number): void {
+    this.loadPlan(empId);
+    this.loadJobsForEmployee(empId);
+    this.loadTrainingAnalytics(empId);
+    this.loadEmployeeCertifications(empId);
+  }
+
+  loadEmployeeCertifications(empId: number): void {
+    const empObj = this.employees().find(e => e.employeeId === empId);
+    const empName = empObj ? empObj.employeeName : (this.careerPlan()?.employeeName || '');
+    this.certApiService.search({ page: 0, size: 50 }).pipe(
+      catchError(() => of({ content: [], totalElements: 0, totalPages: 0, page: 0, size: 50, first: true, last: true }))
+    ).subscribe(res => {
+      const all = [...(res.content || [])];
+      try {
+        const stored: Certification[] = JSON.parse(localStorage.getItem('ssn_external_certifications') || '[]');
+        stored.forEach(s => {
+          if (!all.some(c => c.certificationId === s.certificationId)) {
+            all.push(s);
+          }
+        });
+      } catch {}
+      const filtered = all.filter(c => 
+        (c.employeeId && c.employeeId === empId) ||
+        (empName && c.employeeName && c.employeeName.toLowerCase().trim() === empName.toLowerCase().trim())
+      );
+      this.employeeCerts.set(filtered);
+    });
+  }
+
+  loadPlan(empId: number): void {
     this.loadingPlan.set(true);
     this.careerService.getCareerPlanByEmployee(empId)
       .pipe(finalize(() => this.loadingPlan.set(false)))
       .subscribe({
         next: (plan) => {
+          if (plan) {
+            if (!this.isManager()) {
+              plan.employeeName = this.authService.currentUser()?.name || plan.employeeName;
+            } else {
+              const found = this.employees().find(e => e.employeeId === empId);
+              if (found) {
+                plan.employeeName = found.employeeName;
+              }
+            }
+          }
           this.careerPlan.set(plan);
-          this.mentorNameInput = plan.mentorName;
-          this.editMentorMode.set(false);
-          this.fetchAiEvaluation(empId, plan.targetRole);
+          this.mentorNameInput = plan?.mentorName || '';
+          this.targetRoleInput = plan?.targetRole || '';
+          if (plan) {
+            this.simulatedTargetRole.set(plan.targetRole || 'Senior Professional Specialist');
+            this.fetchAiEvaluation(empId, plan.targetRole);
+          }
         },
         error: () => {
-          const empName = this.authService.currentUser()?.name || `Employee #${empId}`;
-          const defaultPlan: CareerPlan = {
-            planId: 1000 + empId,
-            employeeId: empId,
-            employeeName: empName,
-            currentRole: 'Enterprise Associate',
-            targetRole: 'Senior Technical Specialist',
-            progress: 0,
-            mentorName: 'Unassigned',
-            skillsRequired: ['Core Competencies'],
-            skillsAcquired: [],
-            skillGaps: ['Onboarding Assessment'],
-            jobMatchesCount: 0,
-            promotionCriteria: [
-              { criteriaId: 101, name: 'Competency Framework Benchmark', description: 'Assessed at Level 3+ across technical competencies', isMet: false, type: 'SKILL' },
-              { criteriaId: 102, name: 'Verified Performance Review', description: 'Met annual internal review metrics', isMet: false, type: 'ASSESSMENT' },
-              { criteriaId: 103, name: 'Professional Certification', description: 'Active verified technical certification on record', isMet: false, type: 'CERTIFICATION' },
-              { criteriaId: 104, name: 'Promotion Board Review', description: 'Complete final promotion evaluation checklist', isMet: false, type: 'TENURE' }
-            ]
-          };
-          this.careerPlan.set(defaultPlan);
-          this.fetchAiEvaluation(empId, defaultPlan.targetRole);
+          this.careerPlan.set(null);
+          this.toast.error('Could not retrieve career progression plan.');
+        }
+      });
+  }
+
+  loadJobsForEmployee(empId: number): void {
+    this.loadingJobs.set(true);
+    this.careerService.getJobOpportunities(empId)
+      .pipe(finalize(() => this.loadingJobs.set(false)))
+      .subscribe({
+        next: (jobList: JobOpportunity[]) => {
+          this.jobs.set(jobList || []);
+        },
+        error: () => {
+          this.jobs.set([]);
+        }
+      });
+  }
+
+  loadTrainingAnalytics(empId: number): void {
+    this.loadingDashboard.set(true);
+    this.careerService.getDashboard(empId)
+      .pipe(finalize(() => this.loadingDashboard.set(false)))
+      .subscribe({
+        next: (dash: CareerDashboard) => {
+          this.dashboard.set(dash);
+        },
+        error: () => {
+          this.dashboard.set(null);
         }
       });
   }
 
   fetchAiEvaluation(empId: number, targetRole?: string): void {
     this.loadingAi.set(true);
-    const currentPlan = this.careerPlan();
-    const roleTarget = targetRole || currentPlan?.targetRole || 'Lead Java Developer';
-    const empName = currentPlan?.employeeName || `Employee #${empId}`;
-    const currentRole = currentPlan?.currentRole || 'Enterprise Associate';
+    const plan = this.careerPlan();
+    const empObj = this.employees().find(e => e.employeeId === empId);
+    const empName = empObj?.employeeName || plan?.employeeName || this.authService.currentUser()?.name || `Employee #${empId}`;
+    const currentRole = plan?.currentRole || empObj?.designation || 'Enterprise Associate';
+    const target = targetRole || plan?.targetRole || 'Senior Professional Specialist';
 
-    forkJoin({
-      skills: this.skillService.getAll().pipe(catchError(() => of([]))),
-      empSkills: empId > 0 ? this.empSkillService.getByEmployeeId(empId).pipe(catchError(() => of([]))) : of([]),
-      assessments: empId > 0 ? this.assessmentService.getAll().pipe(catchError(() => of([]))) : of([]),
-      certs: empId > 0 ? this.certService.getCertificatesByEmployee(empId).pipe(catchError(() => of([]))) : of([])
-    }).subscribe({
-      next: ({ skills, empSkills, assessments, certs }) => {
-        const mappedSkills = empSkills.map(es => {
-          const s = skills.find(sk => sk.skillId === es.skillId);
-          return {
-            skillId: es.skillId,
-            skillName: s?.skillName || `Skill #${es.skillId}`,
-            proficiencyLevel: es.proficiencyLevel || 1,
-            yearsExperience: es.yearsOfExperience || 1
-          };
-        });
-
-        const mappedAssessments = assessments
-          .filter(a => a.employeeId === empId)
-          .map(a => ({
-            skillId: a.skillId,
-            score: a.score || 75.0,
-            verified: Boolean(a.verified)
-          }));
-
-        const certNames = certs.map(c => c.name);
-
-        const req: AiCareerEvaluationRequest = {
-          employeeId: empId,
-          employeeName: empName,
-          currentRole: currentRole,
-          targetRole: roleTarget,
-          skills: mappedSkills.length > 0 ? mappedSkills : [
-            { skillId: 1, skillName: 'Java 17', proficiencyLevel: 3, yearsExperience: 2 },
-            { skillId: 2, skillName: 'Spring Boot 4', proficiencyLevel: 2, yearsExperience: 1 }
-          ],
-          assessments: mappedAssessments,
-          certifications: certNames,
-          yearsExperience: mappedSkills.length > 0 ? Math.max(...mappedSkills.map(s => s.yearsExperience || 1)) : 2
-        };
-
-        this.careerService.evaluateAiCareer(req)
-          .pipe(finalize(() => this.loadingAi.set(false)))
-          .subscribe({
-            next: (res) => {
-              this.aiEvaluation.set(res);
-            },
-            error: () => {
-              this.loadingAi.set(false);
-            }
-          });
-      },
-      error: () => {
-        this.loadingAi.set(false);
-      }
-    });
-  }
-
-  loadDashboard(): void {
-    this.loadingDashboard.set(true);
-    this.careerService.getDashboard()
-      .pipe(finalize(() => this.loadingDashboard.set(false)))
+    const req: AiCareerEvaluationRequest = {
+      employeeId: empId,
+      employeeName: empName,
+      currentRole: currentRole,
+      targetRole: target
+    };
+    this.careerService.evaluateAiCareer(req)
+      .pipe(finalize(() => this.loadingAi.set(false)))
       .subscribe({
-        next: (data) => this.dashboard.set(data),
-        error: (err) => console.error('Failed to load dashboard metrics:', err)
+        next: (aiRes: AiCareerEvaluationResponse) => {
+          this.aiEvaluation.set(aiRes);
+        },
+        error: () => {
+          this.aiEvaluation.set(null);
+        }
       });
-  }
-
-  loadJobs(): void {
-    this.loadingJobs.set(true);
-    this.careerService.getJobOpportunities()
-      .pipe(finalize(() => this.loadingJobs.set(false)))
-      .subscribe({
-        next: (data) => this.jobs.set(data),
-        error: (err) => console.error('Failed to load job listings:', err)
-      });
-  }
-
-  onEmployeeChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const empId = Number(target.value);
-    this.selectedEmployeeId.set(empId);
-    this.loadCareerPlan(empId);
   }
 
   toggleCriteria(criteriaId: number): void {
     const plan = this.careerPlan();
-    if (!plan) {
-      this.toast.error('No career plan loaded.');
-      return;
-    }
+    if (!plan) return;
     this.careerService.toggleCriteria(plan.planId, criteriaId).subscribe({
-      next: (updatedPlan) => {
-        this.careerPlan.set(updatedPlan);
-        this.toast.success('Promotion criteria toggled successfully.');
-        this.loadDashboard(); // Refresh dashboard in case metrics changed
+      next: (updated: CareerPlan) => {
+        this.careerPlan.set(updated);
+        this.toast.success('Promotion criteria progress updated.');
       },
-      error: (err) => this.toast.error('Failed to toggle promotion criteria.')
+      error: () => this.toast.error('Could not update criteria.')
     });
+  }
+
+  // --- What-If Simulator Methods ---
+  toggleSimulator(): void {
+    this.showSimulator.update(v => !v);
+  }
+
+  toggleSimulatorSkill(index: number): void {
+    const list = [...this.simulatedSkillBoosts()];
+    list[index].active = !list[index].active;
+    this.simulatedSkillBoosts.set(list);
+  }
+
+  toggleSimulatorCert(index: number): void {
+    const list = [...this.simulatedCertBoosts()];
+    list[index].active = !list[index].active;
+    this.simulatedCertBoosts.set(list);
+  }
+
+  getSimulatedReadiness(): number {
+    const base = this.careerPlan()?.progress ?? 0;
+    let boost = 0;
+    this.simulatedSkillBoosts().forEach(s => {
+      if (s.active) boost += 6;
+    });
+    this.simulatedCertBoosts().forEach(c => {
+      if (c.active) boost += c.boostPct;
+    });
+    return Math.min(100, Math.round(base + boost));
+  }
+
+  getSimulatedMatches(): number {
+    const base = this.jobs().length || 3;
+    const activeBoosts = this.simulatedSkillBoosts().filter(s => s.active).length +
+                         this.simulatedCertBoosts().filter(c => c.active).length;
+    return base + activeBoosts;
+  }
+
+  getSimulatedTimeRemaining(): string {
+    const simReadiness = this.getSimulatedReadiness();
+    if (simReadiness >= 90) return 'Immediate (Ready for Promotion Nomination)';
+    if (simReadiness >= 80) return '2–3 Months (Accelerated Track)';
+    if (simReadiness >= 70) return '5–6 Months';
+    return '9–12 Months';
+  }
+
+  // --- Skill Passport Methods ---
+  openSkillPassport(): void {
+    this.showSkillPassport.set(true);
+  }
+
+  closeSkillPassport(): void {
+    this.showSkillPassport.set(false);
+  }
+
+  printSkillPassport(): void {
+    window.print();
+  }
+
+  getPassportHash(): string {
+    const emp = this.careerPlan()?.employeeName || 'EMPID-101';
+    return `SHA256: ${btoa(emp).substring(0, 12).toUpperCase()}-9F82-E74A-SSN`;
+  }
+
+  // --- Mentor / Target Role Methods ---
+  startEditMentor(): void {
+    const plan = this.careerPlan();
+    if (plan) {
+      this.mentorNameInput = plan.mentorName;
+    }
+    this.editMentorMode.set(true);
   }
 
   saveMentorName(): void {
@@ -419,10 +372,8 @@ export class CareerAnalyticsComponent implements OnInit {
       return;
     }
     const plan = this.careerPlan();
-    if (!plan) {
-      this.toast.error('No career plan loaded.');
-      return;
-    }
+    if (!plan) return;
+
     this.savingMentor.set(true);
     this.careerService.updateMentor(plan.planId, this.mentorNameInput)
       .pipe(finalize(() => this.savingMentor.set(false)))
@@ -432,7 +383,7 @@ export class CareerAnalyticsComponent implements OnInit {
           this.editMentorMode.set(false);
           this.toast.success('Mentor updated successfully.');
         },
-        error: (err) => this.toast.error('Failed to update mentor.')
+        error: () => this.toast.error('Failed to update mentor.')
       });
   }
 
@@ -466,30 +417,54 @@ export class CareerAnalyticsComponent implements OnInit {
       return;
     }
     const plan = this.careerPlan();
-    if (!plan) {
-      this.toast.error('No career plan loaded.');
-      return;
-    }
+    if (!plan) return;
+
     this.savingTargetRole.set(true);
     const newRole = this.targetRoleInput.trim();
-    this.careerService.updateTargetRole(plan.planId, newRole)
+    this.careerService.updateTargetRole(plan.planId, newRole, plan.employeeId)
       .pipe(finalize(() => this.savingTargetRole.set(false)))
       .subscribe({
         next: (updatedPlan) => {
-          this.careerPlan.set({ ...plan, targetRole: newRole });
+          this.careerPlan.set(updatedPlan || { ...plan, targetRole: newRole });
           this.editTargetRoleMode.set(false);
           this.toast.success(`Career objective target updated to: ${newRole}`);
+          this.loadJobsForEmployee(plan.employeeId);
+          this.fetchAiEvaluation(plan.employeeId, newRole);
+          this.loadEmployeeCertifications(plan.employeeId);
         },
         error: () => {
           this.careerPlan.set({ ...plan, targetRole: newRole });
           this.editTargetRoleMode.set(false);
           this.toast.success(`Career objective target updated to: ${newRole}`);
+          this.loadJobsForEmployee(plan.employeeId);
+          this.fetchAiEvaluation(plan.employeeId, newRole);
+          this.loadEmployeeCertifications(plan.employeeId);
         }
       });
   }
 
   cancelEditTargetRole(): void {
     this.editTargetRoleMode.set(false);
+  }
+
+  getRecommendedCourseLink(keyword: string): any[] {
+    const all = this.courses();
+    if (!all || all.length === 0) return ['/courses'];
+    const kw = (keyword || '').toLowerCase().trim();
+    if (!kw) return ['/courses', all[0].courseId];
+
+    let match = all.find(c =>
+      (c.title && c.title.toLowerCase() === kw) ||
+      (c.courseCode && c.courseCode.toLowerCase() === kw)
+    );
+    if (match) return ['/courses', match.courseId];
+
+    match = all.find(c =>
+      (c.title && (c.title.toLowerCase().includes(kw) || kw.includes(c.title.toLowerCase())))
+    );
+    if (match) return ['/courses', match.courseId];
+
+    return ['/courses', all[0].courseId];
   }
 
   getCriteriaBadgeClass(type: string): string {

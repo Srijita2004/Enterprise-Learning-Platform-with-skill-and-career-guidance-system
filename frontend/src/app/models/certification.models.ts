@@ -31,7 +31,7 @@ export interface RenewalRequest {
   decisionByRole: string | null; decisionNote: string | null; decidedAt: string | null; onTime: boolean | null;
 }
 export interface RenewalNotification {
-  notificationId: string; certificationId: string; certificationName: string; employeeName: string;
+  notificationId: string; certificationId: string; certificationName: string; employeeName: string; employeeId?: number;
   type: NotificationType; status: NotificationStatus; message: string; dueDate: string | null; sentAt: string; acknowledgedAt: string | null;
 }
 export interface ComplianceVerification {

@@ -212,8 +212,12 @@ public class VectorSimilarityEngine {
         double expFactor = Math.min(10.0, exp * 2.5);
         double gapPenalty = Math.min(20.0, gapCount * 3.5);
 
+        if (cosineSim == 0.0 && (request.getSkills() == null || request.getSkills().isEmpty())) {
+            return 0.0;
+        }
+
         double total = baseScore + assessmentFactor + certFactor + expFactor - gapPenalty;
-        return Math.max(15.0, Math.min(96.0, Math.round(total * 10.0) / 10.0));
+        return Math.max(0.0, Math.min(96.0, Math.round(total * 10.0) / 10.0));
     }
 
     private String normalizeSkillName(String skill) {

@@ -3,6 +3,7 @@ package com.skillspherenexus.learningservice.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
@@ -21,6 +22,10 @@ public class JwtTokenProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
     public static final String SECRET_KEY = "SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise";
+
+    @Value("${jwt.secret:${JWT_SECRET:SkillSphereNexusSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026Enterprise}}")
+    private String configuredSecretKey;
+
     public static final long TOKEN_VALIDITY_SECONDS = 86400L; // 24 hours
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -46,7 +51,7 @@ public class JwtTokenProvider {
             String encodedPayload = base64UrlEncode(OBJECT_MAPPER.writeValueAsString(payload).getBytes(StandardCharsets.UTF_8));
             String dataToSign = encodedHeader + "." + encodedPayload;
 
-            String signature = signHmacSha256(dataToSign, SECRET_KEY);
+            String signature = signHmacSha256(dataToSign, getEffectiveSecretKey());
             return dataToSign + "." + signature;
         } catch (Exception e) {
             log.error("Error generating JWT token: {}", e.getMessage());
@@ -65,7 +70,7 @@ public class JwtTokenProvider {
             }
 
             String dataToSign = parts[0] + "." + parts[1];
-            String expectedSignature = signHmacSha256(dataToSign, SECRET_KEY);
+            String expectedSignature = signHmacSha256(dataToSign, getEffectiveSecretKey());
 
             if (!MessageDigest.isEqual(parts[2].getBytes(StandardCharsets.UTF_8), expectedSignature.getBytes(StandardCharsets.UTF_8))) {
                 log.warn("JWT signature verification failed");
@@ -129,5 +134,9 @@ public class JwtTokenProvider {
 
     private static String base64UrlEncode(byte[] bytes) {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private String getEffectiveSecretKey() {
+        return (configuredSecretKey != null && !configuredSecretKey.isBlank()) ? configuredSecretKey : SECRET_KEY;
     }
 }

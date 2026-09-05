@@ -100,6 +100,10 @@ public class GeminiCareerCoachService {
             List<AiSkillGapDTO> gaps,
             List<String> strengths
     ) {
+        if (matchScore == 0.0 && readiness == 0.0 && strengths.isEmpty()) {
+            return String.format("Welcome to the enterprise platform, **%s**! As a newly onboarded employee, your competency profile, skill matrix, and career progression roadmaps are currently at **0%% baseline initialization** with no prior assessment or course records. Complete initial role onboarding and skill benchmarking to establish your personalized progression roadmap.", name);
+        }
+
         String readinessTier = readiness >= 80 ? "exceptional advancement velocity" :
                 readiness >= 60 ? "solid upward progression trajectory" : "foundational competency development phase";
 
@@ -125,6 +129,14 @@ public class GeminiCareerCoachService {
     private List<String> generateMilestoneSteps(List<AiSkillGapDTO> gaps, String targetRole) {
         List<String> steps = new ArrayList<>();
         int count = 1;
+
+        if (gaps.isEmpty()) {
+            return List.of(
+                String.format("Milestone 1: Complete Initial Competency Benchmark Assessment for %s", targetRole),
+                "Milestone 2: Enroll in Foundational Enterprise Curriculum Modules",
+                String.format("Milestone 3: Establish Core Proficiency Records for %s", targetRole)
+            );
+        }
 
         for (AiSkillGapDTO gap : gaps) {
             if (count <= 3) {

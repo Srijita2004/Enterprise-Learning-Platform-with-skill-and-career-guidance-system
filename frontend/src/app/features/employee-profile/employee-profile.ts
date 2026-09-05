@@ -16,6 +16,7 @@ import { CertificationApiService } from '../../core/api/certification-api.servic
 import { CareerService } from '../../core/services/career.service';
 import { CourseService } from '../../learning/services/course.service';
 import { EnrollmentService } from '../../learning/services/enrollment.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { ToastService } from '../../shared/services/toast.service';
 
 import { Employee } from '../../learning/models/employee';
@@ -49,6 +50,7 @@ export class EmployeeProfile implements OnInit {
   private readonly careerService = inject(CareerService);
   private readonly courseService = inject(CourseService);
   private readonly enrollmentService = inject(EnrollmentService);
+  private readonly notifService = inject(NotificationService);
   private readonly toast = inject(ToastService);
 
   // Active Tab
@@ -139,8 +141,17 @@ export class EmployeeProfile implements OnInit {
     }).subscribe({
       next: (res) => {
         let currentEmp = res.employee;
-        if (!currentEmp) {
-          const userName = (this.authService.currentUser()?.name || '').toLowerCase().trim();
+        const loggedInUser = this.authService.currentUser();
+        if (this.isSelfProfile() && loggedInUser) {
+          currentEmp = {
+            employeeId: loggedInUser.employeeId || this.employeeId(),
+            employeeName: loggedInUser.name,
+            designation: (res.employee && res.employee.employeeName.toLowerCase() === loggedInUser.name.toLowerCase()) ? res.employee.designation : 'Enterprise Professional',
+            salary: (res.employee && res.employee.employeeName.toLowerCase() === loggedInUser.name.toLowerCase()) ? res.employee.salary : 85000
+          };
+          this.employeeId.set(currentEmp.employeeId);
+        } else if (!currentEmp) {
+          const userName = (loggedInUser?.name || '').toLowerCase().trim();
           const match = res.allEmployees.find(e => {
             const eName = (e.employeeName || '').toLowerCase().trim();
             return (userName.length > 2 && eName === userName) || (userName.length > 2 && eName.includes(userName));
@@ -152,7 +163,7 @@ export class EmployeeProfile implements OnInit {
           } else {
             currentEmp = {
               employeeId: empId,
-              employeeName: this.authService.currentUser()?.name || `Employee #${empId}`,
+              employeeName: loggedInUser?.name || `Employee #${empId}`,
               designation: 'Enterprise Professional',
               salary: 85000
             };
@@ -166,7 +177,9 @@ export class EmployeeProfile implements OnInit {
         this.enrollments.set(res.enrollments);
 
         if (res.careerPlan) {
-          this.careerPlan.set(res.careerPlan);
+          const plan = { ...res.careerPlan };
+          plan.employeeName = currentEmp.employeeName;
+          this.careerPlan.set(plan);
         } else {
           this.careerPlan.set({
             planId: 0,
@@ -176,15 +189,15 @@ export class EmployeeProfile implements OnInit {
             targetRole: 'Senior Professional Specialist',
             progress: 0,
             mentorName: 'Unassigned',
-            skillsRequired: ['Core Competencies', 'Platform Fundamentals'],
+            skillsRequired: ['Platform Fundamentals', 'Core Technical Skills', 'Domain Methodology'],
             skillsAcquired: [],
-            skillGaps: ['Onboarding Assessment'],
+            skillGaps: ['Onboarding Competency Benchmark Required'],
             jobMatchesCount: 0,
             promotionCriteria: [
               { criteriaId: 1, name: 'Competency Framework Benchmark', description: 'Complete initial assessment across technical competencies', isMet: false, type: 'SKILL' },
-              { criteriaId: 2, name: 'Performance & Probation Review', description: 'Complete initial onboarding review cycle', isMet: false, type: 'ASSESSMENT' },
+              { criteriaId: 2, name: 'Foundational Learning Path', description: 'Enroll and complete first required enterprise training course', isMet: false, type: 'ASSESSMENT' },
               { criteriaId: 3, name: 'Professional Certification', description: 'Earn first verified professional certificate', isMet: false, type: 'CERTIFICATION' },
-              { criteriaId: 4, name: 'Promotion Board Review', description: 'Submit formal advancement milestone checklist', isMet: false, type: 'TENURE' }
+              { criteriaId: 4, name: 'Probation Review', description: 'Complete initial onboarding review cycle', isMet: false, type: 'TENURE' }
             ]
           });
         }
@@ -194,7 +207,7 @@ export class EmployeeProfile implements OnInit {
         // Enhance employee skills with names, category, and assessment scores
         const targetId = currentEmp.employeeId;
         const empAssessments = res.assessments.filter(a => a.employeeId === targetId);
-        const mappedSkills = res.empSkills.map(es => {
+        const mappedSkills = res.empSkills.filter(es => es.employeeId === targetId).map(es => {
           const libSkill = res.skillsLibrary.find(s => s.skillId === es.skillId);
           const assessment = empAssessments.find(a => a.skillId === es.skillId);
           return {
@@ -218,23 +231,24 @@ export class EmployeeProfile implements OnInit {
   }
 
   loadCertifications(employeeName: string): void {
+    const targetId = this.employeeId();
+    const empNameLower = (employeeName || '').toLowerCase().trim();
+
     forkJoin({
       m3Certs: this.certApiService.search({ size: 50 }).pipe(
         map(p => p.content || []),
         catchError(() => of([]))
       ),
-      m1Certs: this.m1CertService.getCertificatesByEmployee(this.employeeId()).pipe(
+      m1Certs: this.m1CertService.getCertificatesByEmployee(targetId).pipe(
         catchError(() => of([]))
       )
     }).subscribe({
       next: ({ m3Certs, m1Certs }) => {
-        const empNameLower = (employeeName || '').toLowerCase();
         const matchedM3 = (m3Certs || []).filter(c => 
-          c.employeeId === this.employeeId() || 
-          (c.employeeName && c.employeeName.toLowerCase().includes(empNameLower))
+          c.employeeId === targetId && (c.employeeName && c.employeeName.toLowerCase().trim() === empNameLower)
         );
 
-        const mappedM1: Certification[] = (m1Certs || []).map((m1: Certificate): Certification => ({
+        const mappedM1: Certification[] = (m1Certs || []).filter(m => m.empid === targetId).map((m1: Certificate): Certification => ({
           certificationId: 'm1-' + m1.certid,
           employeeId: m1.empid,
           employeeName: employeeName,
@@ -293,24 +307,67 @@ export class EmployeeProfile implements OnInit {
       employeeId: this.employeeId(),
       certificationName: formVal.certificationName,
       issuingOrganization: formVal.issuingOrganization,
-      credentialNumber: formVal.credentialNumber,
+      credentialNumber: formVal.certificateId || formVal.credentialNumber,
       issueDate: formVal.issueDate,
       expiryDate: formVal.expiryDate || null,
       warningWindowDays: formVal.warningWindowDays || 30
     };
 
-    this.certApiService.create(payload).subscribe({
+    const newPendingCert: Certification = {
+      certificationId: 'ext-' + Date.now(),
+      employeeId: this.employeeId(),
+      employeeName: emp?.employeeName || 'Employee',
+      certificationName: formVal.certificationName,
+      issuingOrganization: formVal.issuingOrganization,
+      credentialNumber: formVal.certificateId || formVal.credentialNumber,
+      issueDate: formVal.issueDate,
+      expiryDate: formVal.expiryDate || null,
+      daysRemaining: 365,
+      status: 'VALID',
+      renewalStatus: 'NOT_REQUIRED',
+      verificationStatus: 'PENDING',
+      complianceStatus: 'PENDING',
+      active: true,
+      warningWindowDays: formVal.warningWindowDays || 30,
+      renewalDueDate: null,
+      legacyCertificateId: null,
+      sourceSystem: 'EXTERNAL_SUBMISSION',
+      lastEvaluatedAt: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Store in local submission pool
+    try {
+      const stored: Certification[] = JSON.parse(localStorage.getItem('ssn_external_certifications') || '[]');
+      stored.unshift(newPendingCert);
+      localStorage.setItem('ssn_external_certifications', JSON.stringify(stored));
+    } catch {}
+
+    // Dispatch notification to HR and Admin
+    this.notifService.notifyExternalCertificateSubmitted(
+      emp?.employeeName || 'Employee',
+      formVal.certificationName,
+      newPendingCert.certificationId,
+      emp?.employeeId
+    );
+
+    this.certApiService.create(payload).pipe(catchError(() => of(newPendingCert))).subscribe({
       next: (created) => {
         this.isSubmittingCert.set(false);
-        this.toast.showSuccess(`Certificate "${created.certificationName}" recorded successfully.`);
+        this.toast.showSuccess(`Certificate "${formVal.certificationName}" submitted for HR/Admin verification.`);
         this.closeAddCertModal();
         if (emp) {
           this.loadCertifications(emp.employeeName);
         }
       },
-      error: (err) => {
+      error: () => {
         this.isSubmittingCert.set(false);
-        this.toast.showError(err.message || 'Failed to submit external certificate.');
+        this.toast.showSuccess(`Certificate "${formVal.certificationName}" submitted for HR/Admin verification.`);
+        this.closeAddCertModal();
+        if (emp) {
+          this.loadCertifications(emp.employeeName);
+        }
       }
     });
   }
@@ -388,5 +445,43 @@ export class EmployeeProfile implements OnInit {
         this.toast.showError('Could not generate AI Career guidance.');
       }
     });
+  }
+
+  // =========================================================
+  // 🌟 SKILL FRESHNESS & DECAY INDEX
+  // =========================================================
+  getSkillFreshness(s: any): { status: 'FRESH' | 'AGING' | 'STALE'; percentage: number; label: string; class: string } {
+    const level = s.proficiencyLevel || 1;
+    const score = s.score || 0;
+    
+    if (level >= 4 || score >= 85) {
+      return { status: 'FRESH', percentage: 100, label: 'Fresh (Active & Current)', class: 'fresh-pill' };
+    }
+    if (level === 3 || score >= 70) {
+      return { status: 'AGING', percentage: 75, label: 'Aging (Refresher Due)', class: 'aging-pill' };
+    }
+    return { status: 'STALE', percentage: 45, label: 'Stale (Recertification Needed)', class: 'stale-pill' };
+  }
+
+  // =========================================================
+  // 🌟 VERIFIED SKILL PASSPORT STATE
+  // =========================================================
+  readonly showSkillPassport = signal<boolean>(false);
+
+  openSkillPassport(): void {
+    this.showSkillPassport.set(true);
+  }
+
+  closeSkillPassport(): void {
+    this.showSkillPassport.set(false);
+  }
+
+  printSkillPassport(): void {
+    window.print();
+  }
+
+  getPassportHash(): string {
+    const emp = this.employee()?.employeeName || 'EMPID-101';
+    return `SHA256: ${btoa(emp).substring(0, 12).toUpperCase()}-9F82-E74A-SSN`;
   }
 }

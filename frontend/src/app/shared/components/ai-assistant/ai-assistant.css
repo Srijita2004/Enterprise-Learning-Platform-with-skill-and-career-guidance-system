@@ -284,7 +284,7 @@
 }
 
 .user-bubble {
-  background: linear-gradient(135deg, var(--color-primary, #3b82f6), #2563eb);
+  background: linear-gradient(135deg, var(--color-primary, #3b82f6), var(--color-primary-hover, #2563eb));
   color: #ffffff;
   border-bottom-right-radius: 4px;
 }

@@ -49,24 +49,13 @@ public class LearningPathAssignmentServiceImpl
 
         if (learningPath.getStatus()
                 != LearningPathStatus.PUBLISHED) {
-            throw new IllegalArgumentException(
-                    "Only published learning paths can be assigned"
-            );
+            learningPath.setStatus(LearningPathStatus.PUBLISHED);
+            learningPathRepository.save(learningPath);
         }
 
         if (request.getLearnerId() == null) {
             throw new IllegalArgumentException(
                     "Learner ID is required"
-            );
-        }
-
-        long totalCourses =
-                learningPathCourseRepository
-                        .countByLearningPathPathId(pathId);
-
-        if (totalCourses == 0) {
-            throw new IllegalArgumentException(
-                    "Learning path does not contain any courses"
             );
         }
 

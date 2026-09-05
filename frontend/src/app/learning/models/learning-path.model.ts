@@ -89,6 +89,7 @@ export interface LearningPathAssignment {
   pathCode: string;
   pathTitle: string;
   learnerId: string;
+  learnerName?: string | null;
   status: LearningPathAssignmentStatus;
   assignmentSource: LearningPathAssignmentSource;
   assignedByUserId?: string | null;

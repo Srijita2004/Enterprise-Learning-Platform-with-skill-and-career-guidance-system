@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Skill } from '../../learning/models/skill';
 import { environment } from '../../../environments/environment';
 
@@ -12,12 +12,16 @@ export class SkillService {
   private readonly baseUrl = `${environment.apiUrl}/skills`;
 
   private mockSkills: Skill[] = [
-    { skillId: 1, skillName: 'Java', category: 'TECHNICAL', description: 'Core Java, Streams, Multithreading, Memory Management' },
-    { skillId: 2, skillName: 'Spring Boot', category: 'TECHNICAL', description: 'Microservices architectures, Spring Cloud, Hibernate, Spring Security' },
-    { skillId: 3, skillName: 'Angular', category: 'TECHNICAL', description: 'TypeScript SPA Framework, Standalone Components, Signals, RxJS' },
-    { skillId: 4, skillName: 'PostgreSQL', category: 'TECHNICAL', description: 'Relational Database, complex indexing, queries optimization' },
-    { skillId: 5, skillName: 'Agile Methodology', category: 'SOFT', description: 'Sprint Planning, Scrum ceremonies, project tracking' },
-    { skillId: 6, skillName: 'Financial Analysis', category: 'DOMAIN', description: 'Investment portfolios, banking regulations, and credit analysis' }
+    { skillId: 1, skillName: 'Java 17 & Concurrency', category: 'TECHNICAL', description: 'Core Java, Virtual Threads, Streams, Memory Optimization, JVM Tuning' },
+    { skillId: 2, skillName: 'Spring Boot 4 & Cloud', category: 'TECHNICAL', description: 'Microservices architectures, Spring Cloud Gateway, Eureka, Hibernate, Spring Security' },
+    { skillId: 3, skillName: 'Angular 21 & Signals', category: 'TECHNICAL', description: 'TypeScript SPA Framework, Standalone Architecture, Signals, Sub-second LCP' },
+    { skillId: 4, skillName: 'PostgreSQL & Query Tuning', category: 'TECHNICAL', description: 'Relational Database, complex indexing, partitioning, query optimization' },
+    { skillId: 5, skillName: 'Kubernetes & Multi-Cloud', category: 'TECHNICAL', description: 'Container orchestration, Helm charts, service mesh, zero-downtime rollouts' },
+    { skillId: 6, skillName: 'Automated QA & Testing', category: 'TECHNICAL', description: 'JUnit, Mockito, Cypress, Playwright, performance benchmarking' },
+    { skillId: 7, skillName: 'Zero-Trust Cybersecurity', category: 'DOMAIN', description: 'JWT authentication, RBAC authorization, TLS encryption, SOC2 compliance' },
+    { skillId: 8, skillName: 'AI & Vector MLOps', category: 'TECHNICAL', description: 'Vector embeddings, cosine similarity search, Gemini LLM prompt orchestration' },
+    { skillId: 9, skillName: 'DevOps & Terraform IaC', category: 'TECHNICAL', description: 'CI/CD pipeline automation, Docker containerization, Infrastructure as Code' },
+    { skillId: 10, skillName: 'Distributed System Design', category: 'TECHNICAL', description: 'Event-driven architecture, Apache Kafka messaging, CAP theorem, resilience' }
   ];
 
   constructor(private http: HttpClient) {}
@@ -27,7 +31,15 @@ export class SkillService {
       return of([...this.mockSkills]);
     }
     return this.http.get<Skill[]>(this.baseUrl).pipe(
-      catchError(this.handleError)
+      map(res => {
+        if (!res || !Array.isArray(res) || res.length === 0) return [...this.mockSkills];
+        const existingIds = new Set(res.map(s => s.skillId));
+        this.mockSkills.forEach(m => {
+          if (!existingIds.has(m.skillId)) res.push(m);
+        });
+        return res;
+      }),
+      catchError(() => of([...this.mockSkills]))
     );
   }
 

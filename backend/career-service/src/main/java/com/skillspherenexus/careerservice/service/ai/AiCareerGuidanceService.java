@@ -36,6 +36,13 @@ public class AiCareerGuidanceService {
 
         // 5. Compute Promotion Readiness Probability
         double readinessProb = vectorSimilarityEngine.calculatePromotionReadiness(rawCosine, request, skillGaps.size());
+
+        if (employeeVector.isEmpty() && (request.getSkills() == null || request.getSkills().isEmpty())) {
+            matchScore = 0.0;
+            rawCosine = 0.0;
+            readinessProb = 0.0;
+        }
+
         String readinessTier = readinessProb >= 80.0 ? "HIGH_ADVANCEMENT" :
                 readinessProb >= 55.0 ? "MODERATE_PROGRESSION" : "FOUNDATION_BUILDING";
 
